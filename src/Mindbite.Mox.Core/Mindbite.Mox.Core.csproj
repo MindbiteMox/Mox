@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Configuration">
     <OutputType>Library</OutputType>
   </PropertyGroup>
@@ -9,10 +9,10 @@
     <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
     <StartupObject />
-    <Version>2.1.60</Version>
+    <Version>2.1.61</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>2.1.60.0</FileVersion>
-    <AssemblyVersion>2.1.60.0</AssemblyVersion>
+    <FileVersion>2.1.61.0</FileVersion>
+    <AssemblyVersion>2.1.61.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

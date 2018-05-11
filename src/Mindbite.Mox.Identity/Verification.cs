@@ -91,7 +91,7 @@ namespace Mindbite.Mox.Identity.Verification
             {
                 Success = true,
                 Verificator = this,
-                Errors = new VerificationError[] { }
+                Errors = new VerificationError[0]
             };
         }
     }
