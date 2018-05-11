@@ -1,0 +1,8 @@
+﻿@using Microsoft.Extensions.Localization;
+
+@model Mindbite.Core.Mox.Identity.Data.Models.PasswordReset
+@inject IStringLocalizer localizer
+
+<h2>@localizer["Återställ lösenord"]</h2>
+
+<a href="@Url.Action("Reset", "ForgotPassword", null, Context.Request.Scheme)?resetId=@Model.Id.ToString()">@localizer["Klicka här för att återställa ditt lösenord."]</a>

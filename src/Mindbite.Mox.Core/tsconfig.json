@@ -1,0 +1,20 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "./wwwroot/mox/js",
+    "lib": [ "dom", "es2015.promise", "es5", "scripthost" ],
+    "declaration": true,
+    "declarationDir": "./contentFiles/ts/types"
+  },
+  "include": ["./wwwroot/mox/js"],
+  "exclude": [
+    "node_modules",
+    "./contentFiles/ts/types"
+  ]
+}

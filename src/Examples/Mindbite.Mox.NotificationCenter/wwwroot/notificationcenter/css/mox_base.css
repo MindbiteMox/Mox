@@ -1,0 +1,4 @@
+﻿.mox-header-right-menu-item .notification { width: 40px; height: 40px; background-image: url('/static/mox/images/logo.png'); background-size: 32px; background-position: center; background-repeat: no-repeat; display: block; }
+.mox-header-right-menu-item .notification-unread { position: absolute; top: 3px; right: 3px; padding: 0 3px; background-color: #f00; color: #fff; border-radius: 3px; pointer-events: none; }
+.mox-header-right-menu-item .notification-menu { position: absolute; top: 50px; right: 10px; width: 200px; background-color: #fff; opacity: 0; visibility: hidden; transition: opacity .2s; border-radius: 3px; border: 1px solid #cacaca; }
+.mox-header-right-menu-item .notification-menu.open { opacity: 1; visibility: visible; }

@@ -1,0 +1,15 @@
+﻿@using Microsoft.Extensions.Localization;
+
+@{
+    Layout = "Mox/LogIn/_Layout";
+}
+
+@inject IStringLocalizer localizer
+
+<fieldset>
+    <h2>@localizer["Ditt lösenord har återställts!"]</h2>
+    <p>@localizer["Du kan logga in med ditt nya lösenord på en gång!"]</p>
+    <p>
+        @Html.ActionLink(localizer["Logga in"], "Index", "LogIn")
+    </p>
+</fieldset>

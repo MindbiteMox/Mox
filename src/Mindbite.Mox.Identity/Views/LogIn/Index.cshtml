@@ -1,0 +1,36 @@
+﻿@using Microsoft.Extensions.Localization;
+@{
+    Layout = "Mox/LogIn/_Layout";
+}
+@model Mindbite.Core.Mox.Identity.ViewModels.AccountViewModel.LogInViewModel
+@inject IStringLocalizer localizer
+
+@using (Html.BeginForm())
+{
+    <fieldset>
+
+        @Html.ValidationSummary(true)
+
+        <p>
+            @Html.LabelFor(model => model.Email)
+            @Html.ValidationMessageFor(model => model.Email)
+            @Html.TextBoxFor(model => model.Email)
+        </p>
+
+        <p>
+            @Html.LabelFor(model => model.Password)
+            @Html.ValidationMessageFor(model => model.Password)
+            @Html.PasswordFor(model => model.Password)
+        </p>
+
+        <p>
+            @Html.CheckBoxFor(model => model.RememberMe)
+            @Html.LabelFor(model => model.RememberMe)
+        </p>
+
+        <p>
+            <input type="submit" value="@localizer["Logga in"]" />
+            @Html.ActionLink(localizer["Glömt lösenord"], "Index", "ForgotPassword")
+        </p>
+    </fieldset>
+}

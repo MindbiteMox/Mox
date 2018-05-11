@@ -1,0 +1,82 @@
+﻿@inject Microsoft.Extensions.Options.IOptions<Mindbite.Core.Mox.Configuration.Config> Config
+@using System.Linq
+@using Mindbite.Core.Mox.Identity.Data
+@using Mindbite.Core.Mox.UI
+@using Mindbite.Core.Mox.UI.Menus
+@using Mindbite.Core.Mox
+@using Mindbite.Core.Mox.NotificationCenter
+
+@{
+    var notificationCenterApp = Config.Value.Apps.FirstOrDefault(x => x.AppId == "notificationcenter");
+}
+
+<a href="#!" class="notification" id="js-notification-header-button"></a>
+<span class="notification-unread" id="js-notification-header-unread" style="display: none;"></span>
+<div class="notification-menu" id="js-notification-header-menu">
+    <ul class="mox-header-dropdown-items">
+        <li class="mox-header-dropdown-item all" id="js-notification-view-all"><a href="@Url.MenuAction(((IMenu)notificationCenterApp.Menu).FirstOrDefault(x => x.Controller == "Notifications"))">Visa alla</a></li>
+    </ul>
+</div>
+
+<script>
+    (function () {
+        var items = function () { return document.querySelectorAll('#js-notification-header-menu .mox-header-dropdown-item:not(.all)'); }
+        var itemsContainer = document.querySelector('#js-notification-header-menu .mox-header-dropdown-items');
+        var viewAllItem = document.getElementById('js-notification-view-all');
+        var unread = document.getElementById('js-notification-header-unread');
+        var getUnreadUrl = '@Url.Action("GetUnread", "Notifications", new { Area = Constants.MainArea })';
+
+        Mox.Utils.Ajax.getJSON(getUnreadUrl).then(function (data) {
+
+            items().forEach(function (x) { x.remove(); });
+
+            if (data.length > 0) {
+                unread.style.display = "block";
+                unread.innerText = data.length;
+
+                for (var i = 0; i < data.length; i++) {
+                    var urlItem = document.createElement("a");
+                    urlItem.innerText = data[i].title;
+                    urlItem.href = data[i].url;
+
+                    var newItem = document.createElement("li");
+                    newItem.className = "mox-header-dropdown-item";
+                    newItem.appendChild(urlItem);
+
+                    itemsContainer.insertBefore(newItem, viewAllItem);
+                }
+            } else {
+                unread.style.display = "none";
+            }
+        });
+    })();
+
+    (function () {
+        var markAsUnreadUrl = '@Url.Action("MarkAsUnread", "Notifications", new { Area = Constants.MainArea })';
+        var button = document.getElementById('js-notification-header-button');
+        var menu = document.getElementById('js-notification-header-menu');
+
+        menu.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+
+        button.addEventListener('click', function (event) {
+            menu.classList.toggle('open');
+            event.preventDefault();
+            event.stopPropagation();
+
+            function closeMenu(ev) {
+                menu.classList.remove('open');
+            }
+
+            if (menu.classList.contains('open')) {
+                document.addEventListener('click', closeMenu);
+
+                Mox.Utils.Ajax.getJSON(markAsUnreadUrl);
+
+            } else {
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    })();
+</script>

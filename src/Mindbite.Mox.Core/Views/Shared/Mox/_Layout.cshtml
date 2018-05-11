@@ -1,0 +1,69 @@
+﻿@using Mindbite.Core.Mox.ViewComponents
+@using Mindbite.Core.Mox
+@using Mindbite.Core.Mox.UI.Menus
+@using Mindbite.Core.Mox.UI
+@using Microsoft.Extensions.Localization;
+
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Core.Mox.Configuration.Config> Config
+@inject IStringLocalizer localizer
+
+@{
+    var currentApp = Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(ViewContext.RouteData.Values["Area"]));
+    var currentSelectedMenu = currentApp?.Menu?.FirstOrDefault(x => x.MatchesView(this.ViewContext));
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@(ViewData["Title"] ?? currentSelectedMenu?.Title ?? "Mox") - @(Config.Value.SiteTitle)</title>
+    <meta name="viewport" content="width=device-width">
+    @Html.Partial("Mox/StaticIncludes/_Styles")
+    @Html.Partial("Mox/StaticIncludes/_Scripts")
+    @Html.Partial("Mox/StaticIncludes/_AppStyles")
+    @Html.Partial("Mox/StaticIncludes/_AppScripts")
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    <header>
+        <div class="mox-header">
+            <div class="mox-header-menu-container">
+                <div class="mox-header-logo">@Config.Value.SiteTitle</div>
+                @await Html.Mox().Menu().AppMenuAsync(includeApp: true, maxDepth: 1)
+
+                <div class="mox-header-right-menu">
+                    @await Component.InvokeAsync("Mox/AppHeaderPartials")
+                </div>
+
+                <div style="clear: both"></div>
+            </div>
+        </div>
+
+        <div class="mox-header-sub-menu">
+            @await Html.Mox().Menu().AppMenuAsync(onlyCurrentApp: true, maxDepth: 1)
+        </div>
+    </header>
+    <div style="clear: both;"></div>
+
+    <div class="mox-content-wrapper">
+        @{
+            @if (currentSelectedMenu?.Parents()?.Count() > 1)
+            {
+                <div class="mox-side-menu">
+                    <span class="app-title">@localizer[currentSelectedMenu.Parents().First().Title]</span>
+                    @await Html.Mox().Menu().MenuAsync(root: currentSelectedMenu.Parents().First(), startLevel: 0, maxDepth: 1)
+                </div>
+            }
+        }
+        @RenderSection("sidemenu", required: false)
+        <div class="mox-content-scroll-wrapper">
+            <div class="mox-content">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script>Mox.UI.GlobalInstances.initDefault()</script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

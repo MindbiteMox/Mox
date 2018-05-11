@@ -1,0 +1,30 @@
+﻿@using Mindbite.Core.Mox
+@using Microsoft.Extensions.Localization;
+@{
+    Layout = "Mox/_Layout";
+}
+@model Mindbite.Core.Mox.Identity.Data.Models.MoxUser
+@inject IStringLocalizer localizer
+
+@Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+
+<h1>@localizer["Ta bort användare"]</h1>
+
+<div class="mox-display">
+    @Html.LabelFor(model => model.UserName)
+    <div class="mox-display-content">@Html.DisplayFor(model => model.UserName)</div>
+
+    @Html.LabelFor(model => model.Email)
+    <div class="mox-display-content">@Html.DisplayFor(model => model.Email)</div>
+</div>
+
+<p class="text-danger">@ViewData["ErrorMessage"]</p>
+<p>@localizer["Är du säker på att du vill ta bort \"{0}\"?", Model.Email]</p>
+@using (Html.BeginForm())
+{
+    <fieldset>
+        <p>
+            <input type="submit" value="@localizer["Ta bort"]" />
+        </p>
+    </fieldset>
+}

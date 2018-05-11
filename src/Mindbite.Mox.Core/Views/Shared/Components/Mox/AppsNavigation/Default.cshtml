@@ -1,0 +1,15 @@
+﻿@using System.Linq
+@using Mindbite.Core.Mox
+@using Mindbite.Core.Mox.ViewModels
+@model AppsNavigationViewModel
+
+@if (Model.Config.Apps.Any(x => x.CanViewWithRoles(Model.Roles)))
+{
+    <h4 class="menu-heading">Appar</h4>
+    <ul class="mox-apps-menu">
+        @foreach (var app in Model.Config.Apps.Where(x => x.CanViewWithRoles(Model.Roles)).Where(x => ((Mindbite.Core.Mox.UI.Menus.IMenu)x.Menu).Items.Any()))
+        {
+            <li class="menu-item @(app == Model.App ? "selected" : "")"><a href="@Url.Action(app)">@app.Name</a></li>
+        }
+    </ul>
+}

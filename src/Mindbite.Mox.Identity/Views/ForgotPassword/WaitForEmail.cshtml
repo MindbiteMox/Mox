@@ -1,0 +1,11 @@
+﻿@using Microsoft.Extensions.Localization;
+@inject IStringLocalizer localizer
+
+@{
+    Layout = "Mox/LogIn/_Layout";
+}
+
+<fieldset>
+    <h2>@localizer["Återställ lösenord"]</h2>
+    <p>@localizer["Ett mail har skickats till dig med instruktioner för hur du återställer ditt lösenord!"]</p>
+</fieldset>

@@ -1,0 +1,14 @@
+﻿@using Mindbite.Core.Mox.UI
+@{
+    var routeValues = new { id = ViewContext.RouteData.Values["Id"] };
+    var menu = Mindbite.Core.Mox.UI.Menus.Menu
+        .Create()
+        .Items(items =>
+        {
+            items.Add().Title("Design").Action("Designs", "Display", routeValues);
+            items.Add().Title("Bilder").Action("Designs", "Images", routeValues);
+            items.Add().Title("Kommentarer").Action("Designs", "Comments", routeValues);
+        });
+}
+
+@await Html.Mox().Menu().MenuAsync(menu, tryMatchingActions: true)

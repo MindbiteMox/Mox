@@ -1,0 +1,12 @@
+﻿@using System.Linq;
+@using Microsoft.EntityFrameworkCore;
+@model Mindbite.Core.Mox.UI.IDataTable
+@{
+    Layout = "Mox/_Layout";
+}
+
+@Html.Partial("Mox/UI/AppBreadCrumbs")
+
+<h1>Notiser</h1>
+
+@await Html.PartialAsync("Mox/DataTable", Model)

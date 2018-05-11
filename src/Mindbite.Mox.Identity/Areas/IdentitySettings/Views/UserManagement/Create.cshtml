@@ -1,0 +1,63 @@
+﻿@using Mindbite.Core.Mox
+@using Microsoft.Extensions.Localization;
+@{
+    Layout = "Mox/_Layout";
+}
+@model Mindbite.Core.Mox.Identity.ViewModels.CreateUserViewModel
+@inject IStringLocalizer localizer
+
+@Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+
+<h1>@localizer["Skapa användare"]</h1>
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <p>
+            @Html.LabelFor(model => model.Name)
+            @Html.ValidationMessageFor(model => model.Name)
+            @Html.TextBoxFor(model => model.Name)
+        </p>
+
+        <p>
+            @Html.LabelFor(model => model.Email)
+            @Html.ValidationMessageFor(model => model.Email)
+            @Html.TextBoxFor(model => model.Email)
+        </p>
+
+        <p>
+            @Html.LabelFor(model => model.Password)
+            @Html.ValidationMessageFor(model => model.Password)
+            @Html.PasswordFor(model => model.Password)
+        </p>
+
+        <p>
+            @Html.LabelFor(model => model.RepeatPassword)
+            @Html.ValidationMessageFor(model => model.RepeatPassword)
+            @Html.PasswordFor(model => model.RepeatPassword)
+        </p>
+    </fieldset>
+
+    <fieldset>
+        <legend>@localizer["Behörigheter"]</legend>
+
+        <ul class="checkbox">
+            @for (var i = 0; i < Model.Roles.Length; i++)
+            {
+                <li>
+                    @Html.HiddenFor(model => model.Roles[i].Id)
+                    @Html.HiddenFor(model => model.Roles[i].Name)
+                    @Html.CheckBoxFor(model => model.Roles[i].Checked)
+                    @Html.LabelFor(model => model.Roles[i].Checked, localizer[$"role_{Model.Roles[i].Name}"])
+                </li>
+            }
+        </ul>
+    </fieldset>
+    <fieldset class="buttons">
+        <p>
+            <input type="submit" value="@localizer["Skapa"]" />
+        </p>
+    </fieldset>
+}

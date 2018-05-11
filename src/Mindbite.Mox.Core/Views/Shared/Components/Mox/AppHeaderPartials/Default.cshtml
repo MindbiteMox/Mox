@@ -1,0 +1,11 @@
+﻿@model IEnumerable<Mindbite.Core.Mox.Configuration.Apps.AppPartial>
+
+@if (Model.Any())
+{
+    <ul class="mox-header-right-menu-list">
+        @foreach (var partial in Model)
+        {
+            <li class="mox-header-right-menu-item">@await Html.PartialAsync(partial.Name)</li>
+        }
+    </ul>
+}

@@ -1,0 +1,32 @@
+﻿@using Mindbite.Core.Mox
+@{
+    Layout = this.Context.Request.IsAjaxRequest() ? "" : "Mox/_Layout";
+}
+@model Mindbite.Core.Mox.DesignDemoApp.Data.Models.Design
+
+@if (!this.Context.Request.IsAjaxRequest())
+{
+    @Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+}
+
+<h1>Ta bort design</h1>
+
+<div class="mox-display">
+    @Html.LabelFor(model => model.Title)
+    <div class="mox-display-content">@Html.DisplayFor(model => model.Title)</div>
+
+    @Html.LabelFor(model => model.Description)
+    <div class="mox-display-content">@Html.DisplayFor(model => model.Description)</div>
+</div>
+
+<p class="text-danger">@ViewData["ErrorMessage"]</p>
+<p>Är du säker på att du vill ta bort "@Html.DisplayFor(model => model.Title)"?</p>
+
+@using (Html.BeginForm())
+{
+    <fieldset class="buttons">
+        <p>
+            <input type="submit" value="Ta bort" />
+        </p>
+    </fieldset>
+}

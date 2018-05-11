@@ -1,0 +1,50 @@
+﻿@using Microsoft.EntityFrameworkCore;
+@using System.Security.Claims;
+@using Mindbite.Core.Mox.Identity.Data
+@using Microsoft.Extensions.Localization;
+
+@inject Mindbite.Core.Mox.Services.IDbContextFetcher dbContextFetcher
+@inject IStringLocalizer localizer
+
+@{
+    var identityDbContext = dbContextFetcher.FetchDbContext<MoxIdentityDbContext>();
+    var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var user = await identityDbContext.Users.SingleOrDefaultAsync(x => x.Id == userId);
+}
+
+<a href="#!" class="identity" id="js-identity-header-button">@user.Initials.ToUpper()</a>
+<div class="identity-menu" id="js-identity-header-menu">
+    <ul class="mox-header-dropdown-items">
+        <li class="mox-header-dropdown-item"><span>@user.Email</span></li>
+        <li class="mox-header-dropdown-item">
+            <a href="@Url.RouteUrl("IdentityLogOut", new { Action = "Index" })">@localizer["Logga ut"]</a>
+        </li>
+    </ul>
+</div>
+
+<script>
+    (function () {
+        var button = document.getElementById('js-identity-header-button');
+        var menu = document.getElementById('js-identity-header-menu');
+
+        menu.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+
+        button.addEventListener('click', function (event) {
+            menu.classList.toggle('open');
+            event.preventDefault();
+            event.stopPropagation();
+
+            function closeMenu(ev) {
+                menu.classList.remove('open');
+            }
+
+            if (menu.classList.contains('open')) {
+                document.addEventListener('click', closeMenu);
+            } else {
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    })();
+</script>

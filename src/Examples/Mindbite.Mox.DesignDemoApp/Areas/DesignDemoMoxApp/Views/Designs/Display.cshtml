@@ -1,0 +1,26 @@
+﻿@using Mindbite.Core.Mox
+@{
+    Layout = this.Context.Request.IsAjaxRequest() ? "" : "Mox/_Layout";
+}
+@model Mindbite.Core.Mox.DesignDemoApp.Data.Models.Design
+
+@if (!this.Context.Request.IsAjaxRequest())
+{
+    @Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+}
+
+<h1>@Model.Title</h1>
+
+@Html.Partial("_DisplayMenu")
+
+<p>
+    @Html.ActionLink("Redigera", "Edit", null, new { id = Model.Id }, new { @class = "mox-button" })
+</p>
+
+<div class="mox-display">
+    @Html.LabelFor(model => model.Title)
+    <div class="mox-display-content">@Html.DisplayFor(model => model.Title)</div>
+    
+    @Html.LabelFor(model => model.Description)
+    <div class="mox-display-content">@Html.DisplayFor(model => model.Description)</div>
+</div>

@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Mvc.Controllers
+@using Mindbite.Core.Mox.UI.Menus
+@using Mindbite.Core.Mox
+@using System.Reflection
+@using System.Linq
+@using Microsoft.Extensions.Localization;
+@using Mindbite.Core.Mox.UI
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Core.Mox.Configuration.Config> Config
+@inject IStringLocalizer localizer
+
+@{
+    var includeCurrentMenu = false;
+    try
+    {
+        includeCurrentMenu = Model.IncludeCurrentMenu;
+    }
+    catch { }
+    var currentApp = Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains((string)this.ViewContext.RouteData.Values["Area"]));
+    var selectedMenu = ((IMenu)currentApp?.Menu).FirstOrDefault(x => x.MatchesView(this.ViewContext));
+    var parents = includeCurrentMenu ? selectedMenu.Parents() : selectedMenu.Parent?.Parents() ?? new List<IMenuItem>();
+    var localizer = Html.Mox().Localizer;
+    var roles = await Html.Mox().GetRolesAsync();
+}
+
+<ul class="mox-breadcrumbs">
+    <li><a href="@Url.AppAction(currentApp, roles)">@localizer[currentApp.Name]</a></li>
+    @foreach (var parent in parents)
+    {
+        <li><a href="@Url.MenuAction(parent, roles)">@localizer[parent.Title]</a></li>
+    }
+</ul>

@@ -1,0 +1,3 @@
+﻿.mox-header-right-menu-item .identity { margin: 5px; width: 30px; height: 30px; background-color: #4893ec; display: block; text-align: center; text-decoration: none; color: white; font-weight: bold; line-height: 30px; }
+.mox-header-right-menu-item .identity-menu { position: absolute; top: 50px; right: 10px; width: 200px; background-color: #fff; opacity: 0; visibility: hidden; transition: opacity .2s; border-radius: 3px; border: 1px solid #cacaca; }
+.mox-header-right-menu-item .identity-menu.open { opacity: 1; visibility: visible; }

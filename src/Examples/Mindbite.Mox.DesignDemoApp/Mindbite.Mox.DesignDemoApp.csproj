@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup Label="Configuration">
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mindbite.Mox.DesignDemoApp.Data\Mindbite.Mox.DesignDemoApp.Data.csproj" />
+    <ProjectReference Include="..\..\Mindbite.Mox.Identity.Data\Mindbite.Mox.Identity.Data.csproj" />
+    <ProjectReference Include="..\Mindbite.Mox.NotificationCenter\Mindbite.Mox.NotificationCenter.csproj" />
+    <ProjectReference Include="..\..\Mindbite.Mox.Core\Mindbite.Mox.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Areas\*\Views\**" />
+    <EmbeddedResource Include="Views\**" />
+  </ItemGroup>
+
+</Project>

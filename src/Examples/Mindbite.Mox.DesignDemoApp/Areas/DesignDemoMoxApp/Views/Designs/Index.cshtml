@@ -1,0 +1,70 @@
+﻿@using System.Linq;
+@using Microsoft.EntityFrameworkCore;
+@model Mindbite.Core.Mox.UI.IDataTable
+@{
+    Layout = "Mox/_Layout";
+}
+
+@Html.Partial("Mox/UI/AppBreadCrumbs")
+
+<h1>Mina designs</h1>
+
+<p>
+    @Html.ActionLink("Skapa ny", "Create", null, null, new { @class = "mox-button", onclick = "openModalForm(this, event)" })
+</p>
+
+@await Html.PartialAsync("Mox/DataTable", Model)
+
+@* Hämta listan med ajax!
+    <script>
+        var request = new XMLHttpRequest();
+        request.open("GET", '@Url.Action("Index")', true);
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.onreadystatechange = function (event) {
+            if (request.readyState == 4) {
+                var data = JSON.parse(request.responseText);
+                console.log(data);
+            }
+        };
+        request.send()
+    </script>
+*@
+
+<script>    
+    function openModalForm(sender, event) {
+        event.preventDefault();
+
+        Mox.UI.Modal.createDialog(sender.href).then(function (modal) {
+            function setupEvents() {
+                var form = modal.contentContainer.querySelector('form');
+                if(form)
+                    form.addEventListener('submit', submitForm);
+
+                var editButtons = Mox.Utils.DOM.collectionOfToArray(modal.contentContainer.querySelectorAll('a'));
+                editButtons.forEach(function (button) {
+                    console.log(button);
+                    button.addEventListener('click', function (event) { event.preventDefault(); modal.replaceContent(event.target.href).then(setupEvents); }); // modal.close(); openModalForm(button, event); });
+                });
+            }
+
+            function submitForm(event) {
+                event.preventDefault();
+
+                Mox.Utils.Fetch.submitForm(event)
+                    .then(function (text) {
+                        modal.contentContainer.innerHTML = text;
+                        setupEvents();
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+            }
+
+            setupEvents();
+        });
+    }
+
+    var editButtons = Mox.Utils.DOM.collectionOfToArray(document.querySelectorAll('.mox-datatable td a'));
+    editButtons.forEach(function (button) {
+        button.addEventListener('click', function (event) { openModalForm(button, event) });
+    });
+</script>

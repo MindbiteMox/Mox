@@ -1,0 +1,6 @@
+﻿@inject Microsoft.Extensions.Options.IOptions<Mindbite.Core.Mox.Configuration.StaticIncludes.IncludeConfig> Config
+
+@foreach (var script in Config.Value.Scripts)
+{
+    <script src="@($"{script}?r={new Random().Next()}")"></script>
+}

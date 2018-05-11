@@ -1,0 +1,35 @@
+﻿@using Microsoft.Extensions.Localization;
+
+@{
+    Layout = "Mox/LogIn/_Layout";
+}
+
+@model Mindbite.Core.Mox.Identity.ViewModels.AccountViewModel.ResetViewModel
+@inject IStringLocalizer localizer
+
+@using (Html.BeginForm("Reset", "ForgotPassword"))
+{
+
+    <fieldset>
+        <h2>@localizer["Välj ett nytt lösenord"]</h2>
+
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(model => model.ResetId)
+
+        <p>
+            @Html.LabelFor(model => model.Password)
+            @Html.ValidationMessageFor(model => model.Password)
+            @Html.PasswordFor(model => model.Password)
+        </p>
+
+        <p>
+            @Html.LabelFor(model => model.RepeatPassword)
+            @Html.ValidationMessageFor(model => model.RepeatPassword)
+            @Html.PasswordFor(model => model.RepeatPassword)
+        </p>
+
+        <p>
+            <input type="submit" value="@localizer["Återställ lösenord"]" />
+        </p>
+    </fieldset>
+}

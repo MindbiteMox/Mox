@@ -1,0 +1,16 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "./wwwroot/notificationcenter/js",
+    "lib": [ "dom", "es2015.promise", "es5", "scripthost" ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
