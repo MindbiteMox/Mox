@@ -57,6 +57,10 @@
         @RenderSection("sidemenu", required: false)
         <div class="mox-content-scroll-wrapper">
             <div class="mox-content">
+                @foreach(var item in Html.Mox().GetAppMenu().Flat)
+                {
+                    <a href="@item.Url">@string.Join("", Enumerable.Range(0, item.Depth).Select(x => "-"))@item.Title</a><br/>
+                }
                 @RenderBody()
             </div>
         </div>

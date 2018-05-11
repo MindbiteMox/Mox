@@ -65,6 +65,7 @@ namespace Mindbite.Mox.Extensions
                 c.ViewLocationExpanders.Add(new AlwaysLookForSharedLocationExpander());
             });
 
+            services.AddScoped<AppMenu>();
             services.AddScoped<IViewRenderService, ViewRenderService>();
             services.AddScoped<IStringLocalizer, MoxStringLocalizer>();
             services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>());
@@ -149,6 +150,9 @@ namespace Mindbite.Mox.Extensions
 
         public static string MenuAction(this IUrlHelper url, UI.Menus.IMenu menu, IEnumerable<string> userRoles, object routeValues = null)
         {
+            if (!menu.Items.Any())
+                return "/error";
+
             var firstMenu = menu.Items.First();
             return url.MenuAction(firstMenu, userRoles, routeValues);
         }

@@ -89,6 +89,8 @@ namespace Mindbite.Mox.UI
             if (!this._htmlExtensions.Config.Value.Apps.Any())
                 return HtmlString.Empty;
 
+
+
             var roles = await this._htmlExtensions.GetRolesAsync();
             var sb = new StringBuilder();
 
