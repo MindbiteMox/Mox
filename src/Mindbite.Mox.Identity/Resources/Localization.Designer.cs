@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Mindbite.Core.Mox.Identity.Resources {
+namespace Mindbite.Mox.Identity.Resources {
     using System;
     
     

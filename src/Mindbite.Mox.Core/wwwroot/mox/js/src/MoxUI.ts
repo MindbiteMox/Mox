@@ -124,7 +124,7 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             };
-            let response = await fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect);
+            let response = await fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
             let text = await response.text();
             modal.contentContainer.innerHTML = text;
             modal.contentWrapper.classList.remove('loading');
@@ -191,7 +191,7 @@
                 }
             };
             this.contentWrapper.classList.add('loading');
-            let response = await fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect);
+            let response = await fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
             let text = await response.text();
             this.contentContainer.innerHTML = text;
             this.contentWrapper.classList.remove('loading');

@@ -1,12 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Hosting;
 @inject IHostingEnvironment env;
-@inject Microsoft.Extensions.Options.IOptions<Mindbite.Core.Mox.Configuration.Config> Config
-@inject Microsoft.Extensions.Options.IOptions<Mindbite.Core.Mox.Configuration.StaticIncludes.StaticFileProviderOptions> StaticFileProviderOptions
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.Config> Config
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.StaticIncludes.StaticFileProviderOptions> StaticFileProviderOptions
 
 @foreach (var include in Config.Value.Apps.Select(x => x.StaticIncludes))
 {
     @foreach (var style in include.Styles)
     {
-        @(style.Render(include.StaticRoot, StaticFileProviderOptions.Value.FileProviders, env.IsDevelopment() ? Mindbite.Core.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash : Mindbite.Core.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash))
+        @(style.Render(include.StaticRoot, StaticFileProviderOptions.Value.FileProviders, env.IsDevelopment() ? Mindbite.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash : Mindbite.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash))
     }
 }

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace Mindbite.Core.Mox.Data
+namespace Mindbite.Mox.Data
 {
     public static class SqlFormatter
     {

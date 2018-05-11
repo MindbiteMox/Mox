@@ -24,13 +24,19 @@ namespace Mindbite.Mox.Identity.Services
 
         public async Task<ISet<string>> GetRolesAsync(string userId)
         {
+            if (userId == null)
+                return new HashSet<string>();
+
+            var user = await this._userManager.FindByIdAsync(userId);
+            if(user == null)
+                return new HashSet<string>();
+
             if (this._roles != null)
                 return _roles;
 
             var cacheKey = UserRolesFetcher.CacheKey(userId);
             if (!this._cache.TryGetValue(cacheKey, out this._roles))
             {
-                var user = await this._userManager.FindByIdAsync(userId);
                 this._roles = new HashSet<string>(await this._userManager.GetRolesAsync(user));
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions();

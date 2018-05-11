@@ -52,7 +52,7 @@ namespace Mindbite.Mox.UI
     {
         public static MoxHtmlExtensionCollection Mox(this IHtmlHelper htmlHelper)
         {
-            return new MoxHtmlExtensionCollection(htmlHelper);
+            return htmlHelper.ViewBag.MoxHtmlExtensionCollection as MoxHtmlExtensionCollection ?? (htmlHelper.ViewBag.MoxHtmlExtensionCollection = new MoxHtmlExtensionCollection(htmlHelper));
         }
     }
 }

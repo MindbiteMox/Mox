@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Mindbite.Core.Mox.Data
+namespace Mindbite.Mox.Data
 {
     public class EnumToList<T> : List<EnumKeyValuePair>
     {

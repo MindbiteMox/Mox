@@ -1,7 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup Label="Configuration">
     <OutputType>Library</OutputType>
-    <TypeScriptToolsVersion>2.3</TypeScriptToolsVersion>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -17,13 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,8 +26,6 @@
     <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
 
-
-
   <ItemGroup>
     <Content Include="contentFiles\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -41,26 +33,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <TypeScriptCompile Include="wwwroot\mox\js\src\utils.ts" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <Folder Include="contentFiles\ts\types\" />
   </ItemGroup>
-  
-  <PropertyGroup>
-    <TypeScriptTarget>ES5</TypeScriptTarget>
-    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
-    <TypeScriptModuleKind />
-    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
-    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
-    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
-    <TypeScriptOutFile />
-    <TypeScriptOutDir />
-    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
-    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
-    <TypeScriptSourceMap>True</TypeScriptSourceMap>
-    <TypeScriptMapRoot />
-    <TypeScriptSourceRoot />
-  </PropertyGroup>
 </Project>

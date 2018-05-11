@@ -10,7 +10,9 @@
     "outDir": "./wwwroot/notificationcenter/js",
     "lib": [ "dom", "es2015.promise", "es5", "scripthost" ]
   },
+  "include": [ "./wwwroot/notificationcenter/js/src" ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "./contentFiles/ts/types"
   ]
 }

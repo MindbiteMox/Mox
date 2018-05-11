@@ -132,7 +132,7 @@ var Mox;
                                         'X-Requested-With': 'XMLHttpRequest'
                                     }
                                 };
-                                return [4 /*yield*/, fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect)];
+                                return [4 /*yield*/, fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(function (url) { window.location.href = url; }))];
                             case 1:
                                 response = _a.sent();
                                 return [4 /*yield*/, response.text()];
@@ -207,7 +207,7 @@ var Mox;
                                     }
                                 };
                                 this.contentWrapper.classList.add('loading');
-                                return [4 /*yield*/, fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect)];
+                                return [4 /*yield*/, fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(function (url) { window.location.href = url; }))];
                             case 1:
                                 response = _a.sent();
                                 return [4 /*yield*/, response.text()];

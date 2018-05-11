@@ -6,11 +6,11 @@ declare namespace Mox.Utils {
     }
     class Fetch {
         static postFormOptions(form: HTMLFormElement): RequestInit;
+        static redirect(onRedirect: (url: string) => void): (response: Response) => Promise<Response>;
         static checkErrorCode(response: Response): Promise<Response>;
-        static redirect(response: Response): Promise<Response>;
         static parseJson(response: Response): Promise<any>;
         static parseText(response: Response): Promise<string>;
-        static submitForm(event: Event): Promise<string>;
+        static submitForm(event: Event, onRedirect: (url: string) => void): Promise<string>;
     }
     class Ajax {
         static getJSON(url: string): Promise<object>;

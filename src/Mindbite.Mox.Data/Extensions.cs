@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 
-namespace Mindbite.Core.Mox.Data
+namespace Mindbite.Mox.Data
 {
     public static class Extensions
     {

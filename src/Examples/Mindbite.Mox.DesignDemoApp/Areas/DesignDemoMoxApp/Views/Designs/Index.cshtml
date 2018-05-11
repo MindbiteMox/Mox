@@ -1,6 +1,6 @@
 ﻿@using System.Linq;
 @using Microsoft.EntityFrameworkCore;
-@model Mindbite.Core.Mox.UI.IDataTable
+@model Mindbite.Mox.UI.IDataTable
 @{
     Layout = "Mox/_Layout";
 }
@@ -50,13 +50,15 @@
             function submitForm(event) {
                 event.preventDefault();
 
-                Mox.Utils.Fetch.submitForm(event)
-                    .then(function (text) {
-                        modal.contentContainer.innerHTML = text;
-                        setupEvents();
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
+                Mox.Utils.Fetch.submitForm(event, function(url) {
+                    modal.close();
+                    window.location.href = window.location.href;
+                }).then(function (text) {
+                    modal.contentContainer.innerHTML = text;
+                    setupEvents();
+                }).catch(function (error) {
+                    console.log(error);
+                });
             }
 
             setupEvents();

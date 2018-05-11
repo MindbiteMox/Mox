@@ -1,5 +1,5 @@
 ﻿@using Microsoft.EntityFrameworkCore
-@model Mindbite.Core.Mox.UI.IDataTable
+@model Mindbite.Mox.UI.IDataTable
 @{ 
     var pageItems = await Model.GetRowDataAsync();
     string currentGroup = null;
@@ -74,7 +74,7 @@
 </table>
 @{
     // TODO: A nicer pager
-    var currentPage = Mindbite.Core.Mox.Utils.Math.Clamp(Model.Page, 1, Model.PageCount);
+    var currentPage = Mindbite.Mox.Utils.Utils.Clamp(Model.Page, 1, Model.PageCount);
 
     if (Model.PageCount > 1)
     {

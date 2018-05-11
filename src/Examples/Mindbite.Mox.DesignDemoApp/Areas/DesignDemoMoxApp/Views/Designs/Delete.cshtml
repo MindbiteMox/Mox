@@ -1,8 +1,8 @@
-﻿@using Mindbite.Core.Mox
+﻿@using Mindbite.Mox.Extensions
 @{
     Layout = this.Context.Request.IsAjaxRequest() ? "" : "Mox/_Layout";
 }
-@model Mindbite.Core.Mox.DesignDemoApp.Data.Models.Design
+@model Mindbite.Mox.DesignDemoApp.Data.Models.Design
 
 @if (!this.Context.Request.IsAjaxRequest())
 {

@@ -1,10 +1,10 @@
-﻿@inject Microsoft.Extensions.Options.IOptions<Mindbite.Core.Mox.Configuration.Config> Config
+﻿@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.Config> Config
 @using System.Linq
-@using Mindbite.Core.Mox.Identity.Data
-@using Mindbite.Core.Mox.UI
-@using Mindbite.Core.Mox.UI.Menus
-@using Mindbite.Core.Mox
-@using Mindbite.Core.Mox.NotificationCenter
+@using Mindbite.Mox.Identity.Data
+@using Mindbite.Mox.UI
+@using Mindbite.Mox.UI.Menus
+@using Mindbite.Mox.Extensions
+@using Mindbite.Mox.NotificationCenter
 
 @{
     var notificationCenterApp = Config.Value.Apps.FirstOrDefault(x => x.AppId == "notificationcenter");

@@ -16,11 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
   </ItemGroup>
 
   <ItemGroup>

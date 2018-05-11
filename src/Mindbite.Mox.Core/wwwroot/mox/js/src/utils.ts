@@ -35,22 +35,25 @@
             }
         }
 
+        static redirect(onRedirect: (url: string) => void): (response: Response) => Promise<Response> {
+            var func = async (response: Response) => {
+                if (response.type === 'opaqueredirect' || response.status >= 300 && response.status < 400) {
+                    onRedirect(response.url);
+                    return Promise.reject('Fetch: redirecting to ' + response.url);
+                }
+                return response;
+            }
+            return func;
+        }
+
         static async checkErrorCode(response: Response): Promise<Response> {
-            if (response.status >= 200 && response.status < 400) {
+            if (response.type === 'opaqueredirect' || response.status >= 200 && response.status < 300 || response.status >= 400 && response.status < 500) {
                 return response;
             }
 
             let error = new Error(response.statusText) as any;
             error.response = response;
             throw error;
-        }
-
-        static async redirect(response: Response): Promise<Response> {
-            if ((response as any).redirected) {
-                window.location.href = response.url;
-                return Promise.reject('Fetch: redirecting to ' + response.url);
-            }
-            return response;
         }
 
         static parseJson(response: Response): Promise<any> {
@@ -61,10 +64,11 @@
             return response.text();
         }
 
-        static submitForm(event: Event): Promise<string> {
+        static submitForm(event: Event, onRedirect: (url: string) => void): Promise<string> {
             let form = (event.target as HTMLFormElement);
             let url = form.action;
             let init = Mox.Utils.Fetch.postFormOptions(form);
+            init.redirect = 'manual';
 
             let button = form.querySelector('input[type=submit]');
             button.classList.add('loading');
@@ -72,7 +76,7 @@
             return new Promise<string>((resolve, reject) => {
                 fetch(url, init)
                     .then(Mox.Utils.Fetch.checkErrorCode)
-                    .then(Mox.Utils.Fetch.redirect)
+                    .then(Mox.Utils.Fetch.redirect(onRedirect))
                     .then(Mox.Utils.Fetch.parseText)
                     .then(function (text) {
                         resolve(text);

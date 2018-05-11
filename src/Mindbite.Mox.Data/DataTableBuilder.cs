@@ -5,7 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Mindbite.Core.Mox.Data
+namespace Mindbite.Mox.Data
 {
     public class DataTableBuilder<T>
     {

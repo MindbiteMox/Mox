@@ -73,27 +73,29 @@ var Mox;
                     },
                 };
             };
+            Fetch.redirect = function (onRedirect) {
+                var _this = this;
+                var func = function (response) { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        if (response.type === 'opaqueredirect' || response.status >= 300 && response.status < 400) {
+                            onRedirect(response.url);
+                            return [2 /*return*/, Promise.reject('Fetch: redirecting to ' + response.url)];
+                        }
+                        return [2 /*return*/, response];
+                    });
+                }); };
+                return func;
+            };
             Fetch.checkErrorCode = function (response) {
                 return __awaiter(this, void 0, void 0, function () {
                     var error;
                     return __generator(this, function (_a) {
-                        if (response.status >= 200 && response.status < 400) {
+                        if (response.type === 'opaqueredirect' || response.status >= 200 && response.status < 300 || response.status >= 400 && response.status < 500) {
                             return [2 /*return*/, response];
                         }
                         error = new Error(response.statusText);
                         error.response = response;
                         throw error;
-                    });
-                });
-            };
-            Fetch.redirect = function (response) {
-                return __awaiter(this, void 0, void 0, function () {
-                    return __generator(this, function (_a) {
-                        if (response.redirected) {
-                            window.location.href = response.url;
-                            return [2 /*return*/, Promise.reject('Fetch: redirecting to ' + response.url)];
-                        }
-                        return [2 /*return*/, response];
                     });
                 });
             };
@@ -103,16 +105,17 @@ var Mox;
             Fetch.parseText = function (response) {
                 return response.text();
             };
-            Fetch.submitForm = function (event) {
+            Fetch.submitForm = function (event, onRedirect) {
                 var form = event.target;
                 var url = form.action;
                 var init = Mox.Utils.Fetch.postFormOptions(form);
+                init.redirect = 'manual';
                 var button = form.querySelector('input[type=submit]');
                 button.classList.add('loading');
                 return new Promise(function (resolve, reject) {
                     fetch(url, init)
                         .then(Mox.Utils.Fetch.checkErrorCode)
-                        .then(Mox.Utils.Fetch.redirect)
+                        .then(Mox.Utils.Fetch.redirect(onRedirect))
                         .then(Mox.Utils.Fetch.parseText)
                         .then(function (text) {
                         resolve(text);

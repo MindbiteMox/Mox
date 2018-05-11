@@ -1,9 +1,9 @@
-﻿@using Mindbite.Core.Mox
+﻿@using Mindbite.Mox.Extensions
 @using Microsoft.Extensions.Localization;
 @{
     Layout = "Mox/_Layout";
 }
-@model Mindbite.Core.Mox.UI.IDataTable
+@model Mindbite.Mox.UI.IDataTable
 @inject IStringLocalizer localizer
 
 @Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = false }.ToExpando())
