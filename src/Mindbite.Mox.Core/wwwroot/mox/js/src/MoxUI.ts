@@ -67,6 +67,9 @@
     export interface ModalOptions {
         className?: string;
         contentClassName?: string;
+        containerElement?: HTMLElement;
+        noShadow?: boolean;
+        dontCloseOnEscape?: boolean;
     }
     
     export class Modal {
@@ -99,17 +102,19 @@
             this.contentWrapper.appendChild(this.closeButton);
 
             this.shadow = document.createElement('div');
-            this.shadow.className = 'mox-modal-shadow';
+            this.shadow.className = 'mox-modal-shadow' + (options.noShadow ? 'hidden' : '');
             this.shadow.appendChild(this.contentWrapper);
 
             this.root = document.createElement('div');
             this.root.className = _options.className || 'mox-modal';
             this.root.appendChild(this.shadow);
 
-            document.body.appendChild(this.root);
+            (options.containerElement || document.body).appendChild(this.root);
 
             this.onCloseCallbacks = [];
-            this.escapeHandle = CloseOnEscapeQueue.enqueue(() => this.close());
+            if (!options.dontCloseOnEscape) {
+                this.escapeHandle = CloseOnEscapeQueue.enqueue(() => this.close());
+            }
         }
 
         static async createDialog(url: string): Promise<Mox.UI.Modal> {

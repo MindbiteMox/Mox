@@ -107,14 +107,16 @@ var Mox;
                 this.contentWrapper.appendChild(this.contentContainer);
                 this.contentWrapper.appendChild(this.closeButton);
                 this.shadow = document.createElement('div');
-                this.shadow.className = 'mox-modal-shadow';
+                this.shadow.className = 'mox-modal-shadow' + (options.noShadow ? 'hidden' : '');
                 this.shadow.appendChild(this.contentWrapper);
                 this.root = document.createElement('div');
                 this.root.className = _options.className || 'mox-modal';
                 this.root.appendChild(this.shadow);
-                document.body.appendChild(this.root);
+                (options.containerElement || document.body).appendChild(this.root);
                 this.onCloseCallbacks = [];
-                this.escapeHandle = CloseOnEscapeQueue.enqueue(function () { return _this.close(); });
+                if (!options.dontCloseOnEscape) {
+                    this.escapeHandle = CloseOnEscapeQueue.enqueue(function () { return _this.close(); });
+                }
             }
             Modal.createDialog = function (url) {
                 return __awaiter(this, void 0, void 0, function () {

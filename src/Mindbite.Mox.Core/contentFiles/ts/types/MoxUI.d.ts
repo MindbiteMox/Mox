@@ -12,6 +12,9 @@ declare namespace Mox.UI {
     interface ModalOptions {
         className?: string;
         contentClassName?: string;
+        containerElement?: HTMLElement;
+        noShadow?: boolean;
+        dontCloseOnEscape?: boolean;
     }
     class Modal {
         private escapeHandle;
