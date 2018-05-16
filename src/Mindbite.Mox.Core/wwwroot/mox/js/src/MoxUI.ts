@@ -102,7 +102,7 @@
             this.contentWrapper.appendChild(this.closeButton);
 
             this.shadow = document.createElement('div');
-            this.shadow.className = 'mox-modal-shadow' + (options.noShadow ? 'hidden' : '');
+            this.shadow.className = 'mox-modal-shadow' + (options.noShadow ? ' hidden' : '');
             this.shadow.appendChild(this.contentWrapper);
 
             this.root = document.createElement('div');

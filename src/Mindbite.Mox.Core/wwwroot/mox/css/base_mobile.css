@@ -21,7 +21,7 @@
 .mox-header-sub-menu .mox-menu { margin: 0 16px; overflow-x: scroll; height: 100px; white-space: nowrap; }
 
 .mox-content-scroll-wrapper { height: unset; overflow: unset; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.mox-content-wrapper { height: unset; }
+.mox-content-wrapper { height: unset; display: block; }
 .mox-content { padding: 16px; padding-bottom: 100px; }
 
 .mox-side-menu { height: unset; width: unset; display: block; float: unset; border: 0; padding-top: 16px; border-bottom: 1px solid #eee; }
