@@ -119,8 +119,10 @@ var Mox;
                         .then(Mox.Utils.Fetch.parseText)
                         .then(function (text) {
                         resolve(text);
+                        button.classList.remove('loading');
                     }).catch(function (error) {
                         reject(error);
+                        button.classList.remove('loading');
                     });
                 });
             };
