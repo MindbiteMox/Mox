@@ -32,6 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Views\Shared\Mox\Identity\_UserSettingsHeader.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources\Localization.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

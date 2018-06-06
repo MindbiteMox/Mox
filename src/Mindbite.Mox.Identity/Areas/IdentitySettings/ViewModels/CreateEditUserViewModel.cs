@@ -93,6 +93,7 @@ namespace Mindbite.Mox.Identity.ViewModels
         {
             this.Roles = roles.Select(x => new RoleViewModel() { Id = x.Id, Name = x.Name, Checked = rolesForUser.Contains(x.Name) }).ToArray();
 
+            this.Id = user.Id;
             this.Name = user.Name;
             this.Email = user.Email;
         }

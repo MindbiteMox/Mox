@@ -1,18 +1,20 @@
 ﻿@using Mindbite.Mox.Extensions
 @using Microsoft.Extensions.Localization;
+
+@model Mindbite.Mox.Identity.ViewModels.EditUserViewModel
+@inject IStringLocalizer localizer
 @{
     Layout = "Mox/_Layout";
 }
-@model Mindbite.Mox.Identity.ViewModels.EditUserViewModel
-@inject IStringLocalizer localizer
 
-@Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
 
-<h1>@localizer["Redigera användare"]</h1>
+@await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = Model.Id }.ToExpando())
 
 @using (Html.BeginForm())
 {
     @Html.ValidationSummary(true)
+    @Html.HiddenFor(model => model.Id)
 
     <fieldset>
         <p>

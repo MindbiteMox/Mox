@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Mindbite.Mox.Identity\Mindbite.Mox.Identity.csproj" />
     <ProjectReference Include="..\Mindbite.Mox.DesignDemoApp.Data\Mindbite.Mox.DesignDemoApp.Data.csproj" />
     <ProjectReference Include="..\..\Mindbite.Mox.Identity.Data\Mindbite.Mox.Identity.Data.csproj" />
     <ProjectReference Include="..\Mindbite.Mox.NotificationCenter\Mindbite.Mox.NotificationCenter.csproj" />
@@ -21,7 +22,14 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Areas\*\Views\**" />
-    <EmbeddedResource Include="Views\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Shared\UserImage.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Shared\UserImage.cshtml" />
   </ItemGroup>
 
 </Project>

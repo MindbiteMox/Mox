@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Mindbite.Mox.DesignDemoApp.Data.Models
 {
@@ -26,7 +27,7 @@ namespace Mindbite.Mox.DesignDemoApp.Data.Models
         public ICollection<Image> Images { get; set; }
     }
 
-    public class DesignMapping : IEntityTypeConfiguration<Design>, IEntityTypeConfiguration<Image>
+    public class DesignMapping : IEntityTypeConfiguration<Design>, IEntityTypeConfiguration<Image>, IEntityTypeConfiguration<UserImage>
     {
         public void Configure(EntityTypeBuilder<Design> builder)
         {
@@ -39,6 +40,34 @@ namespace Mindbite.Mox.DesignDemoApp.Data.Models
         public void Configure(EntityTypeBuilder<Image> builder)
         {
             builder.HasQueryFilter(x => x.IsDeleted == false);
+        }
+
+        public void Configure(EntityTypeBuilder<UserImage> builder)
+        {
+        }
+    }
+
+    public class DesignDbContextActions
+    {
+        private readonly IHostingEnvironment _hostingEnvironment;
+
+        public DesignDbContextActions(IHostingEnvironment hostingEnvironment)
+        {
+            this._hostingEnvironment = hostingEnvironment;
+        }
+
+        public void Remove<TEntity>(IDesignDbContext dbContext, TEntity entity)
+        {
+            if(entity is UserImage)
+            {
+                var userImage = entity as UserImage;
+                var webroot = this._hostingEnvironment.WebRootPath;
+                var filePath = System.IO.Path.Combine(webroot, userImage.FilePath);
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
         }
     }
 }

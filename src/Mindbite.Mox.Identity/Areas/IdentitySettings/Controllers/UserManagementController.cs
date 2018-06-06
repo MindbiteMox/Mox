@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using Microsoft.Extensions.Localization;
 using Mindbite.Mox.Extensions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Mindbite.Mox.Identity.Controllers
 {
@@ -29,8 +30,9 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly Services.UserRolesFetcher _rolesFetcher;
         private readonly SignInManager<MoxUser> _signinManager;
         private readonly IStringLocalizer _localizer;
+        private readonly SettingsOptions _settingsExtension;
 
-        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer)
+        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userValidator = userValidator;
@@ -39,6 +41,7 @@ namespace Mindbite.Mox.Identity.Controllers
             this._rolesFetcher = rolesFetcher as Services.UserRolesFetcher;
             this._signinManager = signInManager;
             this._localizer = localizer;
+            this._settingsExtension = settingsExtension.Value;
         }
 
         public async Task<IActionResult> Index(int? page, string sortColumn, string sortDirection, string filter)
@@ -285,6 +288,34 @@ namespace Mindbite.Mox.Identity.Controllers
             {
                 return RedirectToAction("Delete", new { id, saveChangesError = true });
             }
+        }
+
+        [HttpGet, HttpPost]
+        public async Task<IActionResult> EditOther(string id, [FromQuery] string view)
+        {
+            var extendedView = this._settingsExtension.AdditionalEditUserViews.FirstOrDefault(x => x.ViewName == view);
+
+            if (extendedView == null)
+                return RedirectToAction("Edit", new { id });
+
+            var extension = (SettingsOptions.ISettingsExtension)HttpContext.RequestServices.GetRequiredService(extendedView.ExtensionType);
+            var model = default(object);
+
+            if (HttpContext.Request.Method == "POST")
+            {
+                if(this.ModelState.IsValid)
+                {
+                    model = await extension.TryUpdateModel((o, t) => this.TryUpdateModelAsync(o, t, ""));
+                    await extension.Save(id, model);
+                    return RedirectToAction("EditOther", new { id, view });
+                }
+            }
+            else
+            {
+                model = await extension.GetViewModel(id);
+            }
+
+            return View(extendedView.ViewName, model);
         }
     }
 }

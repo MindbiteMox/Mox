@@ -89,7 +89,6 @@ namespace Mindbite.Mox.Extensions
                 {
                     items.Add()
                         .Title("Användare")
-                        //.AreaAction(Constants.SettingsArea, "MyAccount", "Edit")
                         .Items(identityItems =>
                         {
                             identityItems.Add()
@@ -116,6 +115,8 @@ namespace Mindbite.Mox.Extensions
                 c.StaticRoot = staticRequestPath;
                 c.Styles.Add(new Configuration.StaticIncludes.Style("identity/css/mox_base.css"));
             });
+
+            services.Configure<SettingsOptions>(c => { });
 
             var userRolesFetcher = services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
             if (userRolesFetcher != null)

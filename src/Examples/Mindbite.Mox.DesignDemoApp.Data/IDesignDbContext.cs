@@ -11,5 +11,6 @@ namespace Mindbite.Mox.DesignDemoApp.Data
     {
         DbSet<Design> Designs { get; }
         DbSet<Image> Images { get; }
+        DbSet<UserImage> UserImages { get; }
     }
 }

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Mindbite.Mox.Identity.Data.Models;
 using Mindbite.Mox.Identity.ViewModels;
 using Mindbite.Mox.Services;
@@ -23,14 +25,16 @@ namespace Mindbite.Mox.Identity.Controllers
         private RoleManager<IdentityRole> _roleManager;
         private Services.UserRolesFetcher _rolesFetcher;
         private SignInManager<MoxUser> _signinManager;
+        private readonly SettingsOptions _settingsExtension;
 
-        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager)
+        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userManager = userManager;
             this._roleManager = roleManager;
             this._rolesFetcher = rolesFetcher as Services.UserRolesFetcher;
             this._signinManager = signInManager;
+            this._settingsExtension = settingsExtension.Value;
         }
 
         [HttpGet]
@@ -144,6 +148,35 @@ namespace Mindbite.Mox.Identity.Controllers
             }
 
             return View(editUser);
+        }
+
+        [HttpGet, HttpPost]
+        public async Task<IActionResult> EditOther([FromQuery] string view)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var extendedView = this._settingsExtension.AdditionalEditUserViews.FirstOrDefault(x => x.ViewName == view);
+
+            if (extendedView == null)
+                return RedirectToAction("Edit");
+
+            var extension = (SettingsOptions.ISettingsExtension)HttpContext.RequestServices.GetRequiredService(extendedView.ExtensionType);
+            var model = default(object);
+
+            if (HttpContext.Request.Method == "POST")
+            {
+                if (this.ModelState.IsValid)
+                {
+                    model = await extension.TryUpdateModel((o, t) => this.TryUpdateModelAsync(o, t, ""));
+                    await extension.Save(userId, model);
+                    return RedirectToAction("EditOther", new { view });
+                }
+            }
+            else
+            {
+                model = await extension.GetViewModel(userId);
+            }
+
+            return View(extendedView.ViewName, model);
         }
     }
 }
