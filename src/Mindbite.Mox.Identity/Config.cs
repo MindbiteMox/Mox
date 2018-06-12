@@ -39,6 +39,7 @@ namespace Mindbite.Mox.Identity
         }
 
         public BackdoorOptions Backdoor { get; set; }
+        public Type DefaultUserType { get; set; }
     }
 
     public class SettingsOptions

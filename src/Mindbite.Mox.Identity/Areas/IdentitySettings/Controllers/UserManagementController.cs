@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Localization;
 using Mindbite.Mox.Extensions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
 
 namespace Mindbite.Mox.Identity.Controllers
 {
@@ -31,8 +32,9 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly SignInManager<MoxUser> _signinManager;
         private readonly IStringLocalizer _localizer;
         private readonly SettingsOptions _settingsExtension;
+        private readonly MoxIdentityOptions _identityOptions;
 
-        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension)
+        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userValidator = userValidator;
@@ -42,6 +44,7 @@ namespace Mindbite.Mox.Identity.Controllers
             this._signinManager = signInManager;
             this._localizer = localizer;
             this._settingsExtension = settingsExtension.Value;
+            this._identityOptions = identityOptions.Value;
         }
 
         public async Task<IActionResult> Index(int? page, string sortColumn, string sortDirection, string filter)
@@ -97,12 +100,20 @@ namespace Mindbite.Mox.Identity.Controllers
                 var user = await this._userManager.FindByEmailAsync(newUser.Email);
                 if (user == null)
                 {
-                    var userToCreate = new MoxUserBaseImpl()
+                    var userToCreate = default(MoxUser);
+
+                    if(this._identityOptions?.DefaultUserType != null)
                     {
-                        UserName = newUser.Email,
-                        Email = newUser.Email,
-                        Name = newUser.Name,
-                    };
+                        userToCreate = (MoxUser)Activator.CreateInstance(this._identityOptions.DefaultUserType);
+                    }
+                    else
+                    {
+                        userToCreate = new MoxUserBaseImpl();
+                    }
+
+                    userToCreate.UserName = newUser.Email;
+                    userToCreate.Email = newUser.Email;
+                    userToCreate.Name = newUser.Name;
 
                     var createUserResult = await this._userManager.CreateAsync(userToCreate, newUser.Password);
                     if(!createUserResult.Succeeded)
@@ -303,9 +314,10 @@ namespace Mindbite.Mox.Identity.Controllers
 
             if (HttpContext.Request.Method == "POST")
             {
+                model = await extension.TryUpdateModel((o, t) => this.TryUpdateModelAsync(o, t, ""));
+
                 if(this.ModelState.IsValid)
                 {
-                    model = await extension.TryUpdateModel((o, t) => this.TryUpdateModelAsync(o, t, ""));
                     await extension.Save(id, model);
                     return RedirectToAction("EditOther", new { id, view });
                 }
