@@ -114,6 +114,7 @@ namespace Mindbite.Mox.Extensions
             {
                 c.StaticRoot = staticRequestPath;
                 c.Styles.Add(new Configuration.StaticIncludes.Style("identity/css/mox_base.css"));
+                c.Styles.Add(new Configuration.StaticIncludes.Style("identity/css/mox_base_mobile.css", maxWidth = 960));
             });
 
             services.Configure<SettingsOptions>(c => { });
