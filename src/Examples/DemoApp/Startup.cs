@@ -55,15 +55,15 @@ namespace Mindbite.Mox.DemoApp
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("SomeTestRole"));
             });
 
-            //services.AddDbContext<AppDbContext>(options => 
-            // {
-            //    options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this.HostingEnvironment.ApplicationName));
-            //});
-
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseInMemoryDatabase("DemoApp");
+                options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this.HostingEnvironment.ApplicationName));
             });
+
+            //services.AddDbContext<AppDbContext>(options =>
+            //{
+            //    options.UseInMemoryDatabase("DemoApp");
+            //});
 
             services.Configure<MoxIdentityOptions>(this.Configuration.GetSection("MoxIdentityOptions"));
         }

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Mindbite.Mox.UI.Menu;
 using Mindbite.Mox.Extensions;
+using Mindbite.Mox.Identity;
 
 namespace Mindbite.Mox.DesignDemoApp.Configuration
 {
@@ -26,11 +27,6 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
     {
         public static void AddDesignDemoMoxApp(this IServiceCollection services, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration)
         {
-            /*services.AddDbContext<Data.DesignDbContext>(options =>
-            {
-                options.UseSqlServer(appConfiguration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(hostingEnvironment.ApplicationName));
-            });*/
-
             services.Configure<Mox.Configuration.Config>(c =>
             {
                 var app = c.Apps.Add("Designs demo app", "designs");
@@ -46,6 +42,14 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
             services.Configure<RazorViewEngineOptions>(c =>
             {
                 c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(ConfigExtensions).GetTypeInfo().Assembly, hostingEnvironment));
+            });
+
+            services.AddTransient<Data.Models.DesignDbContextActions>();
+
+            services.AddTransient<IdentityExtensions.UserImage>();
+            services.Configure<SettingsOptions>(options =>
+            {
+                options.AdditionalEditUserViews.Add(new SettingsOptions.View { TabTitle = "Bild", ViewName = "UserImage", ExtensionType = typeof(IdentityExtensions.UserImage) });
             });
         }
 

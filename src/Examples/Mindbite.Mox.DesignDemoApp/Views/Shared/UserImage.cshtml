@@ -1,0 +1,40 @@
+﻿@using Mindbite.Mox.Extensions
+@using Microsoft.Extensions.Localization;
+@using Mindbite.Mox.Identity
+@using Microsoft.Extensions.Options;
+
+@model Mindbite.Mox.DesignDemoApp.ViewModels.UserImage
+@inject IStringLocalizer localizer
+@inject IOptions<SettingsOptions> settingsExtension
+@{
+    Layout = "Mox/_Layout";
+    var subView = ViewContext.HttpContext.Request.Query["view"].FirstOrDefault();
+    var userId = ViewContext.RouteData.Values["id"];
+}
+
+@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+
+@await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = userId }.ToExpando())
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(x => x.ImageUrl)
+
+    <fieldset>
+        <p>
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" style="max-width: 300px; max-height: 300px;" />
+            }
+
+            @Html.EditorFor(x => x.Upload)
+        </p>
+    </fieldset>
+
+    <fieldset class="buttons">
+        <p>
+            <input type="submit" value="Spara" />
+        </p>
+    </fieldset>
+}

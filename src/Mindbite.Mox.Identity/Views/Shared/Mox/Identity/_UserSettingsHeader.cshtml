@@ -1,0 +1,23 @@
+﻿@using Mindbite.Mox.Identity
+@using Microsoft.Extensions.Options;
+@using Microsoft.Extensions.Localization;
+
+@inject IOptions<SettingsOptions> settingsExtension
+@inject IStringLocalizer localizer
+@{
+    var subView = ViewContext.HttpContext.Request.Query["view"].FirstOrDefault();
+    string userId = Model.UserId;
+}
+
+<h1>@localizer[ViewContext.ActionDescriptor.RouteValues["controller"] == "UserManagement" ? "Redigera användare" : "Kontoinställningar"]</h1>
+
+@if (settingsExtension.Value.AdditionalEditUserViews.Any())
+{
+    <ul class="mox-menu">
+        <li><a href="@Url.Action("Edit", new { Id = userId })" @(subView == null ? "class=selected" : "")>@localizer["Inloggningsuppgifter"]</a></li>
+        @foreach (var view in settingsExtension.Value.AdditionalEditUserViews)
+        {
+            <li><a href="@Url.Action("EditOther", new { id = userId, view = view.ViewName })" @(subView == view.ViewName ? "class=selected" : "")>@localizer[view.TabTitle]</a></li>
+        }
+    </ul>
+}

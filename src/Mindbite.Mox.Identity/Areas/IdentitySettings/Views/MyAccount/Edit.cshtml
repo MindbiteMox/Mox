@@ -1,14 +1,17 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Mindbite.Mox.Identity
 @using Microsoft.Extensions.Localization;
+@using Microsoft.Extensions.Options;
+
+@model Mindbite.Mox.Identity.ViewModels.EditMyAccountViewModel
+@inject IStringLocalizer localizer
 @{
     Layout = "Mox/_Layout";
 }
-@model Mindbite.Mox.Identity.ViewModels.EditMyAccountViewModel
-@inject IStringLocalizer localizer
 
-@Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
 
-<h1>@localizer["Kontoinställningar"]</h1>
+@await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = Model.Id }.ToExpando())
 
 @using (Html.BeginForm())
 {

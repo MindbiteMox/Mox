@@ -94,7 +94,9 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
                 hash = $"?hash={this.FileHash}";
             }
 
-            return new HtmlString($"<link href=\"{staticRoot.TrimEnd('/')}/{this.webRootRelativePath.TrimStart('~', '/')}{hash}\" rel=\"stylesheet\" media=\"{this.MediaQuery}\" />");
+            string root = $"/{staticRoot.Trim('/')}";
+
+            return new HtmlString($"<link href=\"{(root != "/" ? root : "")}/{this.webRootRelativePath.TrimStart('~', '/')}{hash}\" rel=\"stylesheet\" media=\"{this.MediaQuery}\" />");
         }
     }
 

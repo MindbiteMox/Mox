@@ -39,6 +39,39 @@ namespace Mindbite.Mox.Identity
         }
 
         public BackdoorOptions Backdoor { get; set; }
+        public Type DefaultUserType { get; set; }
+    }
+
+    public class SettingsOptions
+    {
+        internal interface ISettingsExtension
+        {
+            Task Save(string userId, object viewModel);
+            Task<object> GetViewModel(string userId);
+            Task<object> TryUpdateModel(Func<object, Type, Task<bool>> tryUpdateModel);
+        }
+
+        public abstract class SettingsExtension<T> : ISettingsExtension where T : class, new()
+        {
+            public abstract Task Save(string userId, object viewModel);
+            public abstract Task<object> GetViewModel(string userId);
+            public async Task<object> TryUpdateModel(Func<object, Type, Task<bool>> tryUpdateModel)
+            {
+                var model = new T();
+                if (!await tryUpdateModel(model, typeof(T)))
+                    return null;
+                return model;
+            }
+        }
+
+        public class View
+        {
+            public string TabTitle { get; set; }
+            public string ViewName { get; set; }
+            public Type ExtensionType { get; set; }
+        }
+
+        public List<View> AdditionalEditUserViews { get; set; } = new List<View>();
     }
 
     public class MoxUserManager : UserManager<MoxUser>

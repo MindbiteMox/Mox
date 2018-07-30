@@ -20,9 +20,13 @@ namespace Mindbite.Mox.DemoApp
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Design> Designs { get; set; }
         public DbSet<Image> Images { get; set; }
+        public DbSet<UserImage> UserImages { get; set; }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        private readonly DesignDbContextActions _designDbContextActions;
+
+        public AppDbContext(DbContextOptions<AppDbContext> options, DesignDbContextActions designDbContextActions) : base(options)
         {
+            this._designDbContextActions = designDbContextActions;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,9 +34,16 @@ namespace Mindbite.Mox.DemoApp
             modelBuilder.ApplyConfiguration(new NotificationMapping());
             modelBuilder.ApplyConfiguration<Design>(new DesignMapping());
             modelBuilder.ApplyConfiguration<Image>(new DesignMapping());
+            modelBuilder.ApplyConfiguration<UserImage>(new DesignMapping());
             modelBuilder.ApplyConfiguration(new SubscriptionMapping());
 
             base.OnModelCreating(modelBuilder);
+        }
+
+        public override EntityEntry<TEntity> Remove<TEntity>(TEntity entity)
+        {
+            this._designDbContextActions.Remove(this, entity);
+            return base.Remove(entity);
         }
     }
 }
