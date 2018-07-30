@@ -37,22 +37,14 @@ namespace Mindbite.Mox.UI
         private IStringLocalizer _localizer;
         public IStringLocalizer Localizer => this._localizer ?? (this._localizer = (IStringLocalizer)this._htmlHelper.ViewContext.HttpContext.RequestServices.GetService(typeof(IStringLocalizer)));
 
-        private MenuBuilder.IMenu _appMenu;
-        public MenuBuilder.IMenu GetAppMenu()
-        {
-            if (this._appMenu == null)
-                this._appMenu = new Services.AppMenu(this).GetMenu();
-            return this._appMenu;
-        }
-
         public MoxHtmlExtensionCollection(IHtmlHelper htmlHelper)
         {
             this._htmlHelper = htmlHelper;
         }
 
-        public MenuRenderer Menu()
+        public Menu.Renderer.MenuRenderer Menu()
         {
-            return new MenuRenderer(this);
+            return new Menu.Renderer.MenuRenderer(this);
         }
     }
 

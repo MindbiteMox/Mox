@@ -65,7 +65,6 @@ namespace Mindbite.Mox.Extensions
                 c.ViewLocationExpanders.Add(new AlwaysLookForSharedLocationExpander());
             });
 
-            services.AddScoped<AppMenu>();
             services.AddScoped<IViewRenderService, ViewRenderService>();
             services.AddScoped<IStringLocalizer, MoxStringLocalizer>();
             services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>());
@@ -145,41 +144,43 @@ namespace Mindbite.Mox.Extensions
 
         public static string AppAction(this IUrlHelper url, Configuration.Apps.App app, IEnumerable<string> userRoles, object routeValues = null)
         {
-            return url.MenuAction(app.Menu, userRoles, routeValues);
+            return url.MenuAction(app.Menu.Build(url, userRoles), userRoles, routeValues);
         }
 
-        public static string MenuAction(this IUrlHelper url, UI.Menus.IMenu menu, IEnumerable<string> userRoles, object routeValues = null)
+        public static string MenuAction(this IUrlHelper url, IEnumerable<UI.Menu.MenuItem> menu, IEnumerable<string> userRoles, object routeValues = null)
         {
-            if (!menu.Items.Any())
+            if (!menu.Any())
                 return "/error";
 
-            var firstMenu = menu.Items.First();
-            return url.MenuAction(firstMenu, userRoles, routeValues);
+            return menu.First().Url;
         }
 
-        public static string MenuAction(this IUrlHelper url, UI.Menus.IMenuItem menu, object routeValues = null)
+        public static string MenuAction(this IUrlHelper url, UI.Menu.MenuItem menuItem, object routeValues = null)
         {
-            if (menu == null)
+            if (menuItem == null)
                 return "/error";
 
-            dynamic menuRouteValues = new ExpandoObject();
+            return menuItem.Url;
 
-            if(menu.Area != null)
-                menuRouteValues.Area = menu.Area;
+            /*dynamic menuRouteValues = new ExpandoObject();
+
+            if(menuItem.Area != null)
+                menuRouteValues.Area = menuItem.Area;
 
             object values = Utils.Dynamics.Merge(menu.RouteValues, Utils.Dynamics.Merge(routeValues, menuRouteValues));
 
-            return url.Action(menu.Action, menu.Controller, values);
+            return url.Action(menu.Action, menu.Controller, values);*/
         }
 
-        public static string MenuAction(this IUrlHelper url, UI.Menus.IMenuItem menu, IEnumerable<string> userRoles, object routeValues = null)
+        public static string MenuAction(this IUrlHelper url, UI.Menu.MenuItem menuItem, IEnumerable<string> userRoles, object routeValues = null)
         {
-            if (menu.Controller == null)
+            return menuItem.Url;
+            /*if (menuItem.Controller == null)
             {
                 return url.MenuAction(menu.Items.FirstOrDefault(x => userRoles == null || userRoles.Intersect(x.Roles).Count() == x.Roles.Count()), routeValues);
             }
 
-            return url.MenuAction(menu, routeValues);
+            return url.MenuAction(menu, routeValues);*/
         }
 
         public static IQueryable<T> OrderBy<T>(this IQueryable<T> source, string ordering)

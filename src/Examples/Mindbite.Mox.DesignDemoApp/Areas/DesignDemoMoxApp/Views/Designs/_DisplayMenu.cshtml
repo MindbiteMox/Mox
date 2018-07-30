@@ -1,14 +1,34 @@
 ﻿@using Mindbite.Mox.UI
+@using Mindbite.Mox.UI.Menu
 @{
-    var routeValues = new { id = ViewContext.RouteData.Values["Id"] };
-    var menu = Mindbite.Mox.UI.Menus.Menu
-        .Create()
-        .Items(items =>
-        {
-            items.Add().Title("Design").Action("Designs", "Display", routeValues);
-            items.Add().Title("Bilder").Action("Designs", "Images", routeValues);
-            items.Add().Title("Kommentarer").Action("Designs", "Comments", routeValues);
-        });
+    var routeValues = new { id = ViewContext.RouteData.Values["Id"], Area = ViewContext.RouteData.Values["Area"] as string };
+    var menu = new List<MenuItem>
+    {
+        new MenuItem {
+            Title = "Design",
+            Url = Url.Action("Display", "Designs", routeValues),
+            Area = ViewContext.RouteData.Values["Area"] as string,
+            Controller = ViewContext.RouteData.Values["Controller"] as string,
+            Action = "Display",
+        },
+        new MenuItem {
+            Title = "Bilder",
+            Url = Url.Action("Images", "Designs", routeValues),
+            Area = ViewContext.RouteData.Values["Area"] as string,
+            Controller = ViewContext.RouteData.Values["Controller"] as string,
+            Action = "Images",
+        },
+        new MenuItem {
+            Title = "Kommentarer",
+            Url = Url.Action("Comments", "Designs", routeValues),
+            Area = ViewContext.RouteData.Values["Area"] as string,
+            Controller = ViewContext.RouteData.Values["Controller"] as string,
+            Action = "Comments",
+        }
+    };
+
+    menu.FixParents();
+    menu.SelectCurrentMenu(ViewContext, true);
 }
 
-@await Html.Mox().Menu().MenuAsync(menu, tryMatchingActions: true)
+@Html.Mox().Menu().RenderMenu(menu)

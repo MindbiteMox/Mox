@@ -1,5 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Controllers
-@using Mindbite.Mox.UI.Menus
+@using Mindbite.Mox.UI.Menu
 @using Mindbite.Mox.Extensions
 @using System.Reflection
 @using System.Linq
@@ -16,10 +16,10 @@
     }
     catch { }
     var currentApp = Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains((string)this.ViewContext.RouteData.Values["Area"]));
-    var selectedMenu = ((IMenu)currentApp?.Menu).FirstOrDefault(x => x.MatchesView(this.ViewContext));
-    var parents = includeCurrentMenu ? selectedMenu.Parents() : selectedMenu.Parent?.Parents() ?? new List<IMenuItem>();
-    var localizer = Html.Mox().Localizer;
     var roles = await Html.Mox().GetRolesAsync();
+    var selectedMenu = currentApp?.Menu.Build(Url, roles).Flatten().LastOrDefault(x => x.MatchesView(this.ViewContext));
+    var parents = includeCurrentMenu ? selectedMenu.AllParents : selectedMenu.Parent?.AllParents ?? new List<MenuItem>();
+    var localizer = Html.Mox().Localizer;
 }
 
 <ul class="mox-breadcrumbs">

@@ -18,11 +18,11 @@ namespace Mindbite.Mox.Identity.Controllers
     [Authorize(Roles = Constants.EditMyOwnAccountRole)]
     public class MyAccountController : Controller
     {
-        private Data.MoxIdentityDbContext _context;
-        private UserManager<MoxUser> _userManager;
-        private RoleManager<IdentityRole> _roleManager;
-        private Services.UserRolesFetcher _rolesFetcher;
-        private SignInManager<MoxUser> _signinManager;
+        private readonly Data.MoxIdentityDbContext _context;
+        private readonly UserManager<MoxUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly Services.UserRolesFetcher _rolesFetcher;
+        private readonly SignInManager<MoxUser> _signinManager;
 
         public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager)
         {

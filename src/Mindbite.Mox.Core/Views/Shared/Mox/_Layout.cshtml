@@ -1,6 +1,6 @@
 ﻿@using Mindbite.Mox.ViewComponents
 @using Mindbite.Mox
-@using Mindbite.Mox.UI.Menus
+@using Mindbite.Mox.UI.Menu
 @using Mindbite.Mox.UI
 @using Microsoft.Extensions.Localization;
 
@@ -9,7 +9,7 @@
 
 @{
     var currentApp = Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(ViewContext.RouteData.Values["Area"]));
-    var currentSelectedMenu = currentApp?.Menu?.FirstOrDefault(x => x.MatchesView(this.ViewContext));
+    var currentSelectedMenu = currentApp?.Menu?.Build(Url, await Html.Mox().GetRolesAsync(), ViewContext).Flatten().LastOrDefault(x => x.Selected);
 }
 
 <!DOCTYPE html>
@@ -46,21 +46,17 @@
 
     <div class="mox-content-wrapper">
         @{
-            @if (currentSelectedMenu?.Parents()?.Count() > 1)
+            @if (currentSelectedMenu?.AllParents.Count() > 0)
             {
                 <div class="mox-side-menu">
-                    <span class="app-title">@localizer[currentSelectedMenu.Parents().First().Title]</span>
-                    @await Html.Mox().Menu().MenuAsync(root: currentSelectedMenu.Parents().First(), startLevel: 0, maxDepth: 1)
+                    <span class="app-title">@localizer[currentSelectedMenu.AllParents.First().Title]</span>
+                    @Html.Mox().Menu().RenderMenu(root: currentSelectedMenu.AllParents.First(), startLevel: 0, maxDepth: 1)
                 </div>
             }
         }
         @RenderSection("sidemenu", required: false)
         <div class="mox-content-scroll-wrapper">
             <div class="mox-content">
-                @foreach(var item in Html.Mox().GetAppMenu().Flat)
-                {
-                    <a href="@item.Url">@string.Join("", Enumerable.Range(0, item.Depth).Select(x => "-"))@item.Title</a><br/>
-                }
                 @RenderBody()
             </div>
         </div>

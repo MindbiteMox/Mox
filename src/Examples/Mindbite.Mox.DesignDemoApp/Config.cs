@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
-using Mindbite.Mox.UI.Menus;
+using Mindbite.Mox.UI.Menu;
 using Mindbite.Mox.Extensions;
 
 namespace Mindbite.Mox.DesignDemoApp.Configuration

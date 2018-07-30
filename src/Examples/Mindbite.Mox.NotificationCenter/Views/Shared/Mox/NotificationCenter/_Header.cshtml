@@ -2,7 +2,7 @@
 @using System.Linq
 @using Mindbite.Mox.Identity.Data
 @using Mindbite.Mox.UI
-@using Mindbite.Mox.UI.Menus
+@using Mindbite.Mox.UI.Menu
 @using Mindbite.Mox.Extensions
 @using Mindbite.Mox.NotificationCenter
 
@@ -14,7 +14,7 @@
 <span class="notification-unread" id="js-notification-header-unread" style="display: none;"></span>
 <div class="notification-menu" id="js-notification-header-menu">
     <ul class="mox-header-dropdown-items">
-        <li class="mox-header-dropdown-item all" id="js-notification-view-all"><a href="@Url.MenuAction(((IMenu)notificationCenterApp.Menu).FirstOrDefault(x => x.Controller == "Notifications"))">Visa alla</a></li>
+        <li class="mox-header-dropdown-item all" id="js-notification-view-all"><a href="@(notificationCenterApp.Menu.Build(Url, await Html.Mox().GetRolesAsync()).Flatten().LastOrDefault(x => x.Controller == "Notifications").Url)">Visa alla</a></li>
     </ul>
 </div>
 

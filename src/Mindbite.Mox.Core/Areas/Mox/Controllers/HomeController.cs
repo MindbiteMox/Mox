@@ -29,7 +29,7 @@ namespace Mindbite.Mox.Controllers
             {
                 var userId = HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 var roles = await this._rolesFetcher.GetRolesAsync(userId);
-                return Redirect(Url.AppAction(firstApp, roles));
+                return Redirect(firstApp.Menu.Build(this.Url, roles.AsEnumerable()).First().Url);
             }
 
             return View(this._moxConfig);

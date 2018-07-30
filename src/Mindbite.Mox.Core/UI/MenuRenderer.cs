@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Options;
 using Mindbite.Mox.Extensions;
-using Mindbite.Mox.UI.Menus;
+using Mindbite.Mox.UI.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mindbite.Mox.UI
+namespace Mindbite.Mox.UI.Menu.Renderer
 {
     public class MenuRenderer
     {
@@ -20,38 +20,32 @@ namespace Mindbite.Mox.UI
             this._htmlExtensions = htmlExtensions;
         }
 
-        private async Task<StringBuilder> RenderMenu(StringBuilder sb, IHtmlHelper htmlHelper, IEnumerable<IMenuItem> root = null, int startLevel = 0, int maxDepth = int.MaxValue, bool tryMatchingActions = false)
+        private StringBuilder RenderMenu(StringBuilder sb, IEnumerable<MenuItem> root = null, int startLevel = 0, int maxDepth = int.MaxValue)
         {
-            var roles = await this._htmlExtensions.GetRolesAsync();
-
-            void RenderMenuItem(Menus.IMenuItem item)
+            void renderMenuItem(MenuItem item)
             {
-                var selectedMenu = item.FirstOrDefault(x => x.MatchesView(htmlHelper.ViewContext, tryMatchingActions));
-                var currentMenuIsSelected = item.FirstOrDefault(x => x == selectedMenu) != null;
-                var isParentOfSelectedMenu = currentMenuIsSelected && selectedMenu != null && selectedMenu != item;
+                var @class = item.Selected ? "selected" : "";
+                @class += item.Selected && item.Children.Any(x => x.Selected) ? " selected-parent" : "";
 
-                var @class = currentMenuIsSelected ? "selected" : "";
-                @class += isParentOfSelectedMenu ? " selected-parent" : "";
-
-                sb.AppendLine($"<a href=\"{this._htmlExtensions.UrlHelper.MenuAction(item, roles)}\" class=\"{@class}\">{this._htmlExtensions.Localizer[item.Title]}</a>");
+                sb.Append($"<a href=\"{item.Url}\" class=\"{@class}\">{this._htmlExtensions.Localizer[item.Title]}</a>");
             }
 
-            void TraverseMenuHierarchy(Menus.IMenuItem item, int depth)
+            void TraverseMenuHierarchy(MenuItem item, int depth)
             {
                 if (depth >= maxDepth)
                     return;
 
                 if (depth >= startLevel)
                 {
-                    RenderMenuItem(item);
+                    renderMenuItem(item);
 
                     if (depth + 1 >= maxDepth)
                         return;
 
-                    if (item.Items.Any(x => x.CanViewWithRoles(roles)))
+                    if (item.Children.Any())
                     {
                         sb.AppendLine($"<ul class=\"mox-menu\">");
-                        foreach (var child in item.Items.Where(x => x.CanViewWithRoles(roles)))
+                        foreach (var child in item.Children)
                         {
                             sb.AppendLine($"<li>");
                             TraverseMenuHierarchy(child, depth + 1);
@@ -65,7 +59,7 @@ namespace Mindbite.Mox.UI
                     if (depth + 1 >= maxDepth)
                         return;
 
-                    foreach (var child in item.Items.Where(x => x.CanViewWithRoles(roles)))
+                    foreach (var child in item.Children)
                     {
                         TraverseMenuHierarchy(child, depth + 1);
                     }
@@ -73,7 +67,7 @@ namespace Mindbite.Mox.UI
             }
 
             sb.AppendLine($"<ul class=\"mox-menu\">");
-            foreach (var item in root.Where(x => x.CanViewWithRoles(roles)))
+            foreach (var item in root.Where(x => !string.IsNullOrWhiteSpace(x.Url)))
             {
                 sb.AppendLine($"<li>");
                 TraverseMenuHierarchy(item, 0);
@@ -89,69 +83,48 @@ namespace Mindbite.Mox.UI
             if (!this._htmlExtensions.Config.Value.Apps.Any())
                 return HtmlString.Empty;
 
-
-
             var roles = await this._htmlExtensions.GetRolesAsync();
-            var sb = new StringBuilder();
 
-            if (onlyCurrentApp)
+            var menuItems = default(List<MenuItem>);
+
+            if (includeApp)
             {
-                var currentApp = this._htmlExtensions.Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(this._htmlExtensions.HtmlHelper.ViewContext.RouteData.Values["Area"]));
-                if (includeApp)
+                menuItems = this._htmlExtensions.Config.Value.Apps.Select(x => new MenuItem
                 {
-                    sb.AppendLine($"<ul class=\"mox-menu\">");
-                    sb.AppendLine($"<li>");
-                    sb.AppendLine($"<a href=\"{this._htmlExtensions.UrlHelper.AppAction(currentApp, roles)}\" class=\"selected selected-parent app\">{this._htmlExtensions.Localizer[currentApp.Name]}</a>");
-
-                    sb = await RenderMenu(sb, this._htmlExtensions.HtmlHelper, ((IMenu)currentApp.Menu).Items, startLevel, maxDepth - 1, false);
-
-                    sb.AppendLine($"</li>");
-                    sb.AppendLine($"</ul>");
-                }
-                else
-                {
-                    sb = await RenderMenu(sb, this._htmlExtensions.HtmlHelper, ((IMenu)currentApp.Menu).Items, startLevel, maxDepth, false);
-                }
+                    Id = x.AppId,
+                    Title = x.Name,
+                    Children = x.Menu.Build(this._htmlExtensions.UrlHelper, roles),
+                }).ToList();
+                menuItems.FixParents();
             }
             else
             {
-                if (includeApp)
-                {
-                    var currentApp = this._htmlExtensions.Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(this._htmlExtensions.HtmlHelper.ViewContext.RouteData.Values["Area"]));
-                    sb.AppendLine($"<ul class=\"mox-menu\">");
-                    foreach (var app in this._htmlExtensions.Config.Value.Apps.Where(x => x.CanViewWithRoles(roles) && ((IMenu)x.Menu).Items.Any(y => y.CanViewWithRoles(roles) && (!y.Items.Any() || y.Items.Any(z => z.CanViewWithRoles(roles))))))
-                    {
-                        var @class = app == currentApp ? "selected selected-parent app" : "app";
-
-                        sb.AppendLine($"<li>");
-                        sb.AppendLine($"<a href=\"{this._htmlExtensions.UrlHelper.AppAction(app, roles)}\" class=\"{@class}\">{this._htmlExtensions.Localizer[app.Name]}</a>");
-
-                        sb = await RenderMenu(sb, this._htmlExtensions.HtmlHelper, ((IMenu)app.Menu).Items, startLevel, maxDepth - 1, false);
-
-                        sb.AppendLine($"</li>");
-                    }
-                    sb.AppendLine($"</ul>");
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+                menuItems = this._htmlExtensions.Config.Value.Apps.SelectMany(x => x.Menu.Build(this._htmlExtensions.UrlHelper, roles)).ToList();
+                menuItems.FixParents();
             }
 
+            if(onlyCurrentApp)
+            {
+                var currentApp = this._htmlExtensions.Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(this._htmlExtensions.HtmlHelper.ViewContext.RouteData.Values["Area"]));
+                menuItems = menuItems.Where(x => currentApp.Areas.Contains(x.Area)).ToList();
+            }
+
+            menuItems.SelectCurrentMenu(this._htmlExtensions.HtmlHelper.ViewContext);
+
+            return RenderMenu(menuItems, startLevel, maxDepth);
+        }
+        
+        public IHtmlContent RenderMenu(IEnumerable<MenuItem> root = null, int startLevel = 0, int maxDepth = int.MaxValue)
+        {
+            var sb = new StringBuilder();
+            sb = RenderMenu(sb, root, startLevel, maxDepth);
             return new HtmlString(sb.ToString());
         }
 
-        public async Task<IHtmlContent> MenuAsync(IMenu root = null, int startLevel = 0, int maxDepth = int.MaxValue, bool tryMatchingActions = false)
+        public IHtmlContent RenderMenu(MenuItem root = null, int startLevel = 0, int maxDepth = int.MaxValue)
         {
             var sb = new StringBuilder();
-            sb = await RenderMenu(sb, this._htmlExtensions.HtmlHelper, root.Items, startLevel, maxDepth, tryMatchingActions);
-            return new HtmlString(sb.ToString());
-        }
-
-        public async Task<IHtmlContent> MenuAsync(IMenuItem root = null, int startLevel = 0, int maxDepth = int.MaxValue, bool tryMatchingActions = false)
-        {
-            var sb = new StringBuilder();
-            sb = await RenderMenu(sb, this._htmlExtensions.HtmlHelper, root.Items, startLevel, maxDepth, tryMatchingActions);
+            sb = RenderMenu(sb, root.Children, startLevel, maxDepth);
             return new HtmlString(sb.ToString());
         }
     }

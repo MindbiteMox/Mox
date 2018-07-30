@@ -17,7 +17,7 @@ namespace Mindbite.Mox.Configuration.Apps
         public string Name { get; set; }
         public string AppId { get; private set; }
 
-        public UI.Menus.Menu Menu { get; set; }
+        public AppMenus.AppMenuBuilder Menu { get; set; }
         public List<string> Areas { get; set; }
 
         public HashSet<string> Roles { get; set; }
@@ -34,8 +34,7 @@ namespace Mindbite.Mox.Configuration.Apps
             this.Roles = new HashSet<string>() { "Mox" };
             this.StaticIncludes = new StaticIncludes.IncludeConfig();
 
-            this.Menu = UI.Menus.Menu
-                .Create()
+            this.Menu = new AppMenus.AppMenuBuilder()
                 .Title(name)
                 .Id(appId ?? area);
         }
