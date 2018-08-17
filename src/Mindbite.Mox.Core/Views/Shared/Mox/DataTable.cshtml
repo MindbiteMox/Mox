@@ -6,71 +6,82 @@
 }
 
 <table class="@Model.CssClass">
-    <tr>
-        @foreach (var column in Model.Columns)
-        {
-            @if (Model.Sortable)
+    <thead>
+        <tr>
+            @foreach (var column in Model.Columns)
             {
-                <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="sortable @(column.FieldName == Model.SortColumn ? Model.SortDirection.ToLower() : "") @column.CssClass">
-                    <a href="@Url.Action(null, new { sortColumn = column.FieldName, sortDirection = column.GetNextSortDirection(Model) })">
-                        @column.Title&nbsp;<span style="font-size: 0.7em;">@Html.Raw(column.FieldName == Model.SortColumn ? (Model.SortDirection.ToLower().StartsWith("asc") ? "&#9650;" : "&#9660;") : "")</span>
-                    </a>
-                </th>
-            }
-            else
-            {
-                <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="notsortable @column.CssClass">
-                    <span>@column.Title</span>
-                </th>
-            }
-        }
-        @if (Model.Buttons.Any())
-        {
-            <th class="buttons">
-                <span>&nbsp;</span>
-            </th>
-        }
-    </tr>
-
-    @foreach (var row in pageItems)
-    {
-        string groupValue = null;
-        @if (Model.IsGrouped && ((groupValue = Model.GetGroupValue(row)) != currentGroup))
-        {
-            currentGroup = groupValue;
-            <tr class="group">
-                <td colspan="@(Model.Columns.Count() + (Model.Buttons.Any() ? 1 : 0))"><span>@groupValue</span></td>
-            </tr>
-        }
-        string rowId = Model.GetRowId(row);
-        <tr @(rowId != null ? Html.Raw($"data-id={rowId}") : null)>
-            @{
-                var rowLink = Model.GetRowLink(row);
-                foreach (var column in Model.Columns)
+                @if (Model.Sortable)
                 {
-                    if (rowLink != null)
-                    {
-                        <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@column.GetValue(row)</a></td>
-                    }
-                    else
-                    {
-                        <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><span>@column.GetValue(row)</span></td>
-                    }
+                    <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="sortable @(column.FieldName == Model.SortColumn ? Model.SortDirection.ToLower() : "") @column.CssClass">
+                        <a href="@Url.Action(null, new { sortColumn = column.FieldName, sortDirection = column.GetNextSortDirection(Model) })">
+                            @column.Title&nbsp;<span style="font-size: 0.7em;">@Html.Raw(column.FieldName == Model.SortColumn ? (Model.SortDirection.ToLower().StartsWith("asc") ? "&#9650;" : "&#9660;") : "")</span>
+                        </a>
+                    </th>
+                }
+                else
+                {
+                    <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="notsortable @column.CssClass">
+                        @if (string.IsNullOrWhiteSpace(column.Title))
+                        {
+                            <span>@Html.Raw("&nbsp;")</span>
+                        }
+                        else
+                        {
+                            <span>@column.Title</span>
+                        }
+                        </th>
                 }
             }
             @if (Model.Buttons.Any())
             {
-                <td class="buttons">
-                    <ul class="buttons-list">
-                        @foreach (var button in Model.Buttons)
-                        {
-                            <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass">@(button.Title ?? Html.Raw("&nbsp;").ToString())</a></li>
-                        }
-                    </ul>
-                </td>
+                <th class="buttons">
+                    <span>&nbsp;</span>
+                </th>
             }
         </tr>
-    }
+    </thead>
+
+    <tbody>
+        @foreach (var row in pageItems)
+        {
+            string groupValue = null;
+            @if (Model.IsGrouped && ((groupValue = Model.GetGroupValue(row)) != currentGroup))
+            {
+                currentGroup = groupValue;
+                <tr class="group">
+                    <td colspan="@(Model.Columns.Count() + (Model.Buttons.Any() ? 1 : 0))"><span>@groupValue</span></td>
+                </tr>
+            }
+            string rowId = Model.GetRowId(row);
+            <tr @(rowId != null ? Html.Raw($"data-id={rowId}") : null)>
+                @{
+                    var rowLink = Model.GetRowLink(row);
+                    foreach (var column in Model.Columns)
+                    {
+                        if (rowLink != null)
+                        {
+                            <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@column.GetValue(row)</a></td>
+                        }
+                        else
+                        {
+                            <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><span>@column.GetValue(row)</span></td>
+                        }
+                    }
+                }
+                @if (Model.Buttons.Any())
+                {
+                    <td class="buttons">
+                        <ul class="buttons-list">
+                            @foreach (var button in Model.Buttons)
+                            {
+                                <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass">@(button.Title ?? Html.Raw("&nbsp;").ToString())</a></li>
+                            }
+                        </ul>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
 </table>
 @{
     // TODO: A nicer pager

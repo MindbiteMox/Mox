@@ -50,11 +50,11 @@ namespace Mindbite.Mox.Extensions
                 c.SiteTitle = c.SiteTitle ?? siteTitle;
             });
 
-            services.Configure<Configuration.StaticIncludes.IncludeConfig>(c =>
+            services.Configure<IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
-                c.Styles.Add(new Configuration.StaticIncludes.Style("mox/css/base.css"));
-                c.Styles.Add(new Configuration.StaticIncludes.Style("mox/css/base_mobile.css", maxWidth: 960));
+                c.Styles.Add(new Style("mox/css/base.css"));
+                c.Styles.Add(new Style("mox/css/base_mobile.css", maxWidth: 960));
                 c.Scripts.Add(staticRequestPath.TrimEnd('/') + "/mox/js/utils.js");
                 c.Scripts.Add(staticRequestPath.TrimEnd('/') + "/mox/js/MoxUI.js");
             });
@@ -67,13 +67,19 @@ namespace Mindbite.Mox.Extensions
 
             services.AddScoped<IViewRenderService, ViewRenderService>();
             services.AddScoped<IStringLocalizer, MoxStringLocalizer>();
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>());
+            services.AddTransient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>();
+            //services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>());
 
-            var userRolesFetcher = services.FirstOrDefault(x => x.ServiceType == typeof(Services.IUserRolesFetcher));
+            var userRolesFetcher = services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
             if (userRolesFetcher == null)
             {
-                services.AddScoped<Services.IUserRolesFetcher, Services.DummyUserRolesFetcher>();
+                services.AddScoped<IUserRolesFetcher, DummyUserRolesFetcher>();
             }
+
+            services.Configure<StaticFileProviderOptions>(c =>
+            {
+                c.FileProviders.Add(new Microsoft.Extensions.FileProviders.PhysicalFileProvider(hostingEnvironment.WebRootPath));
+            });
         }
 
         public static void AddMox<AppDbContext_T>(this IServiceCollection services, IHostingEnvironment hostingEnvironment, string path = "Mox") where AppDbContext_T : DbContext, IDbContext
@@ -88,6 +94,16 @@ namespace Mindbite.Mox.Extensions
             {
                 Area = "Mox",
                 Controller = "Home",
+                Action = "Index",
+            });
+        }
+
+        public static void MapRedirectToMoxRoutes(this IRouteBuilder routes)
+        {
+            routes.MapAreaRoute(nameof(MapRedirectToMoxRoutes), "Mox", "{*wildcard}", new
+            {
+                Area = "Mox",
+                Controller = "RedirectToMox",
                 Action = "Index",
             });
         }
@@ -113,33 +129,6 @@ namespace Mindbite.Mox.Extensions
 
             var staticFileProviders = app.ApplicationServices.GetService<IOptions<StaticFileProviderOptions>>();
             staticFileProviders.Value.FileProviders.Add(fileProvider);
-
-            //var newFileProvider = new StaticFilesInAssemblyFileProvider(type.GetTypeInfo().Assembly, hostingEnvironment);
-            //var m = app.ApplicationServices.GetService<Microsoft.Extensions.Options.IOptions<StaticFileOptions>>();
-            //if (m == null || m.Value == null)
-            //{
-            //    throw new Exception($"You must call UseStaticFiles before {nameof(UseMoxStaticFiles)}");
-            //}
-
-            //if(m.Value.RequestPath.HasValue && m.Value.RequestPath != new PathString(requestPath))
-            //{
-            //    throw new Exception($"RequestPath '{requestPath}' must match previously used static requestPath '{m.Value.RequestPath}'");
-            //}
-
-            //m.Value.RequestPath = new PathString(requestPath);
-
-            //switch (m.Value.FileProvider)
-            //{
-            //    case null:
-            //        m.Value.FileProvider = new Microsoft.Extensions.FileProviders.CompositeFileProvider(newFileProvider);
-            //        break;
-            //    case Microsoft.Extensions.FileProviders.CompositeFileProvider compositeFileProvider:
-            //        m.Value.FileProvider = new Microsoft.Extensions.FileProviders.CompositeFileProvider(compositeFileProvider.FileProviders.Concat(new [] { newFileProvider }));
-            //        break;
-            //    default:
-            //        m.Value.FileProvider = new Microsoft.Extensions.FileProviders.CompositeFileProvider(m.Value.FileProvider, newFileProvider);
-            //        break;
-            //}
         }
 
         public static string AppAction(this IUrlHelper url, Configuration.Apps.App app, IEnumerable<string> userRoles, object routeValues = null)

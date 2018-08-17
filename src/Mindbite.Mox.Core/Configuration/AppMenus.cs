@@ -15,9 +15,9 @@ namespace Mindbite.Mox.Configuration.AppMenus
 {
     public static class MenuQueryExtensions
     {
-        public static AppMenuItem FirstOrDefault(this AppMenu menu, Func<AppMenuItem, bool> func, bool recursive = true)
+        public static AppMenuItem FirstOrDefault(this IEnumerable<AppMenuItem> menu, Func<AppMenuItem, bool> func, bool recursive = true)
         {
-            foreach (var item in menu.Items)
+            foreach (var item in menu)
             {
                 var found = item.FirstOrDefault(func, recursive);
                 if (found != null)
@@ -70,20 +70,9 @@ namespace Mindbite.Mox.Configuration.AppMenus
         }
     }
 
-    public class AppMenu
-    {
-        public IEnumerable<AppMenuItem> Items { get; internal set; } = new List<AppMenuItem>();
-        public string Title { get; internal set; }
-        public string Id { get; internal set; } = Guid.NewGuid().ToString();
-
-        internal AppMenu()
-        {
-        }
-    }
-
     public class AppMenuBuilder
     {
-        private readonly AppMenu _appMenu = new AppMenu();
+        private readonly List<AppMenuItem> _appMenu = new List<AppMenuItem>();
 
         public AppMenuBuilder Items(Action<AppMenuItemBuilderBuilder> items)
         {
@@ -91,29 +80,16 @@ namespace Mindbite.Mox.Configuration.AppMenus
             items(builder);
 
             var builtItems = builder.Build();
-            this._appMenu.Items = this._appMenu.Items.Concat(builtItems);
+            this._appMenu.AddRange(builtItems);
 
             foreach (var item in builtItems)
             {
-                item.Menu = this._appMenu;
             }
 
             return this;
         }
 
-        public AppMenuBuilder Title(string title)
-        {
-            this._appMenu.Title = title;
-            return this;
-        }
-
-        public AppMenuBuilder Id(string id)
-        {
-            this._appMenu.Id = id;
-            return this;
-        }
-
-        public List<MenuItem> Build(IUrlHelper url, IEnumerable<string> roles = null, ViewContext viewContext = null, bool tryMatchingAction = false)
+        public IEnumerable<MenuItem> Build(IUrlHelper url, IEnumerable<string> roles = null, ViewContext viewContext = null, bool tryMatchingAction = false)
         {
             IEnumerable<MenuItem> build()
             {
@@ -139,7 +115,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
                     }
                 }
 
-                foreach (var item in this._appMenu.Items)
+                foreach (var item in this._appMenu)
                 {
                     if (roles != null && roles.Any() && item.Roles.Any() && roles.Intersect(item.Roles).Any())
                         continue;
@@ -178,7 +154,6 @@ namespace Mindbite.Mox.Configuration.AppMenus
 
     public class AppMenuItem
     {
-        public AppMenu Menu { get; internal set; }
         public AppMenuItem Parent { get; internal set; }
         public IEnumerable<AppMenuItem> Items { get; internal set; } = Enumerable.Empty<AppMenuItem>();
         public string Title { get; internal set; }
@@ -240,7 +215,6 @@ namespace Mindbite.Mox.Configuration.AppMenus
 
             foreach (var item in builtItems)
             {
-                item.Menu = this._menuItem.Menu;
                 item.Parent = this._menuItem;
             }
 

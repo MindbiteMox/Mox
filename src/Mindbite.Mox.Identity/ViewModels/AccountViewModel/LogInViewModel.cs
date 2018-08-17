@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mindbite.Mox.Attributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -8,13 +9,13 @@ namespace Mindbite.Mox.Identity.ViewModels.AccountViewModel
 {
     public class LogInViewModel
     {
-        [Required]
+        [MoxRequired]
         [EmailAddress]
-        [Display(Name = "E-post")]
         [DataType(DataType.EmailAddress)]
+        [Display(Name = "E-post")]
         public string Email { get; set; }
 
-        [Required]
+        [MoxRequired]
         [DataType(DataType.Password)]
         [Display(Name = "Lösenord")]
         public string Password { get; set; }

@@ -34,9 +34,7 @@ namespace Mindbite.Mox.Configuration.Apps
             this.Roles = new HashSet<string>() { "Mox" };
             this.StaticIncludes = new StaticIncludes.IncludeConfig();
 
-            this.Menu = new AppMenus.AppMenuBuilder()
-                .Title(name)
-                .Id(appId ?? area);
+            this.Menu = new AppMenus.AppMenuBuilder();
         }
 
         public bool CanViewWithRoles(IEnumerable<string> roles)

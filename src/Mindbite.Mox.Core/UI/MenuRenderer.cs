@@ -93,7 +93,7 @@ namespace Mindbite.Mox.UI.Menu.Renderer
                 {
                     Id = x.AppId,
                     Title = x.Name,
-                    Children = x.Menu.Build(this._htmlExtensions.UrlHelper, roles),
+                    Children = x.Menu.Build(this._htmlExtensions.UrlHelper, roles).ToList(),
                 }).ToList();
                 menuItems.FixParents();
             }

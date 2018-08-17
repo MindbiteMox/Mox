@@ -39,7 +39,7 @@ namespace Mindbite.Mox.Services
                         return found;
                 }
 
-                return new LocalizedString(name, name);
+                return new LocalizedString(name, string.Format(name, arguments));
             }
         }
 

@@ -31,5 +31,5 @@ html, body { margin: 0; padding: 0; top: 0; bottom: 0; left: 0; right: 0; positi
 
 .mox-login-background-overlay { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.5); }
 
-.validation-summary-errors { background-color: #faa; padding: 10px 0; border-radius: 3px; }
-.validation-summary-errors ul { margin: 0; }
+.validation-summary-errors { background-color: #faa; padding: 10px 20px; border-radius: 3px; }
+.validation-summary-errors ul { margin: 0; list-style: none; padding: 0; }
