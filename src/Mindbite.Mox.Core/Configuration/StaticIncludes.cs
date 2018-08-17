@@ -16,40 +16,21 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
         Random
     }
 
-    public class Style
+    public class StaticFile
     {
-        public string webRootRelativePath { get; set; }
-        public int MinWidth { get; set; }
-        public int MaxWidth { get; set; }
+        public string WebRootRelativePath { get; set; }
 
         private FileVersionHash HashType { get; set; }
         private string FileHash { get; set; }
 
-        public string MediaQuery
+        private string TagName { get; set; }
+        private bool OpenTag { get; set; }
+        private string UrlAttributeName { get; set; }
+        private Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
+
+        private StaticFile()
         {
-            get
-            {
-                if (this.MinWidth == int.MinValue && this.MaxWidth == int.MaxValue)
-                    return "";
 
-                var queries = new List<string>();
-
-                if (this.MinWidth > int.MinValue)
-                    queries.Add($"(min-width: {this.MinWidth}px)");
-
-                if(this.MaxWidth < int.MaxValue)
-                    queries.Add($"(max-width: {this.MaxWidth}px)");
-
-                return $"screen and {string.Join(" and ", queries)}";
-            }
-        }
-
-        public Style(string webRootRelativePath, int minWidth = int.MinValue, int maxWidth = int.MaxValue)
-        {
-            this.webRootRelativePath = webRootRelativePath;
-            this.MinWidth = minWidth;
-            this.MaxWidth = maxWidth;
-            this.HashType = FileVersionHash.None;
         }
 
         private void UpdateHash(FileVersionHash withHash, IEnumerable<IFileProvider> fileProviders)
@@ -60,10 +41,10 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
                 switch(this.HashType)
                 {
                     case FileVersionHash.FileHash:
-                        var file = fileProviders.Select(x => x.GetFileInfo(this.webRootRelativePath)).FirstOrDefault(x => x.Exists);
+                        var file = fileProviders.Select(x => x.GetFileInfo(this.WebRootRelativePath)).FirstOrDefault(x => x.Exists);
                         if(file == null)
                         {
-                            throw new Exception($"Style file {this.webRootRelativePath} could not be found!");
+                            throw new Exception($"Style file {this.WebRootRelativePath} could not be found!");
                         }
 
                         using (var md5 = System.Security.Cryptography.MD5.Create())
@@ -96,7 +77,57 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
 
             string root = $"/{staticRoot.Trim('/')}";
 
-            return new HtmlString($"<link href=\"{(root != "/" ? root : "")}/{this.webRootRelativePath.TrimStart('~', '/')}{hash}\" rel=\"stylesheet\" media=\"{this.MediaQuery}\" />");
+            if(this.OpenTag)
+            {
+                return new HtmlString($"<{TagName} {UrlAttributeName}=\"{(root != "/" ? root : "")}/{this.WebRootRelativePath.TrimStart('~', '/')}{hash}\" {string.Join(" ", Attributes.Select(x => $"{x.Key}=\"{x.Value}\""))}></{TagName}>");
+            }
+            else
+            {
+                return new HtmlString($"<{TagName} {UrlAttributeName}=\"{(root != "/" ? root : "")}/{this.WebRootRelativePath.TrimStart('~', '/')}{hash}\" {string.Join(" ", Attributes.Select(x => $"{x.Key}=\"{x.Value}\""))} />");
+            }
+        }
+
+        public static StaticFile Style(string webRootRelativePath, int minWidth = int.MinValue, int maxWidth = int.MaxValue)
+        {
+            string getMediaQuery()
+            {
+                if (minWidth == int.MinValue && maxWidth == int.MaxValue)
+                    return "";
+
+                var queries = new List<string>();
+
+                if (minWidth > int.MinValue)
+                    queries.Add($"(min-width: {minWidth}px)");
+
+                if (maxWidth < int.MaxValue)
+                    queries.Add($"(max-width: {maxWidth}px)");
+
+                return $"screen and {string.Join(" and ", queries)}";
+            }
+
+            return new StaticFile
+            {
+                WebRootRelativePath = webRootRelativePath,
+                OpenTag = false,
+                TagName = "link",
+                UrlAttributeName = "href",
+                Attributes = new Dictionary<string, string>
+                {
+                    { "rel", "stylesheet" },
+                    { "media", getMediaQuery() }
+                }
+            };
+        }
+
+        public static StaticFile Script(string webRootRelativePath)
+        {
+            return new StaticFile
+            {
+                WebRootRelativePath = webRootRelativePath,
+                OpenTag = true,
+                TagName = "script",
+                UrlAttributeName = "src",
+            };
         }
     }
 
@@ -107,14 +138,12 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
 
     public class IncludeConfig
     {
-        public List<string> Scripts { get; private set; }
-        public List<Style> Styles { get; private set; }
+        public List<StaticFile> Files { get; private set; }
         public string StaticRoot { get; set; }
 
         public IncludeConfig()
         {
-            this.Scripts = new List<string>();
-            this.Styles = new List<Style>();
+            this.Files = new List<StaticFile>();
             this.StaticRoot = "/";
         }
     }

@@ -53,10 +53,10 @@ namespace Mindbite.Mox.Extensions
             services.Configure<IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
-                c.Styles.Add(new Style("mox/css/base.css"));
-                c.Styles.Add(new Style("mox/css/base_mobile.css", maxWidth: 960));
-                c.Scripts.Add(staticRequestPath.TrimEnd('/') + "/mox/js/utils.js");
-                c.Scripts.Add(staticRequestPath.TrimEnd('/') + "/mox/js/MoxUI.js");
+                c.Files.Add(StaticFile.Style("mox/css/base.css"));
+                c.Files.Add(StaticFile.Style("mox/css/base_mobile.css", maxWidth: 960));
+                c.Files.Add(StaticFile.Script("mox/js/utils.js"));
+                c.Files.Add(StaticFile.Script("mox/js/MoxUI.js"));
             });
 
             services.Configure<RazorViewEngineOptions>(c =>
@@ -214,7 +214,7 @@ namespace Mindbite.Mox.Extensions
         {
             if (controller.Request.Headers["Content-Type"] == "application/json")
             {
-                return controller.PartialView("Mox/DataTable", dataTable);
+                return controller.PartialView("Mox/UI/DataTable", dataTable);
             }
             else
             {

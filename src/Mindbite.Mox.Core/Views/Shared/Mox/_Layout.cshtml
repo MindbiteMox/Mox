@@ -17,10 +17,8 @@
 <head>
     <title>@(ViewData["Title"] ?? currentSelectedMenu?.Title ?? "Mox") - @(Config.Value.SiteTitle)</title>
     <meta name="viewport" content="width=device-width">
-    @Html.Partial("Mox/StaticIncludes/_Styles")
-    @Html.Partial("Mox/StaticIncludes/_Scripts")
-    @Html.Partial("Mox/StaticIncludes/_AppStyles")
-    @Html.Partial("Mox/StaticIncludes/_AppScripts")
+    @await Html.PartialAsync("Mox/StaticIncludes/_Files")
+    @await Html.PartialAsync("Mox/StaticIncludes/_AppFiles")
     @RenderSection("styles", required: false)
 </head>
 <body>

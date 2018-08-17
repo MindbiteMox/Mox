@@ -113,8 +113,8 @@ namespace Mindbite.Mox.Extensions
             services.Configure<Configuration.StaticIncludes.IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
-                c.Styles.Add(new Configuration.StaticIncludes.Style("identity/css/mox_base.css"));
-                c.Styles.Add(new Configuration.StaticIncludes.Style("identity/css/mox_base_mobile.css", maxWidth: 960));
+                c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("identity/css/mox_base.css"));
+                c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("identity/css/mox_base_mobile.css", maxWidth: 960));
             });
 
             services.Configure<SettingsOptions>(c => { });

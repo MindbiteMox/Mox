@@ -40,6 +40,7 @@ namespace Mindbite.Mox.Identity
 
         public BackdoorOptions Backdoor { get; set; }
         public Type DefaultUserType { get; set; }
+        public List<Configuration.StaticIncludes.StaticFile> LoginStaticFiles { get; set; } = new List<Configuration.StaticIncludes.StaticFile>();
     }
 
     public class SettingsOptions

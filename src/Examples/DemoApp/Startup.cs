@@ -66,6 +66,10 @@ namespace Mindbite.Mox.DemoApp
             });
 
             services.Configure<MoxIdentityOptions>(this.Configuration.GetSection("MoxIdentityOptions"));
+            services.Configure<MoxIdentityOptions>(config =>
+            {
+                //config.LoginStaticFiles.Add(Mox.Configuration.StaticIncludes.StaticFile.Style("asdkajlsdjlsdj"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

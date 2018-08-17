@@ -66,8 +66,8 @@ namespace Mindbite.Mox.NotificationCenter
             services.Configure<Mox.Configuration.StaticIncludes.IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
-                c.Styles.Add(new Mox.Configuration.StaticIncludes.Style("notificationcenter/css/mox_base.css"));
-                c.Scripts.Add(staticRequestPath.TrimEnd('/') + "/notificationcenter/js/notification_center.js");
+                c.Files.Add(Mox.Configuration.StaticIncludes.StaticFile.Style("notificationcenter/css/mox_base.css"));
+                c.Files.Add(Mox.Configuration.StaticIncludes.StaticFile.Script("notificationcenter/js/notification_center.js"));
             });
 
             services.Configure<Mox.Communication.EmailOptions>(appConfiguration.GetSection("EmailSender"));
