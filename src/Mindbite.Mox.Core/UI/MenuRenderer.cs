@@ -106,7 +106,7 @@ namespace Mindbite.Mox.UI.Menu.Renderer
             if(onlyCurrentApp)
             {
                 var currentApp = this._htmlExtensions.Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(this._htmlExtensions.HtmlHelper.ViewContext.RouteData.Values["Area"]));
-                menuItems = menuItems.Where(x => currentApp.Areas.Contains(x.Area)).ToList();
+                menuItems = menuItems.Where(x => currentApp?.Areas.Contains(x.Area) ?? false).ToList();
             }
 
             menuItems.SelectCurrentMenu(this._htmlExtensions.HtmlHelper.ViewContext);

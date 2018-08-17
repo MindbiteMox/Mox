@@ -1,0 +1,20 @@
+﻿@inject Mindbite.Mox.Services.ViewMessaging viewMessaging
+
+@if(viewMessaging.AnyMessages)
+{
+    var message = viewMessaging.PopMessage();
+
+    <div class="mox-message">
+        <p>
+            <strong>@message.Title</strong>
+            @if(message.AdditionalLines.Any())
+            {
+                <br/>
+                foreach(var line in message.AdditionalLines)
+                {
+                    @line<br/>
+                }
+            }
+        </p>
+    </div>
+}

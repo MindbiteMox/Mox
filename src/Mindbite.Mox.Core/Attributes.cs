@@ -21,7 +21,15 @@ namespace Mindbite.Mox.Attributes
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Parameter, AllowMultiple = true)]
     public class MoxRequiredAttribute : ValidationAttribute
     {
+        private readonly string _errorMessage = "{0} is required";
         public bool AllowEmptyStrings { get; set; }
+
+        public MoxRequiredAttribute() { }
+
+        public MoxRequiredAttribute(string errorMessage)
+        {
+            this._errorMessage = ErrorMessage;
+        }
 
         public override bool RequiresValidationContext => true;
 
@@ -31,8 +39,7 @@ namespace Mindbite.Mox.Attributes
 
             if (value == null || (string.IsNullOrEmpty(value.ToString()) && !this.AllowEmptyStrings))
             {
-                // TODO: allow custom error message via constructor
-                return new ValidationResult(localizer["{0} is required", validationContext.DisplayName]);
+                return new ValidationResult(localizer[this._errorMessage, validationContext.DisplayName]);
             }
 
             return ValidationResult.Success;

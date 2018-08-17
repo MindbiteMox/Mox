@@ -68,7 +68,8 @@ namespace Mindbite.Mox.Extensions
             services.AddScoped<IViewRenderService, ViewRenderService>();
             services.AddScoped<IStringLocalizer, MoxStringLocalizer>();
             services.AddTransient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>();
-            //services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>());
+
+            services.AddScoped<ViewMessaging>();
 
             var userRolesFetcher = services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
             if (userRolesFetcher == null)
@@ -95,6 +96,12 @@ namespace Mindbite.Mox.Extensions
                 Area = "Mox",
                 Controller = "Home",
                 Action = "Index",
+            });
+            routes.MapAreaRoute("Mox Error", "Mox", "Mox/Error/{errorCode}", new
+            {
+                Area = "Mox",
+                Controller = "Home",
+                Action = "Error",
             });
         }
 

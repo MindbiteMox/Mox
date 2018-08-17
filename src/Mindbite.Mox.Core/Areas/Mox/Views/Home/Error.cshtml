@@ -1,0 +1,16 @@
+﻿@{
+    Layout = "Mox/_Layout";
+    var errorCode = ViewData["ErrorCode"] as string;
+}
+
+<div style="text-align: center;">
+    <h1 style="font-size: 60px;">@errorCode</h1>
+    @if (errorCode.StartsWith("4"))
+    {
+        <p>Sidan kunde inte hittas!</p>
+    }
+    else
+    {
+        <p>Denna sida har ett fel!</p>
+    }
+</div>

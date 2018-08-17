@@ -31,6 +31,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Areas\Mox\Views\Home\Error.cshtml" />
+    <None Remove="Views\Shared\Mox\UI\Message.cshtml" />
+    <None Remove="wwwroot\mox\svg\message-check.svg" />
+  </ItemGroup>
   
   <ItemGroup>
     <Folder Include="contentFiles\ts\types\" />

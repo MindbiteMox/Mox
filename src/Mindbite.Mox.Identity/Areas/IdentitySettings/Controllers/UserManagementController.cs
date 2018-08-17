@@ -33,8 +33,9 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly IStringLocalizer _localizer;
         private readonly SettingsOptions _settingsExtension;
         private readonly MoxIdentityOptions _identityOptions;
+        private readonly ViewMessaging _viewMessaging;
 
-        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions)
+        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions, ViewMessaging viewMessaging)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userValidator = userValidator;
@@ -45,6 +46,7 @@ namespace Mindbite.Mox.Identity.Controllers
             this._localizer = localizer;
             this._settingsExtension = settingsExtension.Value;
             this._identityOptions = identityOptions.Value;
+            this._viewMessaging = viewMessaging;
         }
 
         public async Task<IActionResult> Index(int? page, string sortColumn, string sortDirection, string filter)
@@ -136,6 +138,7 @@ namespace Mindbite.Mox.Identity.Controllers
                         return View(newUser);
                     }
 
+                    _viewMessaging.DisplayMessage("Kontot skapades!");
                     return RedirectToAction("Index");
                 }
                 else

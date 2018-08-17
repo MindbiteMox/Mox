@@ -1,4 +1,5 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Mindbite.Mox.UI
 @using Microsoft.Extensions.Localization;
 @{
     Layout = "Mox/_Layout";
@@ -6,9 +7,11 @@
 @model Mindbite.Mox.UI.IDataTable
 @inject IStringLocalizer localizer
 
-@Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = false }.ToExpando())
+@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = false }.ToExpando())
 
 <h1>@localizer["Inloggningskonton"]</h1>
+
+@await Html.PartialAsync("Mox/UI/Message")
 
 <p>
     @Html.ActionLink(localizer["Skapa ny"], "Create", null, null, new { @class = "mox-button" })

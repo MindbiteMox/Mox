@@ -34,5 +34,20 @@ namespace Mindbite.Mox.Controllers
 
             return View(this._moxConfig);
         }
+
+        public async Task<IActionResult> Error(string errorCode)
+        {
+            this.ViewData["ErrorCode"] = errorCode;
+
+            var route = ControllerContext.RouteData.Routers.FirstOrDefault(x => x is Microsoft.AspNetCore.Routing.Route) as Microsoft.AspNetCore.Routing.Route;
+            if (route?.RouteTemplate.ToLower().TrimStart('/').StartsWith(this._moxConfig.Path.ToLower()) ?? false)
+            {
+                return View(viewName: "Error");
+            }
+            else
+            {
+                return View(viewName: "Shared/Error");
+            }
+        }
     }
 }

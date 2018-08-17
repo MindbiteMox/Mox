@@ -42,7 +42,7 @@ namespace Mindbite.Mox.DemoApp
             services.AddMemoryCache();
             services.AddMvc()
                 .AddViewLocalization();
-            
+            services.AddSession();
             services.AddLocalization(x => x.ResourcesPath = "Resources");
 
             services.AddMox<AppDbContext>(this.HostingEnvironment);
@@ -77,10 +77,11 @@ namespace Mindbite.Mox.DemoApp
         {
             loggerFactory.AddConsole();
 
+            app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseStatusCodePages();
             }
 
             var staticRoot = "/static";
@@ -90,6 +91,7 @@ namespace Mindbite.Mox.DemoApp
             app.UseMoxIdentityStaticFiles(env, staticRoot);
             app.UseMoxNotificationCenterStaticFiles(env, staticRoot);
 
+            app.UseSession();
             app.UseAuthentication();
 
             var supportedCultures = new List<System.Globalization.CultureInfo>
