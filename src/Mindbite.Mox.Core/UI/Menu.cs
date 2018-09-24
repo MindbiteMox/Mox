@@ -66,9 +66,9 @@ namespace Mindbite.Mox.UI.Menu
                 throw new ArgumentException($"The view context's action descriptor must be of type {nameof(ControllerActionDescriptor)}");
             }
 
-            var area = viewContext.RouteData.Values["Area"]?.ToString();
-            var controller = viewContext.RouteData.Values["Controller"]?.ToString();
-            var action = viewContext.RouteData.Values["Action"]?.ToString();
+            var area = viewContext.RouteData.Values["Area"]?.ToString() ?? string.Empty;
+            var controller = viewContext.RouteData.Values["Controller"]?.ToString() ?? string.Empty;
+            var action = viewContext.RouteData.Values["Action"]?.ToString() ?? string.Empty;
 
             if ((menuItem.Area == null || menuItem.Area.ToLower() == area.ToLower()) && menuItem.Controller != null && menuItem.Controller.ToLower() == controller.ToLower() && (!tryMatchingAction || menuItem.Action.ToLower() == action.ToLower()))
             {

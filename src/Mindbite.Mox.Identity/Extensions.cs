@@ -12,6 +12,7 @@ using Mindbite.Mox.Identity;
 using Mindbite.Mox.Identity.AuthorizeFilters;
 using Mindbite.Mox.Identity.Data;
 using Mindbite.Mox.Identity.Data.Models;
+using Mindbite.Mox.Identity.Services;
 using Mindbite.Mox.Services;
 using Mindbite.Mox.Utils.FileProviders;
 using System;
@@ -33,7 +34,9 @@ namespace Mindbite.Mox.Extensions
             services.AddIdentity<MoxUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext_T>()
                 .AddDefaultTokenProviders()
-                .AddUserManager<MoxUserManager>();
+                .AddUserManager<MoxUserManager>()
+                .AddSignInManager<MoxSignInManager>()
+                .AddUserStore<MoxUserStore<AppDbContext_T>>();
 
             services.Configure<MvcOptions>(options => {
                 var policy = new AuthorizationPolicyBuilder()

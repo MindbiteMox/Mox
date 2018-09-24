@@ -20,6 +20,8 @@ namespace Mindbite.Mox.Identity.Data.Models
         [Display(Name = "Namn")]
         public string Name { get; set; }
 
+        public bool IsDeleted { get; set; }
+
         [NotMapped]
         public string Initials => string.Join("", this.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.FirstOrDefault() + "").Take(3));
     }

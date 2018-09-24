@@ -97,7 +97,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
                 {
                     foreach (var _item in item.Items)
                     {
-                        if (roles != null && roles.Any() && item.Roles.Any() && roles.Intersect(item.Roles).Any())
+                        if (roles != null && item.Roles.Any() && !roles.Intersect(item.Roles).Any())
                             continue;
 
                         var routeValues = Utils.Dynamics.Merge(new { _item.Area }, _item.RouteValues) as object;
@@ -117,7 +117,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
 
                 foreach (var item in this._appMenu)
                 {
-                    if (roles != null && roles.Any() && item.Roles.Any() && roles.Intersect(item.Roles).Any())
+                    if (roles != null && item.Roles.Any() && !roles.Intersect(item.Roles).Any())
                         continue;
 
                     var routeValues = Utils.Dynamics.Merge(new { item.Area }, item.RouteValues) as object;

@@ -237,4 +237,13 @@
   <data name="Återställ lösenord" xml:space="preserve">
     <value>Reset Password</value>
   </data>
+  <data name="Kontot skapades!" xml:space="preserve">
+    <value>User created!</value>
+  </data>
+  <data name="Kontot togs bort!" xml:space="preserve">
+    <value>The user is deleted!</value>
+  </data>
+  <data name="Ändringarna sparades!" xml:space="preserve">
+    <value>Your changes are saved!</value>
+  </data>
 </root>

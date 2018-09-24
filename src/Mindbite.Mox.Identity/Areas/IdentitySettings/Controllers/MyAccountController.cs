@@ -26,8 +26,9 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly Services.UserRolesFetcher _rolesFetcher;
         private readonly SignInManager<MoxUser> _signinManager;
         private readonly SettingsOptions _settingsExtension;
+        private readonly ViewMessaging _viewMessaging;
 
-        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension)
+        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension, ViewMessaging viewMessaging)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userManager = userManager;
@@ -35,6 +36,7 @@ namespace Mindbite.Mox.Identity.Controllers
             this._rolesFetcher = rolesFetcher as Services.UserRolesFetcher;
             this._signinManager = signInManager;
             this._settingsExtension = settingsExtension.Value;
+            this._viewMessaging = viewMessaging;
         }
 
         [HttpGet]
@@ -125,6 +127,7 @@ namespace Mindbite.Mox.Identity.Controllers
 
                     await this._signinManager.RefreshSignInAsync(user);
 
+                    _viewMessaging.DisplayMessage("Ändringarna sparades!");
                     return RedirectToAction("Edit");
                 }
                 else

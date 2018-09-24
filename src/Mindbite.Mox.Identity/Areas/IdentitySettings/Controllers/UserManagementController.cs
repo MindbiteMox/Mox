@@ -233,11 +233,12 @@ namespace Mindbite.Mox.Identity.Controllers
                     var signedOnUser = await this._userManager.FindByIdAsync(signedOnUserId);
                     await this._signinManager.RefreshSignInAsync(signedOnUser);
 
+                    _viewMessaging.DisplayMessage("Ändringarna sparades!");
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    IEnumerable<IdentityError> errors = removeRolesResult.Errors.Concat(addRolesResult.Errors);
+                    var errors = removeRolesResult.Errors.Concat(addRolesResult.Errors);
                     foreach (var error in errors.Select(x => x.Description).Distinct())
                     {
                         ModelState.AddModelError(string.Empty, error);
@@ -296,6 +297,8 @@ namespace Mindbite.Mox.Identity.Controllers
                 }
 
                 await this._userManager.DeleteAsync(userToDelete);
+
+                _viewMessaging.DisplayMessage("Kontot togs bort!");
                 return RedirectToAction("Index");
             }
             catch (DbUpdateException)

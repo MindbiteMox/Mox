@@ -13,6 +13,8 @@
 
 @await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = Model.Id }.ToExpando())
 
+@await Html.PartialAsync("Mox/UI/Message")
+
 @using (Html.BeginForm())
 {
     @Html.ValidationSummary(true)

@@ -9,10 +9,10 @@
     <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
     <StartupObject />
-    <Version>2.1.62</Version>
+    <Version>2.1.65</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>2.1.61.0</FileVersion>
-    <AssemblyVersion>2.1.62.0</AssemblyVersion>
+    <FileVersion>2.1.65.0</FileVersion>
+    <AssemblyVersion>2.1.65.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
