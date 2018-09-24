@@ -97,7 +97,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
                 {
                     foreach (var _item in item.Items)
                     {
-                        if (roles != null && item.Roles.Any() && !roles.Intersect(item.Roles).Any())
+                        if (roles != null && _item.Roles.Any() && !roles.Intersect(_item.Roles).Any())
                             continue;
 
                         var routeValues = Utils.Dynamics.Merge(new { _item.Area }, _item.RouteValues) as object;
@@ -110,8 +110,13 @@ namespace Mindbite.Mox.Configuration.AppMenus
                             Action = _item.Action,
                             Controller = _item.Controller
                         };
-                        menuItem.Children.Add(menuItemChild);
+
                         addItems(menuItemChild, _item);
+
+                        if (menuItemChild.Action != null && menuItemChild.Controller != null && menuItemChild.Area != null)
+                        {
+                            menuItem.Children.Add(menuItemChild);
+                        }
                     }
                 }
 
@@ -130,9 +135,13 @@ namespace Mindbite.Mox.Configuration.AppMenus
                         Action = item.Action,
                         Controller = item.Controller
                     };
+
                     addItems(menuItem, item);
 
-                    yield return menuItem;
+                    if(menuItem.Action != null && menuItem.Controller != null && menuItem.Area != null)
+                    {
+                        yield return menuItem;
+                    }
                 }
             }
 

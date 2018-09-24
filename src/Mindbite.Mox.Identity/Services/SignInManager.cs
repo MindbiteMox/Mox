@@ -51,5 +51,15 @@ namespace Mindbite.Mox.Identity.Services
                 return null;
             }
         }
+
+        public override Task<IdentityResult> DeleteAsync(MoxUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            user.IsDeleted = true;
+            user.Email = "DELETED_" + user.Email;
+            user.UserName = "DELETED_" + user.UserName;
+            user.NormalizedEmail = "DELETED_" + user.NormalizedEmail;
+            user.NormalizedUserName = "DELETED_" + user.NormalizedUserName;
+            return this.UpdateAsync(user, cancellationToken);
+        }
     }
 }

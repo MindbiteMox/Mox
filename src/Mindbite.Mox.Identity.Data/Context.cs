@@ -25,6 +25,8 @@ namespace Mindbite.Mox.Identity.Data
             modelBuilder.Entity<Models.MoxUser>().Property(x => x.Name).HasDefaultValue("Namn");
             modelBuilder.Entity<Models.PasswordReset>().HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
 
+            modelBuilder.Entity<Models.MoxUser>().HasQueryFilter(x => !x.IsDeleted);
+
             base.OnModelCreating(modelBuilder);
         }
     }
