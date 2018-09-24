@@ -13,6 +13,8 @@ namespace Mindbite.Mox.Identity.Data
 
         public DbSet<Models.MoxUserBaseImpl> MoxUserImpl { get; set; }
 
+        public bool IncludeDeletedUsers { get; set; } = false;
+
         public MoxIdentityDbContext(DbContextOptions options) : base(options)
         {
 
@@ -25,7 +27,7 @@ namespace Mindbite.Mox.Identity.Data
             modelBuilder.Entity<Models.MoxUser>().Property(x => x.Name).HasDefaultValue("Namn");
             modelBuilder.Entity<Models.PasswordReset>().HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
 
-            modelBuilder.Entity<Models.MoxUser>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Models.MoxUser>().HasQueryFilter(x => this.IncludeDeletedUsers || !x.IsDeleted);
 
             base.OnModelCreating(modelBuilder);
         }
