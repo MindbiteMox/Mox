@@ -43,14 +43,14 @@ namespace Mindbite.Mox.Services
         {
             using (var sw = new StringWriter())
             {
-                var viewResult = _razorViewEngine.FindView(actionContext, viewName, false);
+                var viewResult = _razorViewEngine.FindView(actionContext, viewName ?? actionContext.RouteData.Values["action"] as string, false);
 
                 if (viewResult.View == null)
                 {
                     throw new ArgumentNullException($"{viewName} does not match any available view. \n Searched locations: {string.Join(", \n", viewResult.SearchedLocations)}");
                 }
 
-                var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), actionContext.ModelState ?? new ModelStateDictionary())
                 {
                     Model = model
                 };

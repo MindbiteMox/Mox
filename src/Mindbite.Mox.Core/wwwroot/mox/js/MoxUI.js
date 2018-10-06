@@ -13,8 +13,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -114,6 +114,7 @@ var Mox;
                 this.root.appendChild(this.shadow);
                 document.body.appendChild(this.root);
                 this.onCloseCallbacks = [];
+                this.onContentReplacedCallbacks = [];
                 this.escapeHandle = CloseOnEscapeQueue.enqueue(function () { return _this.close(); });
             }
             Modal.createDialog = function (url) {
@@ -132,7 +133,9 @@ var Mox;
                                         'X-Requested-With': 'XMLHttpRequest'
                                     }
                                 };
-                                return [4 /*yield*/, fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(function (url) { window.location.href = url; }))];
+                                return [4 /*yield*/, fetch(url, getInit)
+                                        .then(Mox.Utils.Fetch.checkErrorCode)
+                                        .then(Mox.Utils.Fetch.redirect(function (url) { window.location.href = url; }))];
                             case 1:
                                 response = _a.sent();
                                 return [4 /*yield*/, response.text()];
@@ -144,6 +147,94 @@ var Mox;
                                 if (!Modal.allOpenModals)
                                     Modal.allOpenModals = [];
                                 Modal.allOpenModals.push(modal);
+                                return [2 /*return*/, modal];
+                        }
+                    });
+                });
+            };
+            Modal.createFormDialog = function (url, options) {
+                return __awaiter(this, void 0, void 0, function () {
+                    function bindEvents() {
+                        var form = modal.contentContainer.querySelector('form');
+                        if (form) {
+                            form.addEventListener('submit', function (e) { return submitForm(form, e); });
+                            var firstInput = form.querySelector('input[type="text"], textarea, select');
+                            if (firstInput) {
+                                firstInput.focus();
+                            }
+                        }
+                        if (!_options.dontEvaluateScripts) {
+                            var scripts = modal.contentContainer.getElementsByTagName('script');
+                            for (var i = 0; i < scripts.length; i++) {
+                                eval(scripts.item(i).innerText);
+                            }
+                        }
+                        console.log(modal.contentContainer.querySelectorAll(_options.buttonSelector || 'a'));
+                        var editButtons = Mox.Utils.DOM.nodeListOfToArray(modal.contentContainer.querySelectorAll(_options.buttonSelector || 'a'));
+                        editButtons.forEach(function (button) { return button.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            if (_options.onButtonClicked) {
+                                _options.onButtonClicked(modal, button, event);
+                            }
+                        }); });
+                    }
+                    function submitForm(form, event) {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var response, responseData, indexOfPath;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        event.preventDefault();
+                                        if (_options.onSubmit) {
+                                            _options.onSubmit(modal, form, event);
+                                        }
+                                        return [4 /*yield*/, Mox.Utils.Fetch.submitAjaxForm(form, event)];
+                                    case 1:
+                                        response = _a.sent();
+                                        console.log(response);
+                                        if (!(response.type === 'html')) return [3 /*break*/, 2];
+                                        modal.replaceContentWithHtml(response.data);
+                                        return [3 /*break*/, 6];
+                                    case 2:
+                                        if (!(response.type === 'json')) return [3 /*break*/, 6];
+                                        responseData = response.data;
+                                        if (_options.onSubmitFormData) {
+                                            _options.onSubmitFormData(modal, form, responseData);
+                                        }
+                                        if (responseData.handleManually) {
+                                            return [2 /*return*/];
+                                        }
+                                        if (!(responseData.action === 'replaceWithContent')) return [3 /*break*/, 3];
+                                        modal.replaceContentWithHtml(responseData.data);
+                                        return [3 /*break*/, 6];
+                                    case 3:
+                                        if (!(responseData.action === 'redirect')) return [3 /*break*/, 6];
+                                        indexOfPath = _options.actualWindowHref.toLowerCase().indexOf(responseData.data.toLowerCase());
+                                        if (!(indexOfPath !== _options.actualWindowHref.length - responseData.data.length)) return [3 /*break*/, 4];
+                                        window.location.href = _options.actualWindowHref;
+                                        return [3 /*break*/, 6];
+                                    case 4: return [4 /*yield*/, modal.close()];
+                                    case 5:
+                                        _a.sent();
+                                        _a.label = 6;
+                                    case 6: return [2 /*return*/];
+                                }
+                            });
+                        });
+                    }
+                    var _options, modal;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                _options = options || {};
+                                _options.actualWindowHref = _options.actualWindowHref || window.location.href;
+                                return [4 /*yield*/, Modal.createDialog(url)];
+                            case 1:
+                                modal = _a.sent();
+                                modal.onContentReplaced(function () {
+                                    bindEvents();
+                                });
+                                bindEvents();
                                 return [2 /*return*/, modal];
                         }
                     });
@@ -215,13 +306,21 @@ var Mox;
                                 text = _a.sent();
                                 this.contentContainer.innerHTML = text;
                                 this.contentWrapper.classList.remove('loading');
+                                this.onContentReplacedCallbacks.forEach(function (x) { return x(); });
                                 return [2 /*return*/];
                         }
                     });
                 });
             };
+            Modal.prototype.replaceContentWithHtml = function (html) {
+                this.contentContainer.innerHTML = html;
+                this.onContentReplacedCallbacks.forEach(function (x) { return x(); });
+            };
             Modal.prototype.onClose = function (callback) {
                 this.onCloseCallbacks.push(callback);
+            };
+            Modal.prototype.onContentReplaced = function (callback) {
+                this.onContentReplacedCallbacks.push(callback);
             };
             Modal.setupHistory = function (modal, url) {
                 var state = { url: url };

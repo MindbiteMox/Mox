@@ -4,13 +4,23 @@ declare namespace Mox.Utils {
         static nodeListOfToArray<T extends Element>(collection: NodeListOf<T>): T[];
         static closest(element: HTMLElement, selector: string): HTMLElement;
     }
-    class Fetch {
-        static postFormOptions(form: HTMLFormElement): RequestInit;
-        static redirect(onRedirect: (url: string) => void): (response: Response) => Promise<Response>;
-        static checkErrorCode(response: Response): Promise<Response>;
-        static parseJson(response: Response): Promise<any>;
-        static parseText(response: Response): Promise<string>;
-        static submitForm(event: Event, onRedirect: (url: string) => void): Promise<string>;
+    namespace Fetch {
+        interface FormPostResponse {
+            action: 'redirect' | 'replaceWithContent';
+            data: string;
+            handleManually: boolean;
+        }
+        function postFormOptions(form: HTMLFormElement): RequestInit;
+        function redirect(onRedirect: (url: string) => void): (response: Response) => Promise<Response>;
+        function doRedirect(response: Response): Promise<Response>;
+        function checkErrorCode(response: Response): Promise<Response>;
+        function parseJson(response: Response): Promise<any>;
+        function parseText(response: Response): Promise<string>;
+        function submitForm(event: Event, onRedirect: (url: string) => void): Promise<string>;
+        function submitAjaxForm(form: HTMLFormElement, event: Event): Promise<{
+            type: 'html' | 'json';
+            data: string | FormPostResponse;
+        }>;
     }
     class Ajax {
         static getJSON(url: string): Promise<object>;

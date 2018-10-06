@@ -68,6 +68,15 @@
         className?: string;
         contentClassName?: string;
     }
+
+    export interface FormDialogOptions {
+        onSubmit: (modal: Modal, form: HTMLFormElement, event: Event) => void;
+        onSubmitFormData: (modal: Modal, form: HTMLFormElement, responseData: Mox.Utils.Fetch.FormPostResponse) => void;
+        onButtonClicked: (modal: Modal, button: Element, event: Event) => void;
+        buttonSelector: string;
+        dontEvaluateScripts: boolean;
+        actualWindowHref: string;
+    }
     
     export class Modal {
         private escapeHandle: CloseOnEscapeHandle;
@@ -77,6 +86,7 @@
         private contentWrapper: HTMLElement;
         private closeButton: HTMLAnchorElement;
         private onCloseCallbacks: (() => void)[];
+        private onContentReplacedCallbacks: (() => void)[];
 
         contentContainer: HTMLElement;
 
@@ -109,6 +119,7 @@
             document.body.appendChild(this.root);
 
             this.onCloseCallbacks = [];
+            this.onContentReplacedCallbacks = [];
             this.escapeHandle = CloseOnEscapeQueue.enqueue(() => this.close());
         }
 
@@ -124,7 +135,9 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             };
-            let response = await fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
+            let response = await fetch(url, getInit)
+                .then(Mox.Utils.Fetch.checkErrorCode)
+                .then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
             let text = await response.text();
             modal.contentContainer.innerHTML = text;
             modal.contentWrapper.classList.remove('loading');
@@ -133,6 +146,85 @@
 
             if (!Modal.allOpenModals) Modal.allOpenModals = [];
             Modal.allOpenModals.push(modal);
+
+            return modal;
+        }
+
+        static async createFormDialog(url: string, options: FormDialogOptions): Promise<Mox.UI.Modal> {
+            const _options = options || {} as FormDialogOptions;
+            _options.actualWindowHref = _options.actualWindowHref || window.location.href;
+
+            const modal = await Modal.createDialog(url);
+
+            function bindEvents() {
+                const form = modal.contentContainer.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', e => submitForm(form, e));
+
+                    const firstInput = form.querySelector('input[type="text"], textarea, select') as HTMLInputElement
+                    if(firstInput) {
+                        firstInput.focus();
+                    }
+                }
+
+                if(!_options.dontEvaluateScripts) {
+                    const scripts = modal.contentContainer.getElementsByTagName('script');
+                    for (let i = 0; i < scripts.length; i++) {
+                        eval(scripts.item(i).innerText);
+                    }
+                }
+
+                console.log(modal.contentContainer.querySelectorAll(_options.buttonSelector || 'a'));
+
+                const editButtons = Mox.Utils.DOM.nodeListOfToArray(modal.contentContainer.querySelectorAll(_options.buttonSelector || 'a'));
+                editButtons.forEach(button => button.addEventListener('click', event => { 
+                    event.preventDefault();
+                    if(_options.onButtonClicked) {
+                        _options.onButtonClicked(modal, button, event);
+                    }
+                }));
+            }
+
+            async function submitForm(form, event) {
+                event.preventDefault();
+
+                if(_options.onSubmit) {
+                    _options.onSubmit(modal, form, event);
+                }
+
+                const response = await Mox.Utils.Fetch.submitAjaxForm(form, event);
+                console.log(response);
+                if(response.type === 'html') {
+                    modal.replaceContentWithHtml(response.data as string);
+                } else if(response.type === 'json') {
+                    const responseData = response.data as Mox.Utils.Fetch.FormPostResponse;
+                    
+                    if(_options.onSubmitFormData) {
+                        _options.onSubmitFormData(modal, form, responseData);
+                    }
+
+                    if(responseData.handleManually) {
+                        return;
+                    }
+
+                    if (responseData.action === 'replaceWithContent') {
+                        modal.replaceContentWithHtml(responseData.data);
+                    } else if (responseData.action === 'redirect') {
+                        const indexOfPath = _options.actualWindowHref.toLowerCase().indexOf((responseData.data as string).toLowerCase())
+                        if(indexOfPath !== _options.actualWindowHref.length - (responseData.data as string).length) {
+                            window.location.href = _options.actualWindowHref;
+                        } else {
+                            await modal.close();
+                        }
+                    }
+                }
+            }
+
+            modal.onContentReplaced(() => {
+                bindEvents();
+            });
+
+            bindEvents();
 
             return modal;
         }
@@ -195,10 +287,20 @@
             let text = await response.text();
             this.contentContainer.innerHTML = text;
             this.contentWrapper.classList.remove('loading');
+            this.onContentReplacedCallbacks.forEach(x => x());
+        }
+
+        replaceContentWithHtml(html: string) {
+            this.contentContainer.innerHTML = html;
+            this.onContentReplacedCallbacks.forEach(x => x());
         }
 
         onClose(callback: () => void) {
             this.onCloseCallbacks.push(callback);
+        }
+
+        onContentReplaced(callback: () => void) {
+            this.onContentReplacedCallbacks.push(callback);
         }
 
         static setupHistory(modal: Modal, url: string): Modal {

@@ -9,7 +9,7 @@
         }
 
         static nodeListOfToArray<T extends Element>(collection: NodeListOf<T>): T[] {
-            return DOM.collectionOfToArray(collection as HTMLCollectionOf<T>);
+            return DOM.collectionOfToArray<T>(collection as any);
         }
 
         static closest(element: HTMLElement, selector: string): HTMLElement {
@@ -23,8 +23,15 @@
         }
     }
 
-    export class Fetch {
-        static postFormOptions(form: HTMLFormElement): RequestInit {
+    export namespace Fetch {
+
+        export interface FormPostResponse {
+            action: 'redirect' | 'replaceWithContent';
+            data: string,
+            handleManually: boolean
+        }
+
+        export function postFormOptions(form: HTMLFormElement): RequestInit {
             return {
                 method: 'POST',
                 body: new FormData(form),
@@ -35,7 +42,7 @@
             }
         }
 
-        static redirect(onRedirect: (url: string) => void): (response: Response) => Promise<Response> {
+        export function redirect(onRedirect: (url: string) => void): (response: Response) => Promise<Response> {
             var func = async (response: Response) => {
                 if (response.type === 'opaqueredirect' || response.status >= 300 && response.status < 400) {
                     onRedirect(response.url);
@@ -46,7 +53,15 @@
             return func;
         }
 
-        static async checkErrorCode(response: Response): Promise<Response> {
+        export async function doRedirect(response: Response): Promise<Response> {
+            if(response.status >= 300 && response.status < 400) {
+                window.location.href = response.url;
+                throw new Error('Fetch: fullRedirect to ' + response.url);
+            }
+            return response;
+        }
+
+        export async function checkErrorCode(response: Response): Promise<Response> {
             if (response.type === 'opaqueredirect' || response.status >= 200 && response.status < 300 || response.status >= 400 && response.status < 500) {
                 return response;
             }
@@ -56,15 +71,15 @@
             throw error;
         }
 
-        static parseJson(response: Response): Promise<any> {
+        export function parseJson(response: Response): Promise<any> {
             return response.json();
         }
 
-        static parseText(response: Response): Promise<string> {
+        export function parseText(response: Response): Promise<string> {
             return response.text();
         }
 
-        static submitForm(event: Event, onRedirect: (url: string) => void): Promise<string> {
+        export function submitForm(event: Event, onRedirect: (url: string) => void): Promise<string> {
             let form = (event.target as HTMLFormElement);
             let url = form.action;
             let init = Mox.Utils.Fetch.postFormOptions(form);
@@ -86,6 +101,25 @@
                         button.classList.remove('loading');
                     });
             });
+        }
+
+        export async function submitAjaxForm(form: HTMLFormElement, event: Event): Promise<{ type: 'html' | 'json', data: string | FormPostResponse }> {
+            const url = form.action;
+            const init = Mox.Utils.Fetch.postFormOptions(form);
+
+            let button = form.querySelector('input[type=submit]');
+            button.classList.add('loading');
+
+            const response = await fetch(url, init).then(Mox.Utils.Fetch.checkErrorCode);
+            const contentType = response.headers.get('Content-Type');
+            
+            if(contentType.indexOf('text/html') > -1) {
+                return { type: 'html', data: await Mox.Utils.Fetch.parseText(response) };
+            } else if (contentType.indexOf('application/json') > -1) {
+                return { type: 'json', data: await Mox.Utils.Fetch.parseJson(response) };
+            } else {
+                throw new Error('Content-Type: "' + contentType + '" cannot be used when responing to a form post request.');
+            }
         }
     }
     
