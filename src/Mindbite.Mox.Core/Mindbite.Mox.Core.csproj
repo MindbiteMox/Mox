@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup Label="Configuration">
     <OutputType>Library</OutputType>
   </PropertyGroup>
@@ -9,15 +9,16 @@
     <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
     <StartupObject />
-    <Version>2.1.68</Version>
+    <Version>2.1.69</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>2.1.68.0</FileVersion>
-    <AssemblyVersion>2.1.68.0</AssemblyVersion>
+    <FileVersion>2.1.69.0</FileVersion>
+    <AssemblyVersion>2.1.69.0</AssemblyVersion>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.All"/>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,12 +31,6 @@
     <Content Include="contentFiles\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Areas\Mox\Views\Home\Error.cshtml" />
-    <None Remove="Views\Shared\Mox\UI\Message.cshtml" />
-    <None Remove="wwwroot\mox\svg\message-check.svg" />
   </ItemGroup>
   
   <ItemGroup>

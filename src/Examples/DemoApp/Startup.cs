@@ -40,15 +40,15 @@ namespace Mindbite.Mox.DemoApp
             services.AddRouting();
             services.AddOptions();
             services.AddMemoryCache();
-            services.AddMvc()
-                .AddViewLocalization();
             services.AddSession();
             services.AddLocalization(x => x.ResourcesPath = "Resources");
 
-            services.AddMox<AppDbContext>(this.HostingEnvironment);
-            services.AddDesignDemoMoxApp(this.HostingEnvironment, this.Configuration);
-            services.AddMoxNotificationCenter(this.HostingEnvironment, this.Configuration);
-            services.AddMoxIdentity<AppDbContext>(this.HostingEnvironment, this.Configuration);
+            var mvc = services.AddMvc()
+                .AddViewLocalization()
+                .AddMox<AppDbContext>(this.HostingEnvironment)
+                .AddDesignDemoMoxApp(this.HostingEnvironment, this.Configuration)
+                .AddMoxNotificationCenter(this.HostingEnvironment, this.Configuration)
+                .AddMoxIdentity<AppDbContext>(this.HostingEnvironment, this.Configuration);
 
             services.Configure<Verification.Services.VerificationOptions>(c =>
             {
@@ -77,11 +77,17 @@ namespace Mindbite.Mox.DemoApp
         {
             loggerFactory.AddConsole();
 
-            app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
 
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
+                app.UseExceptionHandler("/Mox/Error/500");
+                app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
+            }
+            else
+            {
+                app.UseExceptionHandler("/Mox/Error/500");
+                app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
             }
 
             var staticRoot = "/static";

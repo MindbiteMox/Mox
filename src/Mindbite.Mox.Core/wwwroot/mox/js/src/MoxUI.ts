@@ -286,4 +286,84 @@
             GlobalInstances.mobileMenu = MobileMenu.initDefault();
         }
     }
+
+    export class DataTable {
+        containerElement: HTMLElement;
+        renderCompleteCallback?: () => Promise<void>;
+        private addQueryCallback?: () => string;
+        private baseUrl: string;
+
+        static async create(containerElement: HTMLElement, baseUrl: string, renderCompleteCallback?: () => Promise<void>, addQueryCallback?: () => string) {
+            const table = new DataTable(containerElement);
+            table.renderCompleteCallback = renderCompleteCallback;
+            table.addQueryCallback = addQueryCallback;
+            table.baseUrl = baseUrl;
+
+            const renderUrl = localStorage.getItem(table.containerElement.id) || table.baseUrl;
+            await table.render(table.addWindowQueryTo(renderUrl));
+
+            return table;
+        }
+
+        private addWindowQueryTo(url: string): string {
+            const urlQuery = DataTable.getQuery(url);
+            const windowQuery = DataTable.getQuery(window.location.href);
+            const addedQuery = this.addQueryCallback ? this.addQueryCallback() : '';
+            const newQuery = [urlQuery, addedQuery, windowQuery].filter(x => !!x).join('&')
+            const baseUrl = url.split('?')[0];
+            return baseUrl + '?' + newQuery;
+        }
+
+        private static getQuery(url: string): string {
+            const s = url.split('?');
+            if (s.length > 1) return s[1];
+            return "";
+        }
+
+        private constructor(containerElement: HTMLElement) {
+            this.containerElement = containerElement;
+        }
+
+        private async render(url: string) {
+            const getInit: RequestInit = {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            };
+            this.containerElement.innerHTML = await fetch(url, getInit)
+                .then(Mox.Utils.Fetch.checkErrorCode)
+                .then(Mox.Utils.Fetch.parseText);
+
+            localStorage.setItem(this.containerElement.id + '_fullurl', url);
+
+            const sortLinks = Mox.Utils.DOM.nodeListOfToArray(this.containerElement.querySelectorAll('th.sortable a, .mox-pager a')) as HTMLAnchorElement[];
+            sortLinks.forEach(x => x.addEventListener('click', e => {
+                e.preventDefault();
+                const fullUrl = this.addWindowQueryTo(x.href);
+                this.render(fullUrl);
+                localStorage.setItem(this.containerElement.id, x.href);
+                localStorage.setItem(this.containerElement.id + '_fullurl', fullUrl);
+            }));
+
+            if (this.renderCompleteCallback)
+                await this.renderCompleteCallback();
+        }
+
+        static getStoredParam(tableElementId: string, key: string, defaultValue: string): string {
+            const renderUrl = localStorage.getItem(tableElementId + '_fullurl');
+            if (!renderUrl)
+                return defaultValue;
+            const query = DataTable.getQuery(renderUrl);
+            const queries = query.split(/&/g);
+            const result = queries.map(x => x.split('=')).filter(x => x[0].toLowerCase() === key.toLowerCase()).map(x => x[1]);
+            return result.length ? result[0] : defaultValue;
+        }
+
+        async refresh(addQueryCallback?: () => string) {
+            this.addQueryCallback = addQueryCallback || this.addQueryCallback;
+            const renderUrl = localStorage.getItem(this.containerElement.id) || this.baseUrl;
+            await this.render(this.addWindowQueryTo(renderUrl));
+        }
+    }
 }

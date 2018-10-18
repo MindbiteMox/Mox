@@ -44,7 +44,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
                         var file = fileProviders.Select(x => x.GetFileInfo(this.WebRootRelativePath)).FirstOrDefault(x => x.Exists);
                         if(file == null)
                         {
-                            throw new Exception($"Style file {this.WebRootRelativePath} could not be found!");
+                            throw new Exception($"Static file {this.WebRootRelativePath} could not be found!");
                         }
 
                         using (var md5 = System.Security.Cryptography.MD5.Create())

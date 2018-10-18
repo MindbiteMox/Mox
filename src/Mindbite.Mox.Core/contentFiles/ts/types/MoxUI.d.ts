@@ -6,8 +6,8 @@ declare namespace Mox.UI {
         private windowWidth;
         constructor(openButton: HTMLElement, menu: HTMLElement, shadowClass: string, windowWidth: number);
         static initDefault(): MobileMenu;
-        private openClicked(event);
-        private closeClicked(event);
+        private openClicked;
+        private closeClicked;
     }
     interface ModalOptions {
         className?: string;
@@ -36,12 +36,25 @@ declare namespace Mox.UI {
         private static isEventsSetup;
         private static lastHandle;
         private static handles;
-        private static setupEvents();
+        private static setupEvents;
         static enqueue(callback: () => void | Promise<void>): CloseOnEscapeHandle;
         static remove(handle: CloseOnEscapeHandle): void;
     }
     class GlobalInstances {
         static mobileMenu: MobileMenu;
         static initDefault(): void;
+    }
+    class DataTable {
+        containerElement: HTMLElement;
+        renderCompleteCallback?: () => Promise<void>;
+        private addQueryCallback?;
+        private baseUrl;
+        static create(containerElement: HTMLElement, baseUrl: string, renderCompleteCallback?: () => Promise<void>, addQueryCallback?: () => string): Promise<DataTable>;
+        private addWindowQueryTo;
+        private static getQuery;
+        private constructor();
+        private render;
+        static getStoredParam(tableElementId: string, key: string, defaultValue: string): string;
+        refresh(addQueryCallback?: () => string): Promise<void>;
     }
 }
