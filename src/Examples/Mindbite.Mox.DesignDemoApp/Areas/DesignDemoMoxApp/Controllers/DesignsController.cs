@@ -16,6 +16,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 
 namespace Mindbite.Mox.DesignDemoApp.Controllers
 {
@@ -152,6 +155,78 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
             return View("Images", model);
         }
 
+        public class AsyncJsonResult : JsonResult
+        {
+            public AsyncJsonResult(object value) : base(value)
+            {
+            }
+
+            public AsyncJsonResult(object value, JsonSerializerSettings serializerSettings) : base(value, serializerSettings)
+            {
+
+            }
+
+            public override async Task ExecuteResultAsync(ActionContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if(this.Value is Func<Task<object>>)
+                {
+                    this.Value = await ((Func<Task<object>>)this.Value)();
+                }
+                
+                await base.ExecuteResultAsync(context);
+            }
+        }
+
+        public IActionResult AjaxView(string viewName = null, object model = null)
+        {
+            if(this.Request.IsAjaxRequest())
+            {
+                var viewRenderer = HttpContext.RequestServices.GetService<IViewRenderService>();
+                Func<Task<object>> jsonAction = async () => new {
+                    action = "replaceWithContent",
+                    data = await viewRenderer.RenderToStringAsync(this.ControllerContext, viewName, model)
+                };
+                return new AsyncJsonResult(jsonAction);
+            }
+            else
+            {
+                if(viewName != null && model != null) 
+                {
+                    return View(viewName, model);
+                } 
+                else if(viewName != null)
+                {
+                    return View(viewName);
+                }
+                else if(model != null)
+                {
+                    return View(model);
+                }
+                return View();
+            }
+        }
+
+        public IActionResult AjaxRedirectToAction(string actionName, object routeValues = null)
+        {
+            if(this.Request.IsAjaxRequest())
+            {
+                return Json(new 
+                {
+                    action = "redirect",
+                    data = Url.Action(actionName, routeValues)
+                });
+            }
+            else
+            {
+                return RedirectToAction(actionName, routeValues);
+            }
+        }
+
         [HttpGet]
         public IActionResult Create()
         {
@@ -167,10 +242,10 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                 this._context.Add(newDesign);
                 await this._context.SaveChangesAsync();
 
-                return RedirectToAction("Display", new { Id = newDesign.Id });
+                return AjaxRedirectToAction("Index");
             }
 
-            return View(newDesign);
+            return AjaxView(model: newDesign);
         }
 
         [HttpGet]

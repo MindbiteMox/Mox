@@ -30,7 +30,25 @@
     </script>
 *@
 
-<script>    
+<script>
+
+    function openModalForm(sender, event) {
+        event.preventDefault();
+
+        Mox.UI.Modal.createFormDialog(sender.href, {
+            onButtonClicked: function(modal, button, event) {
+                if(button.tagName === 'A') {
+                    modal.replaceContent(button.href);
+                }
+            }
+        });
+    }
+
+    var editButtons = Mox.Utils.DOM.collectionOfToArray(document.querySelectorAll('.mox-datatable td a'));
+    editButtons.forEach(function (button) {
+        button.addEventListener('click', function (event) { openModalForm(button, event) });
+    });
+/*
     function openModalForm(sender, event) {
         event.preventDefault();
 
@@ -68,5 +86,5 @@
     var editButtons = Mox.Utils.DOM.collectionOfToArray(document.querySelectorAll('.mox-datatable td a'));
     editButtons.forEach(function (button) {
         button.addEventListener('click', function (event) { openModalForm(button, event) });
-    });
+    });*/
 </script>

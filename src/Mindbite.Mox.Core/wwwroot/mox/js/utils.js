@@ -60,10 +60,9 @@ var Mox;
             return DOM;
         }());
         Utils.DOM = DOM;
-        var Fetch = /** @class */ (function () {
-            function Fetch() {
-            }
-            Fetch.postFormOptions = function (form) {
+        var Fetch;
+        (function (Fetch) {
+            function postFormOptions(form) {
                 return {
                     method: 'POST',
                     body: new FormData(form),
@@ -72,8 +71,9 @@ var Mox;
                         'X-Requested-With': 'XMLHttpRequest'
                     },
                 };
-            };
-            Fetch.redirect = function (onRedirect) {
+            }
+            Fetch.postFormOptions = postFormOptions;
+            function redirect(onRedirect) {
                 var _this = this;
                 var func = function (response) { return __awaiter(_this, void 0, void 0, function () {
                     return __generator(this, function (_a) {
@@ -85,8 +85,21 @@ var Mox;
                     });
                 }); };
                 return func;
-            };
-            Fetch.checkErrorCode = function (response) {
+            }
+            Fetch.redirect = redirect;
+            function doRedirect(response) {
+                return __awaiter(this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        if (response.status >= 300 && response.status < 400) {
+                            window.location.href = response.url;
+                            throw new Error('Fetch: fullRedirect to ' + response.url);
+                        }
+                        return [2 /*return*/, response];
+                    });
+                });
+            }
+            Fetch.doRedirect = doRedirect;
+            function checkErrorCode(response) {
                 return __awaiter(this, void 0, void 0, function () {
                     var error;
                     return __generator(this, function (_a) {
@@ -98,14 +111,17 @@ var Mox;
                         throw error;
                     });
                 });
-            };
-            Fetch.parseJson = function (response) {
+            }
+            Fetch.checkErrorCode = checkErrorCode;
+            function parseJson(response) {
                 return response.json();
-            };
-            Fetch.parseText = function (response) {
+            }
+            Fetch.parseJson = parseJson;
+            function parseText(response) {
                 return response.text();
-            };
-            Fetch.submitForm = function (event, onRedirect) {
+            }
+            Fetch.parseText = parseText;
+            function submitForm(event, onRedirect) {
                 var form = event.target;
                 var url = form.action;
                 var init = Mox.Utils.Fetch.postFormOptions(form);
@@ -125,10 +141,38 @@ var Mox;
                         button.classList.remove('loading');
                     });
                 });
-            };
-            return Fetch;
-        }());
-        Utils.Fetch = Fetch;
+            }
+            Fetch.submitForm = submitForm;
+            function submitAjaxForm(form, event) {
+                return __awaiter(this, void 0, void 0, function () {
+                    var url, init, button, response, contentType, _a, _b;
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
+                            case 0:
+                                url = form.action;
+                                init = Mox.Utils.Fetch.postFormOptions(form);
+                                button = form.querySelector('input[type=submit]');
+                                button.classList.add('loading');
+                                return [4 /*yield*/, fetch(url, init).then(Mox.Utils.Fetch.checkErrorCode)];
+                            case 1:
+                                response = _c.sent();
+                                contentType = response.headers.get('Content-Type');
+                                if (!(contentType.indexOf('text/html') > -1)) return [3 /*break*/, 3];
+                                _a = { type: 'html' };
+                                return [4 /*yield*/, Mox.Utils.Fetch.parseText(response)];
+                            case 2: return [2 /*return*/, (_a.data = _c.sent(), _a)];
+                            case 3:
+                                if (!(contentType.indexOf('application/json') > -1)) return [3 /*break*/, 5];
+                                _b = { type: 'json' };
+                                return [4 /*yield*/, Mox.Utils.Fetch.parseJson(response)];
+                            case 4: return [2 /*return*/, (_b.data = _c.sent(), _b)];
+                            case 5: throw new Error('Content-Type: "' + contentType + '" cannot be used when responing to a form post request.');
+                        }
+                    });
+                });
+            }
+            Fetch.submitAjaxForm = submitAjaxForm;
+        })(Fetch = Utils.Fetch || (Utils.Fetch = {}));
         var Ajax = /** @class */ (function () {
             function Ajax() {
             }
