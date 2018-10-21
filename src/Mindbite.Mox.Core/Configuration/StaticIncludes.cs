@@ -19,6 +19,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
     public class StaticFile
     {
         public string WebRootRelativePath { get; set; }
+        public bool RenderInHead { get; private set; }
 
         private FileVersionHash HashType { get; set; }
         private string FileHash { get; set; }
@@ -108,6 +109,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
             return new StaticFile
             {
                 WebRootRelativePath = webRootRelativePath,
+                RenderInHead = true,
                 OpenTag = false,
                 TagName = "link",
                 UrlAttributeName = "href",
@@ -124,6 +126,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
             return new StaticFile
             {
                 WebRootRelativePath = webRootRelativePath,
+                RenderInHead = false,
                 OpenTag = true,
                 TagName = "script",
                 UrlAttributeName = "src",

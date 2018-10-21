@@ -70,12 +70,12 @@
     }
 
     export interface FormDialogOptions {
-        onSubmit: (modal: Modal, form: HTMLFormElement, event: Event) => void;
-        onSubmitFormData: (modal: Modal, form: HTMLFormElement, responseData: Mox.Utils.Fetch.FormPostResponse) => void;
-        onButtonClicked: (modal: Modal, button: Element, event: Event) => void;
-        buttonSelector: string;
-        dontEvaluateScripts: boolean;
-        actualWindowHref: string;
+        onSubmit?: (modal: Modal, form: HTMLFormElement, event: Event) => void;
+        onSubmitFormData?: (modal: Modal, form: HTMLFormElement, responseData: Mox.Utils.Fetch.FormPostResponse) => void;
+        onButtonClicked?: (modal: Modal, button: Element, event: Event) => void;
+        buttonSelector?: string;
+        dontEvaluateScripts?: boolean;
+        actualWindowHref?: string;
     }
     
     export class Modal {
@@ -109,7 +109,7 @@
             this.contentWrapper.appendChild(this.closeButton);
 
             this.shadow = document.createElement('div');
-            this.shadow.className = 'mox-modal-shadow';
+            this.shadow.className = 'mox-modal-shadow loading';
             this.shadow.appendChild(this.contentWrapper);
 
             this.root = document.createElement('div');
@@ -140,6 +140,7 @@
                 .then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
             let text = await response.text();
             modal.contentContainer.innerHTML = text;
+            modal.shadow.classList.remove('loading');
             modal.contentWrapper.classList.remove('loading');
 
             document.body.style.overflow = 'hidden';
@@ -188,19 +189,23 @@
             async function submitForm(form, event) {
                 event.preventDefault();
 
-                if(_options.onSubmit) {
-                    _options.onSubmit(modal, form, event);
-                }
-
                 const response = await Mox.Utils.Fetch.submitAjaxForm(form, event);
                 console.log(response);
                 if(response.type === 'html') {
                     modal.replaceContentWithHtml(response.data as string);
+
+                    if(_options.onSubmit) {
+                        _options.onSubmit(modal, form, event);
+                    }
                 } else if(response.type === 'json') {
                     const responseData = response.data as Mox.Utils.Fetch.FormPostResponse;
                     
                     if(_options.onSubmitFormData) {
                         _options.onSubmitFormData(modal, form, responseData);
+                    }
+
+                    if(_options.onSubmit) {
+                        _options.onSubmit(modal, form, event);
                     }
 
                     if(responseData.handleManually) {
@@ -237,6 +242,7 @@
 
             modal.contentContainer.innerHTML = htmlContent;
             setTimeout(() => {
+                modal.shadow.classList.remove('loading');
                 modal.contentWrapper.classList.remove('loading');
             }, 10);
 
@@ -282,10 +288,12 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             };
+            this.shadow.classList.add('loading');
             this.contentWrapper.classList.add('loading');
             let response = await fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
             let text = await response.text();
             this.contentContainer.innerHTML = text;
+            this.shadow.classList.remove('loading');
             this.contentWrapper.classList.remove('loading');
             this.onContentReplacedCallbacks.forEach(x => x());
         }
@@ -338,7 +346,105 @@
         }
     }
 
-    class ShortcutStackFrame {
+    export interface DataTableOptions {
+        container: HTMLElement;
+        url: string;
+        tableId?: string;
+        onRenderComplete?: (dataTable: DataTable) => Promise<void>;
+        addQuery?: (dataTable: DataTable) => string;
+    }
+
+    export class DataTable {
+        private options: DataTableOptions;
+
+        private get tableId() {
+            return DataTable.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
+        }
+
+        get containerElement() {
+            return this.options.container;
+        }
+
+        static async create(options: DataTableOptions): Promise<DataTable> {
+            const table = new DataTable(options);
+
+            const renderUrl = localStorage.getItem(table.tableId) || table.options.url;
+            await table.render(table.addWindowQueryTo(renderUrl));
+
+            return table;
+        }
+
+        private addWindowQueryTo(url: string): string {
+            const urlQuery = DataTable.splitUrl(url).query;
+            const windowQuery = DataTable.splitUrl(window.location.href).query;
+            const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
+            const newQuery = [urlQuery, addedQuery, windowQuery, 'r=' + Math.random()].filter(x => !!x).join('&');
+            const baseUrl = url.split('?')[0];
+            return baseUrl + '?' + newQuery;
+        }
+
+        private static splitUrl(url: string): { domainAndPath: string, query: string } {
+            const s = url.split('?');
+            if (s.length > 1) return { domainAndPath: s[0], query: s[1] };
+            return { domainAndPath: s[0], query: '' };
+        }
+
+        private constructor(options: DataTableOptions) {
+            this.options = options || {} as DataTableOptions;
+        }
+
+        private async render(url: string) {
+            
+            if(!this.options.container.children.length) {
+                this.options.container.classList.add('mox-datatable-loader');
+            }
+
+            const getInit: RequestInit = {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            };
+            this.options.container.innerHTML = await fetch(url, getInit)
+                .then(Mox.Utils.Fetch.checkErrorCode)
+                .then(Mox.Utils.Fetch.parseText);
+
+            localStorage.setItem(this.tableId + '_fullurl', url);
+
+            const sortLinks = Mox.Utils.DOM.nodeListOfToArray(this.options.container.querySelectorAll('th.sortable a, .mox-pager a')) as HTMLAnchorElement[];
+            sortLinks.forEach(x => x.addEventListener('click', e => {
+                e.preventDefault();
+                const fullUrl = this.addWindowQueryTo(x.href);
+                this.render(fullUrl);
+                localStorage.setItem(this.tableId, x.href);
+                localStorage.setItem(this.tableId + '_fullurl', fullUrl);
+            }));
+
+            this.options.container.classList.remove('mox-datatable-loader');
+
+            if (this.options.onRenderComplete) {
+                await this.options.onRenderComplete(this);
+            }
+        }
+
+        static getStoredParam(tableElementId: string, key: string, defaultValue: string): string {
+            const renderUrl = localStorage.getItem(tableElementId + '_fullurl');
+            if (!renderUrl) {
+                return defaultValue;
+            }
+            const query = DataTable.splitUrl(renderUrl).query;
+            const queries = query.split(/&/g);
+            const result = queries.map(x => x.split('=')).filter(x => x[0].toLowerCase() === key.toLowerCase()).map(x => x[1]);
+            return result.length ? result[0] : defaultValue;
+        }
+
+        async refresh() {
+            const renderUrl = localStorage.getItem(this.tableId) || this.options.url;
+            await this.render(this.addWindowQueryTo(renderUrl));
+        }
+    }
+
+    interface ShortcutStackFrame {
         keyCode: number;
         control: boolean;
         shift: boolean;
@@ -356,6 +462,9 @@
 
             window.addEventListener('keydown', e => {
                 if (e.keyCode == 27 && !currentlyProcessing && CloseOnEscapeQueue.handles.length) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
                     currentlyProcessing = true;
                     let callback = CloseOnEscapeQueue.handles[CloseOnEscapeQueue.handles.length - 1].callback;
                     let promise = callback() || Promise.resolve();

@@ -13,7 +13,7 @@
 
 @Html.Partial("_DisplayMenu")
 
-@using (Html.BeginForm("UploadImage", "Designs", new { Id = Model.Design.Id }, FormMethod.Post, true, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm("Images", "Designs", new { Id = Model.Design.Id }, FormMethod.Post, true, new { enctype = "multipart/form-data" }))
 {
     @Html.ValidationSummary(true)
 

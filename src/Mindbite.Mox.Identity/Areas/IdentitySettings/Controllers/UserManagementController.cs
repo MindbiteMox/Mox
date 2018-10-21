@@ -49,7 +49,14 @@ namespace Mindbite.Mox.Identity.Controllers
             this._viewMessaging = viewMessaging;
         }
 
-        public async Task<IActionResult> Index(int? page, string sortColumn, string sortDirection, string filter)
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Table(DataTableSort sort, string filter)
         {
             var dataSource = this._context.Users.Where(x => x.Email != "backdoor@mindbite.se").AsQueryable(); // TODO: Make a better way to hide users from this list!
             var userRoles = await this._context.UserRoles.ToListAsync();
@@ -57,7 +64,8 @@ namespace Mindbite.Mox.Identity.Controllers
 
             if (!string.IsNullOrWhiteSpace(filter))
             {
-                dataSource = dataSource.Where(x => x.Email.ToLower() == filter.ToLower());
+                var normalizedFilter = filter.ToLower();
+                dataSource = dataSource.Where(x => x.Email.ToLower().Contains(normalizedFilter) || x.Name.ToLower().Contains(normalizedFilter));
             }
 
             var dataTable = DataTableBuilder
@@ -68,8 +76,8 @@ namespace Mindbite.Mox.Identity.Controllers
                     Name = x.Name,
                     Roles = string.Join(", ", roles.Where(role => userRoles.Where(ur => ur.UserId == x.Id).Select(ur => ur.RoleId).Contains(role.Id)).Select(role => this._localizer[$"role_{role.Name}"]))
                 }))
-                .Sort(sortColumn ?? "Email", sortDirection ?? "Ascending")
-                .Page(page)
+                .Sort(sort.DataTableSortColumn ?? "Email", sort.DataTableSortDirection ?? "Ascending")
+                .Page(sort.DataTablePage)
                 .RowLink(x => Url.Action("Edit", new { id = x.Id }))
                 .Columns(columns =>
                 {
@@ -83,7 +91,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     buttons.Add(x => Url.Action("delete", new { x.Id })).CssClass("delete");
                 });
 
-            return this.ViewOrOk(dataTable);
+            return PartialView("Mox/UI/DataTable", dataTable);
         }
 
         [HttpGet]

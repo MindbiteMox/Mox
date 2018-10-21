@@ -13,8 +13,45 @@
 
 @await Html.PartialAsync("Mox/UI/Message")
 
-<p>
-    @Html.ActionLink(localizer["Skapa ny"], "Create", null, null, new { @class = "mox-button" })
-</p>
+<ul class="mox-filters">
+    <li class="break">
+        @Html.ActionLink(localizer["Skapa ny"], "Create", null, null, new { @class = "mox-button" })
+    </li>
+    <li>
+        <input type="text" id="js-filter" placeholder="@localizer["Sök på epost eller namn"]">
+    </li>
+</ul>
 
-@await Html.PartialAsync("Mox/UI/DataTable", Model)
+<div id="js-table"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var filter = document.getElementById('js-filter');
+        var dataTable = null;
+        var refreshTimeout = null;
+        
+        Mox.UI.DataTable.create({
+            container: document.getElementById('js-table'),
+            url: '@Url.Action("Table")',
+            addQuery: function(dataTable) {
+                return 'filter=' + encodeURIComponent(filter.value);
+            }
+        }).then(function(d) { 
+            dataTable = d; 
+        });
+
+        filter.addEventListener('keyup', function(e) {
+            if(!dataTable) 
+                return;
+
+            if(refreshTimeout) {
+                clearTimeout(refreshTimeout);
+            }
+
+            refreshTimeout = setTimeout(function() {
+                dataTable.refresh();
+                refreshTimeout = null;
+            }, 300);
+        });
+    });
+</script>

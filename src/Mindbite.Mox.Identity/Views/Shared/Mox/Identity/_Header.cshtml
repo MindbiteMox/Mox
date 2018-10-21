@@ -23,7 +23,7 @@
 </div>
 
 <script>
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
         var button = document.getElementById('js-identity-header-button');
         var menu = document.getElementById('js-identity-header-menu');
 
@@ -46,5 +46,5 @@
                 document.removeEventListener('click', closeMenu);
             }
         });
-    })();
+    });
 </script>

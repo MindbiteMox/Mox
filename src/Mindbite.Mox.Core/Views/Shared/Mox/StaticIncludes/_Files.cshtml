@@ -3,7 +3,16 @@
 @inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.StaticIncludes.StaticFileProviderOptions> StaticFileProviderOptions
 @inject IHostingEnvironment env;
 
-@foreach (var style in Config.Value.Files)
+@{
+    var renderInHead = true;
+    try 
+    {
+        renderInHead = Model.RenderInHead;
+    }
+    catch { }
+}
+
+@foreach (var style in Config.Value.Files.Where(x => x.RenderInHead == renderInHead))
 {
     @(style.Render(Config.Value.StaticRoot, StaticFileProviderOptions.Value.FileProviders, Mindbite.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash))
 }

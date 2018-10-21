@@ -25,13 +25,13 @@ namespace Mindbite.Mox.Identity.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(int? page, string sortColumn, string sortDirection)
+        public async Task<IActionResult> Index(DataTableSort sort)
         {
             var dataSource = this._context.Roles.Select(x => new { Name = this._localizer[$"role_{x.Name}"].ToString() });
             var dataTable = DataTableBuilder
                 .Create(dataSource)
-                .Sort(sortColumn ?? "Name", sortDirection ?? "Ascending")
-                .Page(page)
+                .Sort(sort.DataTableSortColumn ?? "Name", sort.DataTableSortDirection ?? "Ascending")
+                .Page(sort.DataTablePage)
                 .Columns(columns =>
                 {
                     columns.Add(x => x.Name).Title(this._localizer["Namn"]);

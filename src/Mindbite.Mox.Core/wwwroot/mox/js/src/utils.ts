@@ -32,9 +32,22 @@
         }
 
         export function postFormOptions(form: HTMLFormElement): RequestInit {
+            var inputs = form.querySelectorAll('input[type="file"]:not([disabled])') as NodeListOf<HTMLInputElement>;
+            inputs.forEach(function(input) {
+                if (input.files.length > 0) 
+                    return;
+                input.setAttribute('disabled', '');
+            });
+
+            var formBody = new FormData(form);
+
+            inputs.forEach(function(input) {
+                input.removeAttribute('disabled');
+            });
+
             return {
                 method: 'POST',
-                body: new FormData(form),
+                body: formBody,
                 credentials: 'same-origin',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'

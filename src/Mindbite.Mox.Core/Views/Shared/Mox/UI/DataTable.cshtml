@@ -5,105 +5,105 @@
     string currentGroup = null;
 }
 
-<table class="@Model.CssClass">
-    <thead>
-        <tr>
-            @foreach (var column in Model.Columns)
-            {
-                @if (Model.Sortable)
+@if(pageItems.Any())
+{
+    <table class="@Model.CssClass">
+        <thead>
+            <tr>
+                @foreach (var column in Model.Columns)
                 {
-                    <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="sortable @(column.FieldName == Model.SortColumn ? Model.SortDirection.ToLower() : "") @column.CssClass">
-                        <a href="@Url.Action(null, new { sortColumn = column.FieldName, sortDirection = column.GetNextSortDirection(Model) })">
-                            @column.Title&nbsp;<span style="font-size: 0.7em;">@Html.Raw(column.FieldName == Model.SortColumn ? (Model.SortDirection.ToLower().StartsWith("asc") ? "&#9650;" : "&#9660;") : "")</span>
-                        </a>
-                    </th>
-                }
-                else
-                {
-                    <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="notsortable @column.CssClass">
-                        @if (string.IsNullOrWhiteSpace(column.Title))
-                        {
-                            <span>@Html.Raw("&nbsp;")</span>
-                        }
-                        else
-                        {
-                            <span>@column.Title</span>
-                        }
-                        </th>
-                }
-            }
-            @if (Model.Buttons.Any())
-            {
-                <th class="buttons">
-                    <span>&nbsp;</span>
-                </th>
-            }
-        </tr>
-    </thead>
-
-    <tbody>
-        @foreach (var row in pageItems)
-        {
-            string groupValue = null;
-            @if (Model.IsGrouped && ((groupValue = Model.GetGroupValue(row)) != currentGroup))
-            {
-                currentGroup = groupValue;
-                <tr class="group">
-                    <td colspan="@(Model.Columns.Count() + (Model.Buttons.Any() ? 1 : 0))"><span>@groupValue</span></td>
-                </tr>
-            }
-            string rowId = Model.GetRowId(row);
-            <tr @(rowId != null ? Html.Raw($"data-id={rowId}") : null)>
-                @{
-                    var rowLink = Model.GetRowLink(row);
-                    foreach (var column in Model.Columns)
+                    @if (Model.Sortable)
                     {
-                        if (rowLink != null)
-                        {
-                            <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@column.GetValue(row)</a></td>
-                        }
-                        else
-                        {
-                            <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><span>@column.GetValue(row)</span></td>
-                        }
+                        <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="sortable @(column.FieldName == Model.SortColumn ? Model.SortDirection.ToLower() : "") @column.CssClass">
+                            <a href="@Url.Action(null, new { DataTableSortColumn = column.FieldName, DataTableSortDirection = column.GetNextSortDirection(Model) })">
+                                @column.Title&nbsp;<span style="font-size: 0.7em;">@Html.Raw(column.FieldName == Model.SortColumn ? (Model.SortDirection.ToLower().StartsWith("asc") ? "&#9650;" : "&#9660;") : "")</span>
+                            </a>
+                        </th>
+                    }
+                    else
+                    {
+                        <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="notsortable @column.CssClass">
+                            @if (string.IsNullOrWhiteSpace(column.Title))
+                            {
+                                <span>@Html.Raw("&nbsp;")</span>
+                            }
+                            else
+                            {
+                                <span>@column.Title</span>
+                            }
+                            </th>
                     }
                 }
                 @if (Model.Buttons.Any())
                 {
-                    <td class="buttons">
-                        <ul class="buttons-list">
-                            @foreach (var button in Model.Buttons)
-                            {
-                                <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass">@(button.Title ?? Html.Raw("&nbsp;").ToString())</a></li>
-                            }
-                        </ul>
-                    </td>
+                    <th class="buttons">
+                        <span>&nbsp;</span>
+                    </th>
                 }
             </tr>
-        }
-    </tbody>
-</table>
-@{
-    // TODO: A nicer pager
-    var currentPage = Mindbite.Mox.Utils.Utils.Clamp(Model.Page, 1, Model.PageCount);
+        </thead>
 
+        <tbody>
+            @foreach (var row in pageItems)
+            {
+                string groupValue = null;
+                @if (Model.IsGrouped && ((groupValue = Model.GetGroupValue(row)) != currentGroup))
+                {
+                    currentGroup = groupValue;
+                    <tr class="group">
+                        <td colspan="@(Model.Columns.Count() + (Model.Buttons.Any() ? 1 : 0))"><span>@groupValue</span></td>
+                    </tr>
+                }
+                string rowId = Model.GetRowId(row);
+                <tr @(rowId != null ? Html.Raw($"data-id={rowId}") : null)>
+                    @{
+                        var rowLink = Model.GetRowLink(row);
+                        foreach (var column in Model.Columns)
+                        {
+                            if (rowLink != null)
+                            {
+                                <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@column.GetValue(row)</a></td>
+                            }
+                            else
+                            {
+                                <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><span>@column.GetValue(row)</span></td>
+                            }
+                        }
+                    }
+                    @if (Model.Buttons.Any())
+                    {
+                        <td class="buttons">
+                            <ul class="buttons-list">
+                                @foreach (var button in Model.Buttons)
+                                {
+                                    <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass">@(button.Title ?? Html.Raw("&nbsp;").ToString())</a></li>
+                                }
+                            </ul>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    var currentPage = Mindbite.Mox.Utils.Utils.Clamp(Model.Page, 1, Model.PageCount);
+    var pageListStart = Math.Max(1, Math.Min(currentPage - 4, Model.PageCount - 8));
+    var pageListEnd = Math.Min(Model.PageCount, pageListStart + 8);
+    
     if (Model.PageCount > 1)
     {
         <ul class="mox-pager">
-            @if(currentPage > 1)
+            <li class="previous @(currentPage <= 1 ? "disabled" : "")">@Html.ActionLink("<", null, new { DataTablePage = currentPage - 1, DataTableSortColumn = Model.SortColumn, DataTableSortDirection = Model.SortDirection})</li>
+            @for(int page = pageListStart; page <= pageListEnd; page++)
             {
-                <li class="previous">@Html.ActionLink("<", null, new { page = currentPage - 1, sortColumn = Model.SortColumn, sortDirection = Model.SortDirection})</li>
+                <li class="@(currentPage == page ? "selected" : "")">@Html.ActionLink(page.ToString(), null, new { DataTablePage = page, DataTableSortColumn = Model.SortColumn, DataTableSortDirection = Model.SortDirection })</li>
             }
-
-            @for(int page = 1; page<Model.PageCount + 1; page++)
-            {
-                <li class="@(currentPage == page ? "selected" : "")">@Html.ActionLink(page.ToString(), null, new { page = page, sortColumn = Model.SortColumn, sortDirection = Model.SortDirection })</li>
-            }
-
-            @if(currentPage<Model.PageCount)
-            {
-                <li class="next">@Html.ActionLink(">", null, new { page = currentPage + 1, sortColumn = Model.SortColumn, sortDirection = Model.SortDirection })</li>
-            }
+            
+            <li class="next @(currentPage >= Model.PageCount ? "disabled" : "")">@Html.ActionLink(">", null, new { DataTablePage = currentPage + 1, DataTableSortColumn = Model.SortColumn, DataTableSortDirection = Model.SortDirection })</li>
         </ul>
     }
+}
+else
+{
+    <p class="mox-datatable-empty">Listan är tom</p>
 }

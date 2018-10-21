@@ -107,7 +107,7 @@ var Mox;
                 this.contentWrapper.appendChild(this.contentContainer);
                 this.contentWrapper.appendChild(this.closeButton);
                 this.shadow = document.createElement('div');
-                this.shadow.className = 'mox-modal-shadow';
+                this.shadow.className = 'mox-modal-shadow loading';
                 this.shadow.appendChild(this.contentWrapper);
                 this.root = document.createElement('div');
                 this.root.className = _options.className || 'mox-modal';
@@ -142,6 +142,7 @@ var Mox;
                             case 2:
                                 text = _a.sent();
                                 modal.contentContainer.innerHTML = text;
+                                modal.shadow.classList.remove('loading');
                                 modal.contentWrapper.classList.remove('loading');
                                 document.body.style.overflow = 'hidden';
                                 if (!Modal.allOpenModals)
@@ -185,21 +186,24 @@ var Mox;
                                 switch (_a.label) {
                                     case 0:
                                         event.preventDefault();
-                                        if (_options.onSubmit) {
-                                            _options.onSubmit(modal, form, event);
-                                        }
                                         return [4 /*yield*/, Mox.Utils.Fetch.submitAjaxForm(form, event)];
                                     case 1:
                                         response = _a.sent();
                                         console.log(response);
                                         if (!(response.type === 'html')) return [3 /*break*/, 2];
                                         modal.replaceContentWithHtml(response.data);
+                                        if (_options.onSubmit) {
+                                            _options.onSubmit(modal, form, event);
+                                        }
                                         return [3 /*break*/, 6];
                                     case 2:
                                         if (!(response.type === 'json')) return [3 /*break*/, 6];
                                         responseData = response.data;
                                         if (_options.onSubmitFormData) {
                                             _options.onSubmitFormData(modal, form, responseData);
+                                        }
+                                        if (_options.onSubmit) {
+                                            _options.onSubmit(modal, form, event);
                                         }
                                         if (responseData.handleManually) {
                                             return [2 /*return*/];
@@ -247,6 +251,7 @@ var Mox;
                 });
                 modal.contentContainer.innerHTML = htmlContent;
                 setTimeout(function () {
+                    modal.shadow.classList.remove('loading');
                     modal.contentWrapper.classList.remove('loading');
                 }, 10);
                 document.body.style.overflow = 'hidden';
@@ -297,6 +302,7 @@ var Mox;
                                         'X-Requested-With': 'XMLHttpRequest'
                                     }
                                 };
+                                this.shadow.classList.add('loading');
                                 this.contentWrapper.classList.add('loading');
                                 return [4 /*yield*/, fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(function (url) { window.location.href = url; }))];
                             case 1:
@@ -305,6 +311,7 @@ var Mox;
                             case 2:
                                 text = _a.sent();
                                 this.contentContainer.innerHTML = text;
+                                this.shadow.classList.remove('loading');
                                 this.contentWrapper.classList.remove('loading');
                                 this.onContentReplacedCallbacks.forEach(function (x) { return x(); });
                                 return [2 /*return*/];
@@ -352,11 +359,124 @@ var Mox;
             return Modal;
         }());
         UI.Modal = Modal;
-        var ShortcutStackFrame = /** @class */ (function () {
-            function ShortcutStackFrame() {
+        var DataTable = /** @class */ (function () {
+            function DataTable(options) {
+                this.options = options || {};
             }
-            return ShortcutStackFrame;
+            Object.defineProperty(DataTable.prototype, "tableId", {
+                get: function () {
+                    return DataTable.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DataTable.prototype, "containerElement", {
+                get: function () {
+                    return this.options.container;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            DataTable.create = function (options) {
+                return __awaiter(this, void 0, void 0, function () {
+                    var table, renderUrl;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                table = new DataTable(options);
+                                renderUrl = localStorage.getItem(table.tableId) || table.options.url;
+                                return [4 /*yield*/, table.render(table.addWindowQueryTo(renderUrl))];
+                            case 1:
+                                _a.sent();
+                                return [2 /*return*/, table];
+                        }
+                    });
+                });
+            };
+            DataTable.prototype.addWindowQueryTo = function (url) {
+                var urlQuery = DataTable.splitUrl(url).query;
+                var windowQuery = DataTable.splitUrl(window.location.href).query;
+                var addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
+                var newQuery = [urlQuery, addedQuery, windowQuery, 'r=' + Math.random()].filter(function (x) { return !!x; }).join('&');
+                var baseUrl = url.split('?')[0];
+                return baseUrl + '?' + newQuery;
+            };
+            DataTable.splitUrl = function (url) {
+                var s = url.split('?');
+                if (s.length > 1)
+                    return { domainAndPath: s[0], query: s[1] };
+                return { domainAndPath: s[0], query: '' };
+            };
+            DataTable.prototype.render = function (url) {
+                return __awaiter(this, void 0, void 0, function () {
+                    var getInit, _a, sortLinks;
+                    var _this = this;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
+                            case 0:
+                                if (!this.options.container.children.length) {
+                                    this.options.container.classList.add('mox-datatable-loader');
+                                }
+                                getInit = {
+                                    credentials: 'same-origin',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                    },
+                                };
+                                _a = this.options.container;
+                                return [4 /*yield*/, fetch(url, getInit)
+                                        .then(Mox.Utils.Fetch.checkErrorCode)
+                                        .then(Mox.Utils.Fetch.parseText)];
+                            case 1:
+                                _a.innerHTML = _b.sent();
+                                localStorage.setItem(this.tableId + '_fullurl', url);
+                                sortLinks = Mox.Utils.DOM.nodeListOfToArray(this.options.container.querySelectorAll('th.sortable a, .mox-pager a'));
+                                sortLinks.forEach(function (x) { return x.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    var fullUrl = _this.addWindowQueryTo(x.href);
+                                    _this.render(fullUrl);
+                                    localStorage.setItem(_this.tableId, x.href);
+                                    localStorage.setItem(_this.tableId + '_fullurl', fullUrl);
+                                }); });
+                                this.options.container.classList.remove('mox-datatable-loader');
+                                if (!this.options.onRenderComplete) return [3 /*break*/, 3];
+                                return [4 /*yield*/, this.options.onRenderComplete(this)];
+                            case 2:
+                                _b.sent();
+                                _b.label = 3;
+                            case 3: return [2 /*return*/];
+                        }
+                    });
+                });
+            };
+            DataTable.getStoredParam = function (tableElementId, key, defaultValue) {
+                var renderUrl = localStorage.getItem(tableElementId + '_fullurl');
+                if (!renderUrl) {
+                    return defaultValue;
+                }
+                var query = DataTable.splitUrl(renderUrl).query;
+                var queries = query.split(/&/g);
+                var result = queries.map(function (x) { return x.split('='); }).filter(function (x) { return x[0].toLowerCase() === key.toLowerCase(); }).map(function (x) { return x[1]; });
+                return result.length ? result[0] : defaultValue;
+            };
+            DataTable.prototype.refresh = function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var renderUrl;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                renderUrl = localStorage.getItem(this.tableId) || this.options.url;
+                                return [4 /*yield*/, this.render(this.addWindowQueryTo(renderUrl))];
+                            case 1:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            };
+            return DataTable;
         }());
+        UI.DataTable = DataTable;
         var CloseOnEscapeQueue = /** @class */ (function () {
             function CloseOnEscapeQueue() {
             }
@@ -364,6 +484,8 @@ var Mox;
                 var currentlyProcessing = false;
                 window.addEventListener('keydown', function (e) {
                     if (e.keyCode == 27 && !currentlyProcessing && CloseOnEscapeQueue.handles.length) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         currentlyProcessing = true;
                         var callback = CloseOnEscapeQueue.handles[CloseOnEscapeQueue.handles.length - 1].callback;
                         var promise = callback() || Promise.resolve();

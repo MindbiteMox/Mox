@@ -18,6 +18,7 @@ namespace Mindbite.Mox.UI
         string SortDirection { get; }
         bool Sortable { get; }
         string CssClass { get; }
+        HtmlString EmptyMessage { get; }
 
         IEnumerable<IDataTableColumn> Columns { get; }
         IEnumerable<IDataTableButton> Buttons { get; }
@@ -51,6 +52,13 @@ namespace Mindbite.Mox.UI
     public enum ColumnAlign
     {
         Left, Right, Center
+    }
+
+    public class DataTableSort
+    {
+        public string DataTableSortColumn { get; set; }
+        public string DataTableSortDirection { get; set; } = "Descending";
+        public int? DataTablePage { get; set; }
     }
 
     public class DataTableButtonFactory<T>
@@ -216,6 +224,7 @@ namespace Mindbite.Mox.UI
             private string _groupMember;
             private Func<T, object> _groupMemberFunc;
             private Func<object, HtmlString> _groupMemberRender;
+            private HtmlString _emptyMessage;
 
             public int PageCount => this._pageCount ?? (this._pageCount = ((this._dataSource.Count() - 1) / this._pageSize) + 1).Value;
 
@@ -224,6 +233,8 @@ namespace Mindbite.Mox.UI
             string IDataTable.SortDirection => this._sortDirection;
             bool IDataTable.Sortable => this._sortable;
             string IDataTable.CssClass => this._cssClass;
+            HtmlString IDataTable.EmptyMessage => this._emptyMessage;
+
 
             IEnumerable<IDataTableColumn> IDataTable.Columns => this._columns;
             IEnumerable<IDataTableButton> IDataTable.Buttons => this._buttons;
@@ -378,6 +389,12 @@ namespace Mindbite.Mox.UI
             public QueryableDataTable<T> CssClass(string cssClass)
             {
                 this._cssClass = cssClass;
+                return this;
+            }
+
+            public QueryableDataTable<T> EmptyMessage(HtmlString emptyMessage)
+            {
+                this._emptyMessage = emptyMessage;
                 return this;
             }
 

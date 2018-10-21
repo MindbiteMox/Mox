@@ -38,21 +38,20 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
             this._notificationSender = notificationSender;
         }
 
-        public async Task<IActionResult> Index(int? page, string sortColumn, string sortDirection, string filter)
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        public IActionResult Table(UI.DataTableSort tableSort)
         {
             var dataSource = this._context.Designs.Include(x => x.Images).AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(filter))
-            {
-                dataSource = dataSource.Where(x => x.Title.ToLower() == filter.ToLower());
-            }
-
             var dataTable = DataTableBuilder
                 .Create(dataSource)
-                .Sort(sortColumn ?? "Title", sortDirection ?? "Ascending")
-                .Page(page)
+                .Sort(tableSort.DataTableSortColumn ?? "Title", tableSort.DataTableSortDirection ?? "Ascending")
+                .Page(tableSort.DataTablePage)
                 .RowLink(x => Url.Action("Display", new { id = x.Id }))
-                //.CssClass("mox-datatable clean")
                 .Columns(columns =>
                 {
                     columns.Add(x => x.Id).Title("Id").Width(100);
@@ -66,7 +65,7 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                     buttons.Add(x => Url.Action("delete", new { Id = x.Id })).CssClass("delete");
                 });
 
-            return this.ViewOrOk(dataTable);
+            return this.PartialView("Mox/UI/DataTable", dataTable);
         }
 
         [HttpGet]
@@ -110,6 +109,7 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ActionName("Images")]
         public async Task<IActionResult> UploadImage(int? id, ViewModels.ImagesViewModel model)
         {
             if (id == null)
@@ -149,10 +149,10 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                 this._context.Add(newImage);
                 await this._context.SaveChangesAsync();
 
-                return RedirectToAction("Images", new { Id = id });
+                return AjaxRedirectToAction("Images", new { Id = id });
             }
 
-            return View("Images", model);
+            return AjaxView("Images", model);
         }
 
         public class AsyncJsonResult : JsonResult
@@ -189,7 +189,8 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                 var viewRenderer = HttpContext.RequestServices.GetService<IViewRenderService>();
                 Func<Task<object>> jsonAction = async () => new {
                     action = "replaceWithContent",
-                    data = await viewRenderer.RenderToStringAsync(this.ControllerContext, viewName, model)
+                    data = await viewRenderer.RenderToStringAsync(this.ControllerContext, viewName, model),
+                    model
                 };
                 return new AsyncJsonResult(jsonAction);
             }
@@ -211,14 +212,16 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
             }
         }
 
-        public IActionResult AjaxRedirectToAction(string actionName, object routeValues = null)
+        public IActionResult AjaxRedirectToAction(string actionName, object routeValues = null, object model = null)
         {
             if(this.Request.IsAjaxRequest())
             {
                 return Json(new 
                 {
                     action = "redirect",
-                    data = Url.Action(actionName, routeValues)
+                    data = Url.Action(actionName, routeValues),
+                    routeValues,
+                    model
                 });
             }
             else
@@ -242,7 +245,9 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                 this._context.Add(newDesign);
                 await this._context.SaveChangesAsync();
 
-                return AjaxRedirectToAction("Index");
+                return AjaxRedirectToAction("Index", model: new {
+                    newDesign.Id
+                });
             }
 
             return AjaxView(model: newDesign);
@@ -263,7 +268,7 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                 return NotFound();
             }
 
-            return View(design);
+            return View(model: design);
         }
 
         [HttpPost]
@@ -284,10 +289,10 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                 var url = Url.Action("Display", "Designs", new { Area = Constants.MainArea, Id = id }, Request.Scheme);
                 await this._notificationSender.SendAsync(me, "Mox.Designs.Edit", shortDescription: "Ny design ändrades!", url: url, entityId: id);
 
-                return RedirectToAction("Display", new { Id = design.Id });
+                return AjaxRedirectToAction("Index");
             }
 
-            return View(design);
+            return AjaxView(model: design);
         }
 
         [HttpGet]
@@ -333,11 +338,11 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
             {
                 this._context.Remove(designToDelete);
                 await this._context.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return AjaxRedirectToAction("Index");
             }
             catch (DbUpdateException)
             {
-                return RedirectToAction("Delete", new { id = id, saveChangesError = true });
+                return AjaxRedirectToAction("Delete", new { id = id, saveChangesError = true });
             }
         }
     }

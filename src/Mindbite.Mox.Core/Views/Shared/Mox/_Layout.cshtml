@@ -2,7 +2,8 @@
 @using Mindbite.Mox
 @using Mindbite.Mox.UI.Menu
 @using Mindbite.Mox.UI
-@using Microsoft.Extensions.Localization;
+@using Mindbite.Mox.Extensions
+@using Microsoft.Extensions.Localization
 
 @inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.Config> Config
 @inject IStringLocalizer localizer
@@ -17,8 +18,8 @@
 <head>
     <title>@(ViewData["Title"] ?? currentSelectedMenu?.Title ?? "Mox") - @(Config.Value.SiteTitle)</title>
     <meta name="viewport" content="width=device-width">
-    @await Html.PartialAsync("Mox/StaticIncludes/_Files")
-    @await Html.PartialAsync("Mox/StaticIncludes/_AppFiles")
+    @await Html.PartialAsync("Mox/StaticIncludes/_Files", new { RenderInHead = true }.ToExpando())
+    @await Html.PartialAsync("Mox/StaticIncludes/_AppFiles", new { RenderInHead = true }.ToExpando())
     @RenderSection("styles", required: false)
 </head>
 <body>
@@ -60,8 +61,11 @@
         </div>
     </div>
 
-    <script>Mox.UI.GlobalInstances.initDefault()</script>
 
+    @await Html.PartialAsync("Mox/StaticIncludes/_Files", new { RenderInHead = false }.ToExpando())
+    @await Html.PartialAsync("Mox/StaticIncludes/_AppFiles", new { RenderInHead = false }.ToExpando())
     @RenderSection("scripts", required: false)
+    
+    <script>Mox.UI.GlobalInstances.initDefault()</script>
 </body>
 </html>

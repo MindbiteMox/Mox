@@ -3,9 +3,18 @@
 @inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.Config> Config
 @inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.StaticIncludes.StaticFileProviderOptions> StaticFileProviderOptions
 
+@{
+    var renderInHead = true;
+    try 
+    {
+        renderInHead = Model.RenderInHead;
+    }
+    catch { }
+}
+
 @foreach (var include in Config.Value.Apps.Select(x => x.StaticIncludes))
 {
-    @foreach (var style in include.Files)
+    @foreach (var style in include.Files.Where(x => x.RenderInHead == renderInHead))
     {
         @(style.Render(include.StaticRoot, StaticFileProviderOptions.Value.FileProviders, Mindbite.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash))
     }

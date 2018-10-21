@@ -14,12 +14,12 @@ declare namespace Mox.UI {
         contentClassName?: string;
     }
     interface FormDialogOptions {
-        onSubmit: (modal: Modal, form: HTMLFormElement, event: Event) => void;
-        onSubmitFormData: (modal: Modal, form: HTMLFormElement, responseData: Mox.Utils.Fetch.FormPostResponse) => void;
-        onButtonClicked: (modal: Modal, button: Element, event: Event) => void;
-        buttonSelector: string;
-        dontEvaluateScripts: boolean;
-        actualWindowHref: string;
+        onSubmit?: (modal: Modal, form: HTMLFormElement, event: Event) => void;
+        onSubmitFormData?: (modal: Modal, form: HTMLFormElement, responseData: Mox.Utils.Fetch.FormPostResponse) => void;
+        onButtonClicked?: (modal: Modal, button: Element, event: Event) => void;
+        buttonSelector?: string;
+        dontEvaluateScripts?: boolean;
+        actualWindowHref?: string;
     }
     class Modal {
         private escapeHandle;
@@ -42,6 +42,25 @@ declare namespace Mox.UI {
         onClose(callback: () => void): void;
         onContentReplaced(callback: () => void): void;
         static setupHistory(modal: Modal, url: string): Modal;
+    }
+    interface DataTableOptions {
+        container: HTMLElement;
+        url: string;
+        tableId?: string;
+        onRenderComplete?: (dataTable: DataTable) => Promise<void>;
+        addQuery?: (dataTable: DataTable) => string;
+    }
+    class DataTable {
+        private options;
+        private readonly tableId;
+        readonly containerElement: HTMLElement;
+        static create(options: DataTableOptions): Promise<DataTable>;
+        private addWindowQueryTo;
+        private static splitUrl;
+        private constructor();
+        private render;
+        static getStoredParam(tableElementId: string, key: string, defaultValue: string): string;
+        refresh(): Promise<void>;
     }
     type CloseOnEscapeHandle = number;
     class CloseOnEscapeQueue {

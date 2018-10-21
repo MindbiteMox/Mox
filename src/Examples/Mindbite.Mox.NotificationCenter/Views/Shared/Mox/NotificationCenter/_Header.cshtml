@@ -19,7 +19,7 @@
 </div>
 
 <script>
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
         var items = function () { return document.querySelectorAll('#js-notification-header-menu .mox-header-dropdown-item:not(.all)'); }
         var itemsContainer = document.querySelector('#js-notification-header-menu .mox-header-dropdown-items');
         var viewAllItem = document.getElementById('js-notification-view-all');
@@ -49,9 +49,9 @@
                 unread.style.display = "none";
             }
         });
-    })();
+    });
 
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
         var markAsUnreadUrl = '@Url.Action("MarkAsUnread", "Notifications", new { Area = Constants.MainArea })';
         var button = document.getElementById('js-notification-header-button');
         var menu = document.getElementById('js-notification-header-menu');
@@ -78,5 +78,5 @@
                 document.removeEventListener('click', closeMenu);
             }
         });
-    })();
+    });
 </script>
