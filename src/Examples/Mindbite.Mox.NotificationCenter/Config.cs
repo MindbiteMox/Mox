@@ -26,23 +26,25 @@ namespace Mindbite.Mox.NotificationCenter
 
     public static class Configuration
     {
-        public static void AddMoxNotificationCenter(this IServiceCollection services, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static")
+        public static IMvcBuilder AddMoxNotificationCenter(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static")
         {
-            services.AddScoped<INotificationSender, NotificationCenterSender>();
-            services.AddScoped<INotificationReciever, NotificationCenterReciever>();
-            services.AddScoped<INotificationSubscriber, NotificationCenterSubscriber>();
+            mvc.AddApplicationPart(typeof(Configuration).Assembly);
 
-            services.AddScoped<EmailMessenger>();
-            services.AddScoped<PalomaTextMessenger>();
+            mvc.Services.AddScoped<INotificationSender, NotificationCenterSender>();
+            mvc.Services.AddScoped<INotificationReciever, NotificationCenterReciever>();
+            mvc.Services.AddScoped<INotificationSubscriber, NotificationCenterSubscriber>();
 
-            services.AddScoped<IMessengerProvider, MessengerProvider>(options => {
-                return new MessengerProvider(services.BuildServiceProvider(), m => {
+            mvc.Services.AddScoped<EmailMessenger>();
+            mvc.Services.AddScoped<PalomaTextMessenger>();
+
+            mvc.Services.AddScoped<IMessengerProvider, MessengerProvider>(options => {
+                return new MessengerProvider(mvc.Services.BuildServiceProvider(), m => {
                     m.Add(typeof(EmailMessenger));
                     m.Add(typeof(PalomaTextMessenger));
                 });
             });
 
-            services.Configure<Mox.Configuration.Config>(c =>
+            mvc.Services.Configure<Mox.Configuration.Config>(c =>
             {
                 var app = c.Apps.Add("Notifikationscenter", "notificationcenter");
                 app.Areas.Add(Constants.MainArea);
@@ -58,20 +60,22 @@ namespace Mindbite.Mox.NotificationCenter
                 app.HeaderPartial = new Mox.Configuration.Apps.AppPartial() { Name = "Mox/NotificationCenter/_Header", Position = 500 };
             });
 
-            services.Configure<RazorViewEngineOptions>(c =>
+            mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
-                c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(Configuration).GetTypeInfo().Assembly, hostingEnvironment));
+                c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(Configuration).Assembly, hostingEnvironment));
             });
 
-            services.Configure<Mox.Configuration.StaticIncludes.IncludeConfig>(c =>
+            mvc.Services.Configure<Mox.Configuration.StaticIncludes.IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
                 c.Files.Add(Mox.Configuration.StaticIncludes.StaticFile.Style("notificationcenter/css/mox_base.css"));
                 c.Files.Add(Mox.Configuration.StaticIncludes.StaticFile.Script("notificationcenter/js/notification_center.js"));
             });
 
-            services.Configure<Mox.Communication.EmailOptions>(appConfiguration.GetSection("EmailSender"));
-            services.AddScoped<Mox.Communication.EmailSender>();
+            mvc.Services.Configure<Mox.Communication.EmailOptions>(appConfiguration.GetSection("EmailSender"));
+            mvc.Services.AddScoped<Mox.Communication.EmailSender>();
+
+            return mvc;
         }
 
         public static void MapMoxNotificationCenterRoutes(this IRouteBuilder routes, string moxPath = "Mox")

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup Label="Configuration">
     <OutputType>Library</OutputType>
@@ -12,10 +12,11 @@
     <Version>2.1.17</Version>
     <AssemblyVersion>2.1.17.0</AssemblyVersion>
     <FileVersion>2.1.17.0</FileVersion>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,11 +31,7 @@
     <EmbeddedResource Include="Views\**" />
     <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Views\Shared\Mox\Identity\_UserSettingsHeader.cshtml" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Update="Resources\Localization.Designer.cs">
       <DesignTime>True</DesignTime>

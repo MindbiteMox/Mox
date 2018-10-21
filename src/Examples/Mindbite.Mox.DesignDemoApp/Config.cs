@@ -25,9 +25,11 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
 
     public static class ConfigExtensions
     {
-        public static void AddDesignDemoMoxApp(this IServiceCollection services, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration)
+        public static IMvcBuilder AddDesignDemoMoxApp(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration)
         {
-            services.Configure<Mox.Configuration.Config>(c =>
+            mvc.AddApplicationPart(typeof(ConfigExtensions).Assembly);
+
+            mvc.Services.Configure<Mox.Configuration.Config>(c =>
             {
                 var app = c.Apps.Add("Designs demo app", "designs");
                 app.Areas.Add(Constants.MainArea);
@@ -39,18 +41,20 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
                 });
             });
 
-            services.Configure<RazorViewEngineOptions>(c =>
+            mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
                 c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(ConfigExtensions).GetTypeInfo().Assembly, hostingEnvironment));
             });
 
-            services.AddTransient<Data.Models.DesignDbContextActions>();
+            mvc.Services.AddTransient<Data.Models.DesignDbContextActions>();
 
-            services.AddTransient<IdentityExtensions.UserImage>();
-            services.Configure<SettingsOptions>(options =>
+            mvc.Services.AddTransient<IdentityExtensions.UserImage>();
+            mvc.Services.Configure<SettingsOptions>(options =>
             {
                 options.AdditionalEditUserViews.Add(new SettingsOptions.View { TabTitle = "Bild", ViewName = "UserImage", ExtensionType = typeof(IdentityExtensions.UserImage) });
             });
+
+            return mvc;
         }
 
         public static void MapDesignDemoRoutes(this IRouteBuilder routes, string moxPath = "Mox")

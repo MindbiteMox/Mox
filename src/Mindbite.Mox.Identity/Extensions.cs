@@ -29,16 +29,18 @@ namespace Mindbite.Mox.Extensions
         {
         }
 
-        public static void AddMoxIdentity<AppDbContext_T>(this IServiceCollection services, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext
         {
-            services.AddIdentity<MoxUser, IdentityRole>()
+            mvc.AddApplicationPart(typeof(IdentityExtensions).Assembly);
+
+            mvc.Services.AddIdentity<MoxUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext_T>()
                 .AddDefaultTokenProviders()
                 .AddUserManager<MoxUserManager>()
                 .AddSignInManager<MoxSignInManager>()
                 .AddUserStore<MoxUserStore<AppDbContext_T>>();
 
-            services.Configure<MvcOptions>(options => {
+            mvc.Services.Configure<MvcOptions>(options => {
                 var policy = new AuthorizationPolicyBuilder()
                      .RequireAuthenticatedUser()
                      .RequireRole(Constants.MoxRole)
@@ -46,12 +48,12 @@ namespace Mindbite.Mox.Extensions
                 options.Filters.Add(new MoxAuthorizeFilter(policy, moxPath));
             });
 
-            services.Configure<LocalizationSources>(options =>
+            mvc.Services.Configure<LocalizationSources>(options =>
             {
                 options.ResouceTypes.Add(typeof(Localization));
             });
 
-            services.Configure<IdentityOptions>(options =>
+            mvc.Services.Configure<IdentityOptions>(options =>
             {
                 // Password settings
                 options.Password.RequireDigit = true;
@@ -64,7 +66,7 @@ namespace Mindbite.Mox.Extensions
                 options.User.RequireUniqueEmail = true;
             });
 
-            services.ConfigureApplicationCookie(options => {
+            mvc.Services.ConfigureApplicationCookie(options => {
                 options.Cookie.Name = "MoxAuthCookie";
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.Cookie.Expiration = TimeSpan.FromDays(30);
@@ -74,12 +76,12 @@ namespace Mindbite.Mox.Extensions
                 options.LogoutPath = $"{moxPath}/LogOut".TrimStart('/').Insert(0, "/");
             });
 
-            services.Configure<RazorViewEngineOptions>(c =>
+            mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
                 c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(IdentityExtensions).GetTypeInfo().Assembly, hostingEnvironment));
             });
 
-            services.Configure<Mindbite.Mox.Configuration.Config>(c =>
+            mvc.Services.Configure<Configuration.Config>(c =>
             {
                 var settingsApp = c.Apps.FirstOrDefault(x => x.AppId == "MoxSettings");
 
@@ -113,27 +115,27 @@ namespace Mindbite.Mox.Extensions
                 identityApp.HeaderPartial = new Configuration.Apps.AppPartial() { Name = "Mox/Identity/_Header", Position = 1000 };
             });
 
-            services.Configure<Configuration.StaticIncludes.IncludeConfig>(c =>
+            mvc.Services.Configure<Configuration.StaticIncludes.IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
                 c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("identity/css/mox_base.css"));
                 c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("identity/css/mox_base_mobile.css", maxWidth: 960));
             });
 
-            services.Configure<SettingsOptions>(c => { });
+            mvc.Services.Configure<SettingsOptions>(c => { });
 
-            var userRolesFetcher = services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
+            var userRolesFetcher = mvc.Services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
             if (userRolesFetcher != null)
             {
-                services.Remove(userRolesFetcher);
+                mvc.Services.Remove(userRolesFetcher);
             }
 
-            services.AddScoped<IUserRolesFetcher, Identity.Services.UserRolesFetcher>();
-            services.AddScoped<Identity.Services.IPasswordResetManager, Identity.Services.PasswordResetManager>();
+            mvc.Services.AddScoped<IUserRolesFetcher, UserRolesFetcher>();
+            mvc.Services.AddScoped<IPasswordResetManager, PasswordResetManager>();
 
-            services.AddTransient<Identity.Services.IBackDoor, Identity.Services.BackDoor>();
+            mvc.Services.AddTransient<IBackDoor, BackDoor>();
 
-            services.Configure<Verification.Services.VerificationOptions>(c =>
+            mvc.Services.Configure<Verification.Services.VerificationOptions>(c =>
             {
                 c.Verificators.Add(new Identity.Verification.BackDoorVerificator());
                 c.Verificators.Add(new Identity.Verification.EmailConfigSetVerificator());
@@ -141,6 +143,8 @@ namespace Mindbite.Mox.Extensions
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.AdminRole));
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.EditMyOwnAccountRole));
             });
+
+            return mvc;
         }
 
         public static void MapMoxIdentityRoutes(this IRouteBuilder routes, string moxPath = "Mox")

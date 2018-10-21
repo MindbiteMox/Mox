@@ -39,18 +39,20 @@ namespace Mindbite.Mox.Extensions
             return (ExpandoObject)expando;
         }
 
-        public static void AddMoxWithoutDb(this IServiceCollection services, IHostingEnvironment hostingEnvironment, string path = "Mox", string siteTitle = "Mox", string staticRequestPath = "/static")
+        public static IMvcBuilder AddMoxWithoutDb(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, string path = "Mox", string siteTitle = "Mox", string staticRequestPath = "/static")
         {
+            mvc.AddApplicationPart(typeof(MoxExtensions).Assembly);
+
             if (hostingEnvironment == null)
                 throw new ArgumentNullException($"Parameter {nameof(hostingEnvironment)} cannot be null!");
 
-            services.Configure<Configuration.Config>(c =>
+            mvc.Services.Configure<Configuration.Config>(c =>
             {
                 c.Path = c.Path ?? path;
                 c.SiteTitle = c.SiteTitle ?? siteTitle;
             });
 
-            services.Configure<IncludeConfig>(c =>
+            mvc.Services.Configure<IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
                 c.Files.Add(StaticFile.Style("mox/css/base.css"));
@@ -59,34 +61,38 @@ namespace Mindbite.Mox.Extensions
                 c.Files.Add(StaticFile.Script("mox/js/MoxUI.js"));
             });
 
-            services.Configure<RazorViewEngineOptions>(c =>
+            mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
                 c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(MoxExtensions).GetTypeInfo().Assembly, hostingEnvironment));
                 c.ViewLocationExpanders.Add(new AlwaysLookForSharedLocationExpander());
             });
 
-            services.AddScoped<IViewRenderService, ViewRenderService>();
-            services.AddScoped<IStringLocalizer, MoxStringLocalizer>();
-            services.AddTransient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>();
+            mvc.Services.AddScoped<IViewRenderService, ViewRenderService>();
+            mvc.Services.AddScoped<IStringLocalizer, MoxStringLocalizer>();
+            mvc.Services.AddTransient<IConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MoxDataAnnotationsLocalizationOptionsSetup>();
 
-            services.AddScoped<ViewMessaging>();
+            mvc.Services.AddScoped<ViewMessaging>();
 
-            var userRolesFetcher = services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
+            var userRolesFetcher = mvc.Services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
             if (userRolesFetcher == null)
             {
-                services.AddScoped<IUserRolesFetcher, DummyUserRolesFetcher>();
+                mvc.Services.AddScoped<IUserRolesFetcher, DummyUserRolesFetcher>();
             }
 
-            services.Configure<StaticFileProviderOptions>(c =>
+            mvc.Services.Configure<StaticFileProviderOptions>(c =>
             {
                 c.FileProviders.Add(new Microsoft.Extensions.FileProviders.PhysicalFileProvider(hostingEnvironment.WebRootPath));
             });
+
+            return mvc;
         }
 
-        public static void AddMox<AppDbContext_T>(this IServiceCollection services, IHostingEnvironment hostingEnvironment, string path = "Mox") where AppDbContext_T : DbContext, IDbContext
+        public static IMvcBuilder AddMox<AppDbContext_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, string path = "Mox") where AppDbContext_T : DbContext, IDbContext
         {
-            services.AddMoxWithoutDb(hostingEnvironment, path);
-            services.AddScoped<IDbContextFetcher, DbContextFetcher<AppDbContext_T>>();
+            mvc.AddMoxWithoutDb(hostingEnvironment, path);
+            mvc.Services.AddScoped<IDbContextFetcher, DbContextFetcher<AppDbContext_T>>();
+
+            return mvc;
         }
 
         public static void MapMoxRoutes(this IRouteBuilder routes, string path = "Mox")
