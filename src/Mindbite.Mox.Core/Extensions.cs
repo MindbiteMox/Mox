@@ -25,6 +25,7 @@ using Mindbite.Mox.Configuration.StaticIncludes;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Mindbite.Mox.Extensions
 {
@@ -41,7 +42,19 @@ namespace Mindbite.Mox.Extensions
 
         public static IMvcBuilder AddMoxWithoutDb(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, string path = "Mox", string siteTitle = "Mox", string staticRequestPath = "/static")
         {
-            mvc.AddApplicationPart(typeof(MoxExtensions).Assembly);
+            var thisAssembly = typeof(MoxExtensions).Assembly;
+            mvc.AddApplicationPart(thisAssembly);
+            var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
+            var viewsDLLDirectory = Path.GetDirectoryName(thisAssembly.Location);
+            var viewsDLLPath = Path.Combine(viewsDLLDirectory, viewsDLLName);
+            if(File.Exists(viewsDLLPath)){
+                var viewAssembly = Assembly.LoadFile(viewsDLLPath);
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(viewAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            } else {
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(thisAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            }
 
             if (hostingEnvironment == null)
                 throw new ArgumentNullException($"Parameter {nameof(hostingEnvironment)} cannot be null!");

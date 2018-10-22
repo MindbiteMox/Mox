@@ -5,14 +5,12 @@
   
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <EnableDefaultContentItems>false</EnableDefaultContentItems>
-    <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
-    <StartupObject />
-    <Version>2.1.69</Version>
+    <IsPackable>true</IsPackable>
+    <Version>2.1.70</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>2.1.69.0</FileVersion>
-    <AssemblyVersion>2.1.69.0</AssemblyVersion>
+    <FileVersion>2.1.70.0</FileVersion>
+    <AssemblyVersion>2.1.70.0</AssemblyVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
@@ -22,8 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Areas\*\Views\**" />
-    <EmbeddedResource Include="Views\**" />
     <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
 
@@ -31,9 +27,5 @@
     <Content Include="contentFiles\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="contentFiles\ts\types\" />
   </ItemGroup>
 </Project>

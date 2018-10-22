@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Areas\*\Views\**" />
-    <EmbeddedResource Include="Views\**" />
+    <!--<EmbeddedResource Include="Areas\*\Views\**" />
+    <EmbeddedResource Include="Views\**" />-->
     <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
   

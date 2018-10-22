@@ -75,17 +75,4 @@ declare namespace Mox.UI {
         static mobileMenu: MobileMenu;
         static initDefault(): void;
     }
-    class DataTable {
-        containerElement: HTMLElement;
-        renderCompleteCallback?: () => Promise<void>;
-        private addQueryCallback?;
-        private baseUrl;
-        static create(containerElement: HTMLElement, baseUrl: string, renderCompleteCallback?: () => Promise<void>, addQueryCallback?: () => string): Promise<DataTable>;
-        private addWindowQueryTo;
-        private static getQuery;
-        private constructor();
-        private render;
-        static getStoredParam(tableElementId: string, key: string, defaultValue: string): string;
-        refresh(addQueryCallback?: () => string): Promise<void>;
-    }
 }

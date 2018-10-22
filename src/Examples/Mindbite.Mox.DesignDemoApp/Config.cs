@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Http;
 using Mindbite.Mox.UI.Menu;
 using Mindbite.Mox.Extensions;
 using Mindbite.Mox.Identity;
+using System.IO;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Mindbite.Mox.DesignDemoApp.Configuration
 {
@@ -27,7 +29,19 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
     {
         public static IMvcBuilder AddDesignDemoMoxApp(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration)
         {
-            mvc.AddApplicationPart(typeof(ConfigExtensions).Assembly);
+            var thisAssembly = typeof(ConfigExtensions).Assembly;
+            mvc.AddApplicationPart(thisAssembly);
+            var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
+            var viewsDLLDirectory = Path.GetDirectoryName(thisAssembly.Location);
+            var viewsDLLPath = Path.Combine(viewsDLLDirectory, viewsDLLName);
+            if(File.Exists(viewsDLLPath)){
+                var viewAssembly = Assembly.LoadFile(viewsDLLPath);
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(viewAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            } else {
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(thisAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            }
 
             mvc.Services.Configure<Mox.Configuration.Config>(c =>
             {

@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <OutputType>Library</OutputType>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
@@ -19,18 +20,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Areas\*\Views\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="Views\Shared\UserImage.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Views\Shared\UserImage.cshtml" />
   </ItemGroup>
 
 </Project>

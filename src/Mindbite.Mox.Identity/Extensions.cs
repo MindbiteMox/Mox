@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,7 @@ using Mindbite.Mox.Services;
 using Mindbite.Mox.Utils.FileProviders;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -31,7 +33,19 @@ namespace Mindbite.Mox.Extensions
 
         public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext
         {
-            mvc.AddApplicationPart(typeof(IdentityExtensions).Assembly);
+            var thisAssembly = typeof(IdentityExtensions).Assembly;
+            mvc.AddApplicationPart(thisAssembly);
+            var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
+            var viewsDLLDirectory = Path.GetDirectoryName(thisAssembly.Location);
+            var viewsDLLPath = Path.Combine(viewsDLLDirectory, viewsDLLName);
+            if(File.Exists(viewsDLLPath)){
+                var viewAssembly = Assembly.LoadFile(viewsDLLPath);
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(viewAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            } else {
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(thisAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            }
 
             mvc.Services.AddIdentity<MoxUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext_T>()

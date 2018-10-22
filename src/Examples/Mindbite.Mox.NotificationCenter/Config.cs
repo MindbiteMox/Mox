@@ -16,6 +16,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Mindbite.Mox.Extensions;
+using System.IO;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Mindbite.Mox.NotificationCenter
 {
@@ -28,7 +30,19 @@ namespace Mindbite.Mox.NotificationCenter
     {
         public static IMvcBuilder AddMoxNotificationCenter(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static")
         {
-            mvc.AddApplicationPart(typeof(Configuration).Assembly);
+            var thisAssembly = typeof(Configuration).Assembly;
+            mvc.AddApplicationPart(thisAssembly);
+            var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
+            var viewsDLLDirectory = Path.GetDirectoryName(thisAssembly.Location);
+            var viewsDLLPath = Path.Combine(viewsDLLDirectory, viewsDLLName);
+            if(File.Exists(viewsDLLPath)){
+                var viewAssembly = Assembly.LoadFile(viewsDLLPath);
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(viewAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            } else {
+                var viewAssemblyPart = new CompiledRazorAssemblyPart(thisAssembly);
+                mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
+            }
 
             mvc.Services.AddScoped<INotificationSender, NotificationCenterSender>();
             mvc.Services.AddScoped<INotificationReciever, NotificationCenterReciever>();
