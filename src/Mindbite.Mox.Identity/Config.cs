@@ -38,9 +38,20 @@ namespace Mindbite.Mox.Identity
             public string Password { get; set; }
         }
 
+        public class Hooks
+        {
+            internal List<Type> HookTypes { get; set; } = new List<Type>();
+
+            public void Add<T>() where T: Services.UserChanges
+            {
+                HookTypes.Add(typeof(T));
+            }
+        }
+
         public BackdoorOptions Backdoor { get; set; }
         public Type DefaultUserType { get; set; }
         public List<Configuration.StaticIncludes.StaticFile> LoginStaticFiles { get; set; } = new List<Configuration.StaticIncludes.StaticFile>();
+        public Hooks HookTypes { get; set; } = new Hooks();
     }
 
     public class SettingsOptions

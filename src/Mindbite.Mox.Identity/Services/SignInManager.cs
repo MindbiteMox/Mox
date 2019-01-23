@@ -34,7 +34,14 @@ namespace Mindbite.Mox.Identity.Services
 
     public class MoxUserStore<AppDbContext_T> : UserStore<MoxUser, IdentityRole, AppDbContext_T> where AppDbContext_T : DbContext
     {
-        public MoxUserStore(AppDbContext_T context) : base(context) { }
+        private readonly MoxIdentityOptions _options;
+        private readonly IServiceProvider _serviceProvider;
+
+        public MoxUserStore(AppDbContext_T context, IOptions<MoxIdentityOptions> options, IServiceProvider serviceProvider) : base(context)
+        {
+            this._options = options.Value;
+            this._serviceProvider = serviceProvider;
+        }
 
         public override IQueryable<MoxUser> Users => base.Users.Where(x => !x.IsDeleted);
 
@@ -52,14 +59,67 @@ namespace Mindbite.Mox.Identity.Services
             }
         }
 
-        public override Task<IdentityResult> DeleteAsync(MoxUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<IdentityResult> DeleteAsync(MoxUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
+            foreach (var hook in this.Hooks) { await hook.OnDeleteAsync(user); }
+
             user.IsDeleted = true;
             user.Email = new string($"DEL_{user.Email}_{user.Id}".Take(250).ToArray());
             user.UserName = new string($"DEL_{user.UserName}_{user.Id}".Take(250).ToArray());
             user.NormalizedEmail = user.Id;
             user.NormalizedUserName = user.Id;
-            return this.UpdateAsync(user, cancellationToken);
+            var result = await this.UpdateAsync(user, cancellationToken);
+
+            if (result.Succeeded)
+            {
+                foreach (var hook in this.Hooks) { await hook.OnDeletedAsync(user); }
+            }
+
+            return result;
+        }
+
+        public override async Task<IdentityResult> CreateAsync(MoxUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            foreach (var hook in this.Hooks) { await hook.OnCreateAsync(user); }
+
+            var result = await base.CreateAsync(user, cancellationToken);
+
+            if (result.Succeeded)
+            {
+                foreach (var hook in this.Hooks) { await hook.OnCreatedAsync(user); }
+            }
+            return result;
+        }
+
+        public override async Task<IdentityResult> UpdateAsync(MoxUser user, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            foreach (var hook in this.Hooks) { await hook.OnUpdateAsync(user); }
+
+            var result = await base.UpdateAsync(user, cancellationToken);
+
+            if (result.Succeeded)
+            {
+                foreach (var hook in this.Hooks) { await hook.OnUpdatedAsync(user); }
+            }
+            return result;
+        }
+
+        private List<UserChanges> _hooks;
+        private List<UserChanges> Hooks
+        {
+            get
+            {
+                if (this._hooks == null)
+                {
+                    this._hooks = new List<UserChanges>();
+                    foreach (var x in this._options.HookTypes.HookTypes)
+                    {
+                        _hooks.Add((UserChanges)_serviceProvider.GetService(x));
+                    }
+                }
+                return _hooks;
+
+            }
         }
     }
 }
