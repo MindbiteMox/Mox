@@ -2,30 +2,33 @@
   <PropertyGroup Label="Configuration">
     <OutputType>Library</OutputType>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputTypeEx>library</OutputTypeEx>
     <IsPackable>true</IsPackable>
-    <Version>2.1.70</Version>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>2.1.70.0</FileVersion>
-    <AssemblyVersion>2.1.70.0</AssemblyVersion>
+    <Version>2.1.71</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <FileVersion>2.1.71.0</FileVersion>
+    <AssemblyVersion>2.1.71.0</AssemblyVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All"/>
+    <PackageReference Include="Microsoft.AspNetCore.All" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.1.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="contentFiles\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Remove="tsconfig.json" />
+    <Content Remove="Properties\**" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="contentFiles\**">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 </Project>
