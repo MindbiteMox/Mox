@@ -7,10 +7,10 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputTypeEx>library</OutputTypeEx>
     <IsPackable>true</IsPackable>
-    <Version>2.1.71</Version>
+    <Version>2.1.72</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <FileVersion>2.1.71.0</FileVersion>
-    <AssemblyVersion>2.1.71.0</AssemblyVersion>
+    <FileVersion>2.1.72.0</FileVersion>
+    <AssemblyVersion>2.1.72.0</AssemblyVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
