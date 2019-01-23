@@ -9,10 +9,12 @@
     <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
     <StartupObject />
-    <Version>2.1.17</Version>
-    <AssemblyVersion>2.1.17.0</AssemblyVersion>
-    <FileVersion>2.1.17.0</FileVersion>
+    <Version>2.1.19</Version>
+    <AssemblyVersion>2.1.19.0</AssemblyVersion>
+    <FileVersion>2.1.19.0</FileVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,8 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<EmbeddedResource Include="Areas\*\Views\**" />
-    <EmbeddedResource Include="Views\**" />-->
+    <Content Include="contentFiles\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Remove="tsconfig.json" />
+    <Content Remove="Properties\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
   

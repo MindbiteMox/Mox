@@ -132,7 +132,7 @@ h4, h5, h6 { font-size: 1rem; }
 
 .mox-pager li+li { border-left: 1px solid #cacaca; }
 
-.mox-content .mox-filters { display: flex; flex-direction: row; list-style: none; padding: 0; margin: 0; margin-top: 10px; margin-bottom: -10px; flex-wrap: wrap; }
+.mox-content .mox-filters { display: flex; flex-direction: row; list-style: none; padding: 0; margin: 0; margin-top: 10px; flex-wrap: wrap; }
 .mox-content .mox-filters input[type=text] { box-sizing: border-box; border: 1px solid #cacaca; padding: 4.5px; border-radius: 3px; margin: 0; line-height: 17px; }
 .mox-content .mox-filters > li { margin-bottom: 10px; }
 .mox-content .mox-filters > .break { flex-grow: 1; }
