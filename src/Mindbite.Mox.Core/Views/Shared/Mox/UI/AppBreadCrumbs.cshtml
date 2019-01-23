@@ -10,15 +10,22 @@
 
 @{
     var includeCurrentMenu = false;
+    var additionalNodes = Enumerable.Empty<MenuItem>();
     try
     {
         includeCurrentMenu = Model.IncludeCurrentMenu;
     }
     catch { }
+    try
+    {
+        additionalNodes = Model.AdditionalNodes;
+    }
+    catch { }
     var currentApp = Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains((string)this.ViewContext.RouteData.Values["Area"]));
     var roles = await Html.Mox().GetRolesAsync();
     var selectedMenu = currentApp?.Menu.Build(Url, roles).Flatten().LastOrDefault(x => x.MatchesView(this.ViewContext));
-    var parents = includeCurrentMenu ? selectedMenu.AllParents : selectedMenu.Parent?.AllParents ?? new List<MenuItem>();
+    var parents = includeCurrentMenu ? selectedMenu.AllParents.Append(selectedMenu) : selectedMenu.AllParents;
+    parents = parents.Concat(additionalNodes);
     var localizer = Html.Mox().Localizer;
 }
 
