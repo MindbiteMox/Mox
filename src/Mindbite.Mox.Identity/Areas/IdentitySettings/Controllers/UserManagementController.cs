@@ -125,7 +125,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     userToCreate.Email = newUser.Email;
                     userToCreate.Name = newUser.Name;
 
-                    var createUserResult = await this._userManager.CreateAsync(userToCreate, newUser.Password);
+                    var createUserResult = await this._userManager.CreateAsync(userToCreate);
                     if(!createUserResult.Succeeded)
                     {
                         foreach (var error in createUserResult.Errors)
@@ -176,8 +176,9 @@ namespace Mindbite.Mox.Identity.Controllers
 
             var roles = await this._roleManager.Roles.ToListAsync();
             var userRoles = await this._userManager.GetRolesAsync(user);
+            var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-            return View(new EditUserViewModel(roles, userRoles, user));
+            return View(new EditUserViewModel(roles, userRoles, user, hasPassword));
         }
 
         [HttpPost]
@@ -198,7 +199,7 @@ namespace Mindbite.Mox.Identity.Controllers
                 user.Email = editUser.Email;
                 user.Name = editUser.Name;
 
-                if (!string.IsNullOrWhiteSpace(editUser.Password))
+                if (editUser.WantsPassword && !string.IsNullOrWhiteSpace(editUser.Password))
                 {
                     var validationResult = await Task.WhenAll(this._userManager.PasswordValidators.AsEnumerable().Select(x => x.ValidateAsync(this._userManager, user, editUser.Password)));
                     if (validationResult.Any(x => !x.Succeeded))
@@ -215,6 +216,13 @@ namespace Mindbite.Mox.Identity.Controllers
                         await this._userManager.RemovePasswordAsync(user);
                     }
                     await this._userManager.AddPasswordAsync(user, editUser.Password);
+                }
+                else if(!editUser.WantsPassword)
+                {
+                    if (await this._userManager.HasPasswordAsync(user))
+                    {
+                        await this._userManager.RemovePasswordAsync(user);
+                    }
                 }
 
                 var updateResult = await this._userManager.UpdateAsync(user);

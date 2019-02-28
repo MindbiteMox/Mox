@@ -77,7 +77,7 @@ namespace Mindbite.Mox.Attributes
     }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public sealed class NoCacheAttribute : ActionFilterAttribute
+    public sealed class MoxNoCacheAttribute : ActionFilterAttribute
     {
         public override void OnResultExecuting(ResultExecutingContext filterContext)
         {
@@ -92,6 +92,9 @@ namespace Mindbite.Mox.Attributes
     public class MoxRequiredIfAttribute : MoxRequiredAttribute, IClientModelValidator
     {
         private readonly string _propertyName;
+
+        public string And { get; set; }
+        public string AndNot { get; set; }
 
         public MoxRequiredIfAttribute(string propertyName) : base()
         {
@@ -111,18 +114,39 @@ namespace Mindbite.Mox.Attributes
             AddAttribute(context.Attributes, "data-val-requiredif-propertyname", this._propertyName);
         }
 
+        private bool EvaluateProperty(Type type, object instance, string propertyName)
+        {
+            var property = type.GetProperty(propertyName);
+            var propertyValue = property.GetValue(instance);
+
+            if (propertyValue is bool && (bool)propertyValue)
+            {
+                return true;
+            }
+            else if (!(propertyValue is bool) && propertyValue != GetDefault(property.PropertyType))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             var instance = validationContext.ObjectInstance;
             var type = instance.GetType();
-            var property = type.GetProperty(this._propertyName);
-            var propertyValue = property.GetValue(instance);
+            var result = EvaluateProperty(type, instance, this._propertyName);
 
-            if (propertyValue is bool && !(bool)propertyValue)
+            if(!string.IsNullOrWhiteSpace(this.And))
             {
-                return ValidationResult.Success;
+                result = result && EvaluateProperty(type, instance, this.And);
             }
-            else if (propertyValue == GetDefault(property.PropertyType))
+            else if(!string.IsNullOrWhiteSpace(this.AndNot))
+            {
+                result = result && !EvaluateProperty(type, instance, this.AndNot);
+            }
+
+            if(!result)
             {
                 return ValidationResult.Success;
             }
@@ -173,7 +197,68 @@ namespace Mindbite.Mox.Attributes
             {
                 return ValidationResult.Success;
             }
-            else if (propertyValue != GetDefault(property.PropertyType))
+            else if (!(propertyValue is bool) && propertyValue != GetDefault(property.PropertyType))
+            {
+                return ValidationResult.Success;
+            }
+
+            return base.IsValid(value, validationContext);
+        }
+
+        private static object GetDefault(Type type)
+        {
+            if (type.IsValueType)
+            {
+                return Activator.CreateInstance(type);
+            }
+            return null;
+        }
+    }
+
+    public class MoxCompareAttribute : CompareAttribute
+    {
+        public string If { get; set; }
+        public string IfNot { get; set; }
+
+        public override bool RequiresValidationContext => true;
+
+        public MoxCompareAttribute(string compareProperty) : base(compareProperty)
+        {
+        }
+
+        private bool EvaluateProperty(Type type, object instance, string propertyName)
+        {
+            var property = type.GetProperty(propertyName);
+            var propertyValue = property.GetValue(instance);
+
+            if (propertyValue is bool && (bool)propertyValue)
+            {
+                return true;
+            }
+            else if (!(propertyValue is bool) && propertyValue != GetDefault(property.PropertyType))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var instance = validationContext.ObjectInstance;
+            var type = instance.GetType();
+            var result = true;
+
+            if(!string.IsNullOrWhiteSpace(this.If))
+            {
+                result = EvaluateProperty(type, instance, this.If);
+            }
+            else if(!string.IsNullOrWhiteSpace(this.IfNot))
+            {
+                result = !EvaluateProperty(type, instance, this.IfNot);
+            }
+
+            if (!result)
             {
                 return ValidationResult.Success;
             }

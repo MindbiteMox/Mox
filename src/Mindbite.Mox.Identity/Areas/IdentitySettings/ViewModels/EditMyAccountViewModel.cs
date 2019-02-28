@@ -12,7 +12,7 @@ namespace Mindbite.Mox.Identity.ViewModels
 
         public EditMyAccountViewModel() : base() { }
 
-        public EditMyAccountViewModel(IEnumerable<IdentityRole> roles, IEnumerable<string> rolesForUser, Data.Models.MoxUser user) : base(roles, rolesForUser, user)
+        public EditMyAccountViewModel(IEnumerable<IdentityRole> roles, IEnumerable<string> rolesForUser, Data.Models.MoxUser user, bool hasPassword) : base(roles, rolesForUser, user, hasPassword)
         {
             this.IsAdmin = rolesForUser.Contains(Constants.AdminRole);
         }

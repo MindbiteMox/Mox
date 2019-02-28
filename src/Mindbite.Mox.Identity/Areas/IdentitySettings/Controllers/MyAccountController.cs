@@ -58,8 +58,9 @@ namespace Mindbite.Mox.Identity.Controllers
 
             var roles = await this._roleManager.Roles.ToListAsync();
             var userRoles = await this._userManager.GetRolesAsync(user);
+            var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-            return View(new EditMyAccountViewModel(roles, userRoles, user) { Id = user.Id });
+            return View(new EditMyAccountViewModel(roles, userRoles, user, hasPassword) { Id = user.Id });
         }
 
         [HttpPost]
@@ -74,6 +75,7 @@ namespace Mindbite.Mox.Identity.Controllers
                 var roles = await this._roleManager.Roles.ToListAsync();
                 var userRoles = await this._context.UserRoles.ToListAsync();
                 var myUserRoles = await this._userManager.GetRolesAsync(user);
+                var hasPassword = await this._userManager.HasPasswordAsync(user);
 
                 user.UserName = editUser.Email;
                 user.Email = editUser.Email;
@@ -81,12 +83,12 @@ namespace Mindbite.Mox.Identity.Controllers
 
                 if (!myUserRoles.Contains(Constants.AdminRole))
                 {
-                    var _dummy = new EditMyAccountViewModel(roles, myUserRoles, user);
+                    var _dummy = new EditMyAccountViewModel(roles, myUserRoles, user, hasPassword);
                     editUser.Roles = _dummy.Roles;
                 }
 
                 // Validate and set password
-                if (!string.IsNullOrWhiteSpace(editUser.Password))
+                if (editUser.WantsPassword && !string.IsNullOrWhiteSpace(editUser.Password))
                 {
                     var validationResult = await Task.WhenAll(this._userManager.PasswordValidators.AsEnumerable().Select(x => x.ValidateAsync(this._userManager, user, editUser.Password)));
                     if (validationResult.Any(x => !x.Succeeded))
@@ -103,6 +105,13 @@ namespace Mindbite.Mox.Identity.Controllers
                         await this._userManager.RemovePasswordAsync(user);
                     }
                     var result = await this._userManager.AddPasswordAsync(user, editUser.Password);
+                }
+                else if (!editUser.WantsPassword)
+                {
+                    if (await this._userManager.HasPasswordAsync(user))
+                    {
+                        await this._userManager.RemovePasswordAsync(user);
+                    }
                 }
 
                 var updateResult = await this._userManager.UpdateAsync(user);
@@ -144,8 +153,9 @@ namespace Mindbite.Mox.Identity.Controllers
                 var roles = await this._roleManager.Roles.ToListAsync();
                 var userRoles = await this._context.UserRoles.ToListAsync();
                 var myUserRoles = await this._userManager.GetRolesAsync(user);
+                var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-                var _dummy = new EditMyAccountViewModel(roles, myUserRoles, user);
+                var _dummy = new EditMyAccountViewModel(roles, myUserRoles, user, hasPassword);
                 //editUser.Roles = _dummy.Roles;
                 editUser.IsAdmin = myUserRoles.Contains(Constants.AdminRole);
             }

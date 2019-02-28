@@ -29,17 +29,72 @@
             @Html.TextBoxFor(model => model.Email)
         </p>
 
-        <p>
-            @Html.LabelFor(model => model.Password)
-            @Html.ValidationMessageFor(model => model.Password)
-            @Html.PasswordFor(model => model.Password)
-        </p>
+    </fieldset>
+    <fieldset>
+        <legend>@localizer["Lösenord"]</legend>
 
-        <p>
-            @Html.LabelFor(model => model.RepeatPassword)
-            @Html.ValidationMessageFor(model => model.RepeatPassword)
-            @Html.PasswordFor(model => model.RepeatPassword)
-        </p>
+        @Html.CheckBoxFor(x => x.HasPassword, new { style = "display: none" })
+        @Html.CheckBoxFor(x => x.WantsPassword, new { style = "display: none" })
+
+        @if (Model.HasPassword)
+        {
+            <div class="show-if-wantsPassword">
+                <p>
+                    @Html.LabelFor(model => model.Password)
+                    @Html.ValidationMessageFor(model => model.Password)
+                    @Html.PasswordFor(model => model.Password, new { autocomplete = "new-password" })
+                </p>
+
+                <p>
+                    @Html.LabelFor(model => model.RepeatPassword)
+                    @Html.ValidationMessageFor(model => model.RepeatPassword)
+                    @Html.PasswordFor(model => model.RepeatPassword, new { autocomplete = "new-password" })
+                </p>
+
+                <p>
+                    <label for="@Html.IdFor(x => x.WantsPassword)" class="mox-button">@localizer["Ta bort lösenord"]</label>
+                </p>
+            </div>
+
+            <div class="show-if-not-wantsPassword">
+                <p>
+                    @localizer["{0} kommer endast kunna logga in med magisk e-postlänk om lösenordet tas bort.", @Model.Name]
+                </p>
+                <p>
+                    <label for="@Html.IdFor(x => x.WantsPassword)" class="mox-button">@localizer["Ta inte bort lösenord"]</label>
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="show-if-wantsPassword">
+                <p>
+                    @Html.LabelFor(model => model.Password)
+                    @Html.ValidationMessageFor(model => model.Password)
+                    @Html.PasswordFor(model => model.Password, new { autocomplete = "new-password" })
+                </p>
+
+                <p>
+                    @Html.LabelFor(model => model.RepeatPassword)
+                    @Html.ValidationMessageFor(model => model.RepeatPassword)
+                    @Html.PasswordFor(model => model.RepeatPassword, new { autocomplete = "new-password" })
+                </p>
+
+                <p>
+                    <label for="@Html.IdFor(x => x.WantsPassword)" class="mox-button">@localizer["Skapa inte lösenord"]</label>
+                </p>
+            </div>
+
+            <div class="show-if-not-wantsPassword">
+                <p>
+                    @localizer["{0} kan endast logga in med magisk e-postlänk, ett lösenord måste skapas innan det kan användas för att logga in.", @Model.Name]
+                </p>
+                
+                <p>
+                    <label for="@Html.IdFor(x => x.WantsPassword)" class="mox-button">@localizer["Skapa lösenord"]</label>
+                </p>
+            </div>
+        }
     </fieldset>
 
     <fieldset>
@@ -59,7 +114,14 @@
     </fieldset>
     <fieldset class="buttons">
         <p>
-            <input type="submit" value="@localizer["Spara"]" />
+            <input type="submit" value="@localizer["Spara ändringar"]" />
         </p>
     </fieldset>
 }
+
+<style>
+    .show-if-wantsPassword,
+    .show-if-not-wantsPassword { display: none; }
+    #@Html.IdFor(x => x.WantsPassword):checked ~ .show-if-wantsPassword { display: block; }
+    #@Html.IdFor(x => x.WantsPassword):not(:checked) ~ .show-if-not-wantsPassword { display: block; }
+</style>

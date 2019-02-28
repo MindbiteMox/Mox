@@ -64,6 +64,13 @@ namespace Mindbite.Mox.Identity.Controllers
         public async Task<IActionResult> SendMagicLink(PasswordOrMagicLinkViewModel model)
         {
             var user = await this._userManager.FindByEmailAsync(model.Email);
+
+            if(user == null)
+            {
+                ModelState.AddModelError(string.Empty, this._localizer["Det finns ingen användare med e-postadressen {0}.", model.Email]);
+                return View("PasswordOrMagicLink", model);
+            }
+
             var (success, error) = await this._magicLinkManager.GenerateAndSendMagicLinkAsync(ControllerContext, user, model.ReturnUrl);
 
             if(success)
