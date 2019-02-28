@@ -6,11 +6,13 @@ using System;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mindbite.Mox.Utils
 {
     public static class Dynamics
     {
+
         public static dynamic Merge(object item1, object item2)
         {
             if (item1 == null || item2 == null)
@@ -107,6 +109,32 @@ namespace Mindbite.Mox.Utils
         public static int Clamp(int value, int min, int max)
         {
             return System.Math.Min(max, System.Math.Max(min, value));
+        }
+
+        public static string DisplayName(Enum enumValue)
+        {
+            var member = enumValue.GetType().GetMember(enumValue.ToString()).First();
+            return member.GetCustomAttribute<DisplayAttribute>().Name;
+        }
+
+        public static string DisplayName<T>(Expression<Func<T>> expression)
+        {
+            var memberExpression = expression as MemberExpression;
+            if (memberExpression == null)
+            {
+                var unaryExpr = expression as UnaryExpression;
+                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert)
+                {
+                    memberExpression = unaryExpr.Operand as MemberExpression;
+                }
+            }
+
+            if (memberExpression != null && memberExpression.Member.MemberType == MemberTypes.Property)
+            {
+                return memberExpression.Member.GetCustomAttribute<DisplayAttribute>().Name;
+            }
+
+            throw new ArgumentException(nameof(expression));
         }
     }
 

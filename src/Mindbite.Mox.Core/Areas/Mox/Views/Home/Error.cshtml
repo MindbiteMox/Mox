@@ -1,6 +1,10 @@
 ﻿@{
-    Layout = "Mox/_Layout";
     var errorCode = ViewData["ErrorCode"] as string;
+    var isAuthenticated = (bool)ViewData["IsAuthenticated"];
+    if (isAuthenticated)
+    {
+        Layout = "Mox/_Layout";
+    }
 }
 
 <div style="text-align: center;">

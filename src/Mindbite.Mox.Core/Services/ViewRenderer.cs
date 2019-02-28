@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,8 +16,8 @@ namespace Mindbite.Mox.Services
 {
     public interface IViewRenderService
     {
-        Task<string> RenderToStringAsync(string viewName, object model);
-        Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model);
+        Task<string> RenderToStringAsync(string viewName, object model, IDictionary<string, object> viewData = null);
+        Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model, IDictionary<string, object> viewData = null);
     }
 
     public class ViewRenderService : IViewRenderService
@@ -32,14 +33,14 @@ namespace Mindbite.Mox.Services
             this._serviceProvider = serviceProvider;
         }
 
-        public Task<string> RenderToStringAsync(string viewName, object model)
+        public Task<string> RenderToStringAsync(string viewName, object model, IDictionary<string, object> viewData = null)
         {
             var httpContext = new DefaultHttpContext { RequestServices = _serviceProvider };
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            return this.RenderToStringAsync(actionContext, viewName, model);
+            return this.RenderToStringAsync(actionContext, viewName, model, viewData);
         }
 
-        public async Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model)
+        public async Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model, IDictionary<string, object> viewData = null)
         {
             using (var sw = new StringWriter())
             {
@@ -52,8 +53,16 @@ namespace Mindbite.Mox.Services
 
                 var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), actionContext.ModelState ?? new ModelStateDictionary())
                 {
-                    Model = model
+                    Model = model,
                 };
+
+                if(viewData != null)
+                {
+                    foreach(var pair in viewData)
+                    {
+                        viewDictionary[pair.Key] = pair.Value;
+                    }
+                }
 
                 var viewContext = new ViewContext(
                     actionContext,

@@ -10,6 +10,7 @@ namespace Mindbite.Mox.Identity.Data
     public class MoxIdentityDbContext : IdentityDbContext<Models.MoxUser>, IDbContext
     {
         public DbSet<Models.PasswordReset> PasswordReset { get; set; }
+        public DbSet<Models.MagicLinkToken> MagicLinkTokens { get; set; }
 
         public DbSet<Models.MoxUserBaseImpl> MoxUserImpl { get; set; }
 
@@ -26,6 +27,7 @@ namespace Mindbite.Mox.Identity.Data
 
             modelBuilder.Entity<Models.MoxUser>().Property(x => x.Name).HasDefaultValue("Namn");
             modelBuilder.Entity<Models.PasswordReset>().HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            modelBuilder.Entity<Models.MagicLinkToken>().HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
 
             modelBuilder.Entity<Models.MoxUser>().HasQueryFilter(x => this.IncludeDeletedUsers || !x.IsDeleted);
 

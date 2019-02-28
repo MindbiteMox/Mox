@@ -94,7 +94,7 @@ namespace Mindbite.Mox.Identity.Services
                 ResetToken = resetToken,
                 Completed = false,
                 CreatedOn = DateTime.Now,
-                RequestedByClientInfo = httpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Okänt",
+                RequestedByClientInfo = httpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown",
                 CompletedOn = null,
                 ValidUntil = DateTime.Today.AddDays(1)
             };

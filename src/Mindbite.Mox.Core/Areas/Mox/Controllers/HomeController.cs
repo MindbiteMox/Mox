@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Mindbite.Mox.Configuration;
@@ -35,9 +36,11 @@ namespace Mindbite.Mox.Controllers
             return View(this._moxConfig);
         }
 
+        [AllowAnonymous]
         public IActionResult Error(string errorCode)
         {
             this.ViewData["ErrorCode"] = errorCode;
+            this.ViewData["IsAuthenticated"] = User?.Identity?.IsAuthenticated ?? false;
 
             var route = ControllerContext.RouteData.Routers.FirstOrDefault(x => x is Microsoft.AspNetCore.Routing.Route) as Microsoft.AspNetCore.Routing.Route;
             if (route?.RouteTemplate.ToLower().TrimStart('/').StartsWith(this._moxConfig.Path.ToLower()) ?? false)

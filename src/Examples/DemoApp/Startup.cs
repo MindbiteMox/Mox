@@ -42,6 +42,10 @@ namespace Mindbite.Mox.DemoApp
             services.AddMemoryCache();
             services.AddSession();
             services.AddLocalization(x => x.ResourcesPath = "Resources");
+            services.AddLogging(x =>
+            {
+                x.AddConsole();
+            });
 
             var mvc = services.AddMvc()
                 .AddViewLocalization()
@@ -73,15 +77,13 @@ namespace Mindbite.Mox.DemoApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggingBuilder loggingBuilder)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggingBuilder.AddConsole();
-
             if (env.IsDevelopment())
             {
-                //app.UseDeveloperExceptionPage();
-                app.UseExceptionHandler("/Mox/Error/500");
-                app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
+                app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler("/Mox/Error/500");
+                //app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
             }
             else
             {

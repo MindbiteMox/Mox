@@ -60,7 +60,11 @@ namespace Mindbite.Mox.Identity.Controllers
                 };
                 emailMessage.To.Add(user.Email);
 
-                await this._emailSender.SendAsync(emailMessage);
+                try
+                {
+                    await this._emailSender.SendAsync(emailMessage);
+                }
+                catch { }
 
                 return RedirectToAction("WaitForEmail");
             }

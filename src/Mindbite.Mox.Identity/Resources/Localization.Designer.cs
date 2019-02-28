@@ -19,7 +19,7 @@ namespace Mindbite.Mox.Identity.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Localization {
@@ -39,7 +39,7 @@ namespace Mindbite.Mox.Identity.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Mindbite.Core.Mox.Identity.Resources.Localization", typeof(Localization).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Mindbite.Mox.Identity.Resources.Localization", typeof(Localization).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,15 @@ namespace Mindbite.Mox.Identity.Resources {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Obligatorisk.
+        /// </summary>
+        internal static string _0__is_required {
+            get {
+                return ResourceManager.GetString("{0} is required", resourceCulture);
             }
         }
         
@@ -84,6 +93,15 @@ namespace Mindbite.Mox.Identity.Resources {
         internal static string role_Mox {
             get {
                 return ResourceManager.GetString("role_Mox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ange en giltig e-post.
+        /// </summary>
+        internal static string The__0__field_is_not_a_valid_e_mail_address_ {
+            get {
+                return ResourceManager.GetString("The {0} field is not a valid e-mail address.", resourceCulture);
             }
         }
     }

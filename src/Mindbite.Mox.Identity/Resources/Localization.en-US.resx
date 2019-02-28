@@ -246,4 +246,7 @@
   <data name="Ändringarna sparades!" xml:space="preserve">
     <value>Your changes are saved!</value>
   </data>
+  <data name="Håll mig inloggad" xml:space="preserve">
+    <value>Keep me logged in</value>
+  </data>
 </root>

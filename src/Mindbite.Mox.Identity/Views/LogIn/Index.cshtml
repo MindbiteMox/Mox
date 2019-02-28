@@ -11,16 +11,11 @@
 
         @Html.ValidationSummary(true)
 
-        <p>
-            @Html.LabelFor(model => model.Email)
-            @Html.ValidationMessageFor(model => model.Email)
-            @Html.TextBoxFor(model => model.Email)
-        </p>
+        <h2>@localizer["Logga in"]</h2>
 
         <p>
-            @Html.LabelFor(model => model.Password)
-            @Html.ValidationMessageFor(model => model.Password)
-            @Html.PasswordFor(model => model.Password)
+            @Html.ValidationMessageFor(model => model.Email)
+            @Html.TextBoxFor(model => model.Email, new { placeholder = Html.DisplayNameFor(x => x.Email), autofocus = true })
         </p>
 
         <p>
@@ -28,9 +23,12 @@
             @Html.LabelFor(model => model.RememberMe)
         </p>
 
-        <p>
-            <input type="submit" value="@localizer["Logga in"]" />
-            @Html.ActionLink(localizer["Glömt lösenord"], "Index", "ForgotPassword")
-        </p>
+        <div class="mox-login-col2">
+            <div>
+            </div>
+            <div>
+                <input type="submit" value="@localizer["Nästa"]" />
+            </div>
+        </div>
     </fieldset>
 }

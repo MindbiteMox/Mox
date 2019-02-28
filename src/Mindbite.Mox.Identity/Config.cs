@@ -48,10 +48,17 @@ namespace Mindbite.Mox.Identity
             }
         }
 
+        public class MagicLinkOptions
+        {
+            // In minutes
+            public int ValidFor { get; set; } = 5;
+        }
+
         public BackdoorOptions Backdoor { get; set; }
         public Type DefaultUserType { get; set; }
         public List<Configuration.StaticIncludes.StaticFile> LoginStaticFiles { get; set; } = new List<Configuration.StaticIncludes.StaticFile>();
         public Hooks HookTypes { get; set; } = new Hooks();
+        public MagicLinkOptions MagicLink { get; set; } = new MagicLinkOptions();
     }
 
     public class SettingsOptions

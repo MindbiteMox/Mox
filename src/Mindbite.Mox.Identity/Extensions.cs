@@ -146,6 +146,7 @@ namespace Mindbite.Mox.Extensions
 
             mvc.Services.AddScoped<IUserRolesFetcher, UserRolesFetcher>();
             mvc.Services.AddScoped<IPasswordResetManager, PasswordResetManager>();
+            mvc.Services.AddScoped<IMagicLinkManager, MagicLinkManager>();
 
             mvc.Services.AddTransient<IBackDoor, BackDoor>();
 

@@ -15,12 +15,37 @@ namespace Mindbite.Mox.Identity.ViewModels.AccountViewModel
         [Display(Name = "E-post")]
         public string Email { get; set; }
 
+        [Display(Name = "Håll mig inloggad")]
+        public bool RememberMe { get; set; } = true;
+    }
+
+    public class PasswordOrMagicLinkViewModel
+    {
+        public string Email { get; set; }
+        public bool RememberMe { get; set; }
+        public string ReturnUrl { get; set; }
+    }
+
+    public class PasswordViewModel
+    {
+        [MoxRequired]
+        [EmailAddress]
+        [DataType(DataType.EmailAddress)]
+        [Display(Name = "E-post")]
+        public string Email { get; set; }
+
         [MoxRequired]
         [DataType(DataType.Password)]
         [Display(Name = "Lösenord")]
         public string Password { get; set; }
 
-        [Display(Name = "Kom ihåg mig?")]
+        public bool RememberMe { get; set; }
+    }
+
+    public class MagicLinkEmailViewModel
+    {
+        public Guid MagicToken { get; set; }
+        public string ReturnUrl { get; set; }
         public bool RememberMe { get; set; }
     }
 }
