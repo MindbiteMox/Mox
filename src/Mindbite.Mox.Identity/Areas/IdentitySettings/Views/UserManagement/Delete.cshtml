@@ -6,7 +6,7 @@
 @model Mindbite.Mox.Identity.Data.Models.MoxUser
 @inject IStringLocalizer localizer
 
-@Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
 
 <h1>@localizer["Ta bort användare"]</h1>
 

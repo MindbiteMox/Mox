@@ -31,6 +31,11 @@ namespace Mindbite.Mox.Attributes
             this._errorMessage = ErrorMessage;
         }
 
+        public override string FormatErrorMessage(string name)
+        {
+            return string.Format(this._errorMessage, name);
+        }
+
         public override bool RequiresValidationContext => true;
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)

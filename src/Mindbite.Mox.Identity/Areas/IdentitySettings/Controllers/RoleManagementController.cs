@@ -25,7 +25,7 @@ namespace Mindbite.Mox.Identity.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(DataTableSort sort)
+        public IActionResult Index(DataTableSort sort)
         {
             var dataSource = this._context.Roles.Select(x => new { Name = this._localizer[$"role_{x.Name}"].ToString() });
             var dataTable = DataTableBuilder

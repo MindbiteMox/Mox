@@ -81,7 +81,7 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-content article > h1:first-of-type { margin-top: 1.5rem; }
 .mox-content article h1 { margin-bottom: 1rem; }
 
-.mox-button { padding: 0.4em 0.8em; border-radius: 3px; background-color: #eee; text-decoration: none; color: #24292e; font-size: 1rem; font-weight: 500; display: inline-block; }
+.mox-button { padding: 6px 10px; border-radius: 3px; background-color: #eee; text-decoration: none; color: #24292e; font-size: 1rem; font-weight: 500; display: inline-block; line-height: 1.2rem; }
 .mox-button:hover { background-color: #cacaca; }
 
 .mox-button.save { background-color: #efe; }

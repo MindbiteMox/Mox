@@ -40,9 +40,10 @@ namespace Mindbite.Mox.NotificationCenter.Communication
     public class PalomaTextMessenger : IMessenger
     {
         public string Identitifyer => nameof(PalomaTextMessenger);
-        public async Task Send(Notification notification, MoxUser reciever)
+        public Task Send(Notification notification, MoxUser reciever)
         {
             //throw new Exception("(#/)asjdalwjdlaiwjo");
+            return Task.CompletedTask;
         }
     }
 

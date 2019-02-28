@@ -6,7 +6,7 @@
 
 @if (!this.Context.Request.IsAjaxRequest())
 {
-    @Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
 }
 
 <h1>Skapa ny design</h1>

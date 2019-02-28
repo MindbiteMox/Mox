@@ -6,12 +6,12 @@
 
 @if (!this.Context.Request.IsAjaxRequest())
 {
-    @Html.Partial("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
 }
 
 <h1>@Model.Design.Title</h1>
 
-@Html.Partial("_DisplayMenu")
+@await Html.PartialAsync("_DisplayMenu")
 
 @using (Html.BeginForm("Images", "Designs", new { Id = Model.Design.Id }, FormMethod.Post, true, new { enctype = "multipart/form-data" }))
 {

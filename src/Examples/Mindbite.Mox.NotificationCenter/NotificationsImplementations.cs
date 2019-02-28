@@ -137,7 +137,7 @@ namespace Mindbite.Mox.NotificationCenter
             return this._context.Subscriptions.Where(x => x.SubscriberId == me.Id);
         }
 
-        public async Task UnsubscribeFromAsync(MoxUser me, string subjectId, int? entityId = null, MoxUser user = null)
+        public Task UnsubscribeFromAsync(MoxUser me, string subjectId, int? entityId = null, MoxUser user = null)
         {
             throw new NotImplementedException();
         }

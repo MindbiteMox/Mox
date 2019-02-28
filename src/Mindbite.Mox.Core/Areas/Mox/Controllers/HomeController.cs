@@ -35,7 +35,7 @@ namespace Mindbite.Mox.Controllers
             return View(this._moxConfig);
         }
 
-        public async Task<IActionResult> Error(string errorCode)
+        public IActionResult Error(string errorCode)
         {
             this.ViewData["ErrorCode"] = errorCode;
 
