@@ -15,7 +15,8 @@ namespace Mindbite.Mox.Identity.Verification
 
         public async Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider)
         {
-            List<VerificationError> errors = new List<VerificationError>();
+            var errors = new List<VerificationError>();
+
             try
             {
                 var backdoor = serviceProvider.GetRequiredService<Identity.Services.IBackDoor>();
@@ -23,11 +24,25 @@ namespace Mindbite.Mox.Identity.Verification
 
                 if(identityOptions?.Value?.Backdoor == null)
                 {
-                    throw new Exception($"{nameof(Identity.MoxIdentityOptions)}.Backdoor must be configured.");
+                    return new VerificationResult { Success = true, Verificator = this };
                 }
 
                 if (identityOptions.Value.Backdoor.UseBackdoor)
                 {
+                    var backdoorOptions = identityOptions.Value.Backdoor;
+
+                    if(!string.IsNullOrWhiteSpace(backdoorOptions.RemotePasswordAuthUrl))
+                    {
+                        if (!string.IsNullOrWhiteSpace(backdoorOptions.Password))
+                        {
+                            throw new Exception($"{nameof(MoxIdentityOptions.BackdoorOptions.Password)} cannot be set when using {nameof(MoxIdentityOptions.BackdoorOptions.RemotePasswordAuthUrl)}.");
+                        }
+                        else if (string.IsNullOrWhiteSpace(backdoorOptions.RemotePasswordAuthDataFormatString))
+                        {
+                            throw new Exception($"{nameof(MoxIdentityOptions.BackdoorOptions.RemotePasswordAuthDataFormatString)} must be set when using {nameof(MoxIdentityOptions.BackdoorOptions.RemotePasswordAuthUrl)}.");
+                        }
+                    }
+
                     await backdoor.Build(identityOptions.Value.Backdoor.Email, identityOptions.Value.Backdoor.Password);
                 }
             }
@@ -35,7 +50,7 @@ namespace Mindbite.Mox.Identity.Verification
             {
                 errors.Add(new VerificationError()
                 {
-                    Code = "IBackdoor service",
+                    Code = "IBackDoor service",
                     Description = $"{e.Message} \n\nInner exception: {e.InnerException?.Message}"
                 });
             }

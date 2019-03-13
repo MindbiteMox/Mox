@@ -12,14 +12,14 @@
 
 <div class="mox-display">
     @Html.LabelFor(model => model.UserName)
-    <div class="mox-display-content">@Html.DisplayFor(model => model.UserName)</div>
+    <div class="mox-display-content">@Html.DisplayFor(model => model.Name)</div>
 
     @Html.LabelFor(model => model.Email)
     <div class="mox-display-content">@Html.DisplayFor(model => model.Email)</div>
 </div>
 
 <p class="text-danger">@ViewData["ErrorMessage"]</p>
-<p>@localizer["Är du säker på att du vill ta bort \"{0}\"?", Model.Email]</p>
+<p>@localizer["Är du säker på att du vill ta bort {0}?", Model.Name]</p>
 @using (Html.BeginForm())
 {
     <fieldset>

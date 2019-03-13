@@ -35,9 +35,16 @@ namespace Mindbite.Mox.Identity.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(LogInViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Index(LogInViewModel model, string returnUrl = null)
         {
-            if(ModelState.IsValid)
+            var user = await this._userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, this._localizer["Det finns ingen användare med e-postadressen {0}.", model.Email]);
+                return View(model);
+            }
+
+            if (ModelState.IsValid)
             {
                 return RedirectToAction("PasswordOrMagicLink", new PasswordOrMagicLinkViewModel
                 {
@@ -46,6 +53,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     ReturnUrl = returnUrl
                 });
             }
+
             return View(model);
         }
 
@@ -75,7 +83,7 @@ namespace Mindbite.Mox.Identity.Controllers
 
             if(success)
             {
-                return RedirectToAction("MagicLinkSent");
+                return RedirectToAction("MagicLinkSent", new ShortCodeViewModel { Email = model.Email, RememberMe = model.RememberMe, ReturnUrl = model.ReturnUrl });
             }
 
             ModelState.AddModelError(string.Empty, this._localizer[Utils.Utils.DisplayName(error)]);
@@ -83,13 +91,39 @@ namespace Mindbite.Mox.Identity.Controllers
         }
 
         [HttpGet]
-        public IActionResult MagicLinkSent()
+        public IActionResult MagicLinkSent(string email, bool rememberMe, string returnUrl = null)
         {
-            return View();
+            return View("ShortCodeLogIn", new ShortCodeViewModel { Email = email, RememberMe = rememberMe, ReturnUrl = returnUrl });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ShortCodeLogIn(ShortCodeViewModel model)
+        {
+            var user = await this._userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var isValid = await this._magicLinkManager.ValidateShortCodeAsync(user, model.ShortCode);
+                if(!isValid)
+                {
+                    ModelState.AddModelError(string.Empty, this._localizer["Koden stämmer inte eller är inte längre giltig!"]);
+                    return View(new ShortCodeViewModel { Email = model.Email, RememberMe = model.RememberMe, ReturnUrl = model.ReturnUrl });
+                }
+
+                await this._signInManager.SignInAsync(user, model.RememberMe);
+                return RedirectToLocal(model.ReturnUrl);
+            }
+
+            return View(new ShortCodeViewModel { Email = model.Email, RememberMe = model.RememberMe, ReturnUrl = model.ReturnUrl });
         }
 
         [HttpGet]
-        public IActionResult PasswordLogin(string email, bool rememberMe)
+        public IActionResult PasswordLogIn(string email, bool rememberMe)
         {
             return View(new PasswordViewModel
             {
@@ -136,7 +170,7 @@ namespace Mindbite.Mox.Identity.Controllers
 
         private IActionResult RedirectToLocal(string returnUrl)
         {
-            if (Url.IsLocalUrl(returnUrl))
+            if (returnUrl != null && Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }

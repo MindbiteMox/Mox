@@ -9,12 +9,14 @@
     <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
     <StartupObject />
-    <Version>2.1.20</Version>
-    <AssemblyVersion>2.1.20.0</AssemblyVersion>
-    <FileVersion>2.1.20.0</FileVersion>
+    <Version>2.2.1</Version>
+    <AssemblyVersion>2.2.1.0</AssemblyVersion>
+    <FileVersion>2.2.1.0</FileVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <Copyright>Mindbite AB</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,4 +10,12 @@
 
 <h2>@localizer["Direktinloggning"]</h2>
 
-@await Html.PartialAsync("Mox/Email/_Button", new { Url = @Url.Action("MagicLinkLogIn", "LogIn", new { Model.MagicToken, Model.RememberMe, Model.ReturnUrl }, Context.Request.Scheme), Title = @localizer["Logga in"] }.ToExpando())
+<p>@localizer["Logga in med autentiseringskoden:"]</p>
+
+<p style="text-align: center; font-size: 40px; background-color: #f0f0f0;">
+    @Model.ShortCode
+</p>
+
+<p>@localizer["eller"]</p>
+
+@await Html.PartialAsync("Mox/Email/_Button", new { Url = @Url.Action("MagicLinkLogIn", "LogIn", new { Model.MagicToken, Model.RememberMe, Model.ReturnUrl }, Context.Request.Scheme), Title = @localizer["Logga in direkt på denna enhet"] }.ToExpando())

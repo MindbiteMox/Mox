@@ -33,6 +33,11 @@ namespace Mindbite.Mox.Extensions
 
         public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext
         {
+            return AddMoxIdentity<AppDbContext_T, MoxUserManager>(mvc, hostingEnvironment, appConfiguration, moxPath, staticRequestPath);
+        }
+
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T, UserManager_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext where UserManager_T : MoxUserManager
+        {
             var thisAssembly = typeof(IdentityExtensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);
             var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
@@ -50,7 +55,7 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.AddIdentity<MoxUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext_T>()
                 .AddDefaultTokenProviders()
-                .AddUserManager<MoxUserManager>()
+                .AddUserManager<UserManager_T>()
                 .AddSignInManager<MoxSignInManager>()
                 .AddUserStore<MoxUserStore<AppDbContext_T>>();
 

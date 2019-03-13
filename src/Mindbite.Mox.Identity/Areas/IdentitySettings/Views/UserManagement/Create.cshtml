@@ -18,7 +18,7 @@
         <p>
             @Html.LabelFor(model => model.Name)
             @Html.ValidationMessageFor(model => model.Name)
-            @Html.TextBoxFor(model => model.Name)
+            @Html.TextBoxFor(model => model.Name, new { autofocus = true })
         </p>
 
         <p>

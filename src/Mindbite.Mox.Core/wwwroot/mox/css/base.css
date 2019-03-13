@@ -81,7 +81,7 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-content article > h1:first-of-type { margin-top: 1.5rem; }
 .mox-content article h1 { margin-bottom: 1rem; }
 
-.mox-button { padding: 6px 10px; border-radius: 3px; background-color: #eee; text-decoration: none; color: #24292e; font-size: 1rem; font-weight: 500; display: inline-block; line-height: 1.2rem; }
+.mox-button { padding: 6px 10px; border-radius: 3px; background-color: #eee; text-decoration: none; color: #24292e; font-size: 1rem; font-weight: 500; display: inline-block; line-height: 1.2rem; cursor: pointer; }
 .mox-button:hover { background-color: #cacaca; }
 
 .mox-button.save { background-color: #efe; }
@@ -178,6 +178,7 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-content fieldset { border: 0; padding: 0; margin-bottom: 15px; }
 .mox-content fieldset legend { padding: 0; display: block; font-size: 20px; margin-bottom: 0; }
 
+.mox-content fieldset > p:first-child { margin-top: 0; }
 .mox-content fieldset p label { display: inline-block; margin-bottom: 4px; }
 .mox-content fieldset p input[type=text],
 .mox-content fieldset p input[type=password],
@@ -185,7 +186,6 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-content fieldset p input[type=time],
 .mox-content fieldset p select,
 .mox-content fieldset p textarea { width: 100%; box-sizing: border-box; border: 1px solid #cacaca; padding: 5px 8px; border-radius: 3px; }
-
 .mox-content fieldset p input[type=file] { width: 100%; box-sizing: border-box; }
 
 .mox-content fieldset input[type=submit],
@@ -200,8 +200,9 @@ h4, h5, h6 { font-size: 1rem; }
 
 .mox-content fieldset.buttons { width: 100%; box-sizing: border-box; }
 
-.mox-hidden-if-not-checked { display: none; padding-top: 10px; margin-bottom: 30px; }
+.mox-hidden-if-not-checked { display: none; padding-top: 1em; margin-bottom: 30px; }
 input[type="checkbox"]:checked ~ .mox-hidden-if-not-checked { display: block; }
+.mox-hidden-if-not-checked > p:first-of-type { margin-top: 0; }
 
 /**************************************************************
     DISPLAY

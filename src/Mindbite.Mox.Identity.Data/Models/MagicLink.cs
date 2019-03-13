@@ -19,6 +19,7 @@ namespace Mindbite.Mox.Identity.Data.Models
         public bool Used { get; set; }
         public bool Invalidated { get; set; }
         public DateTime ValidUntil { get; set; }
+        public string NormalizedShortCode { get; set; }
 
         public MoxUser User { get; set; }
     }

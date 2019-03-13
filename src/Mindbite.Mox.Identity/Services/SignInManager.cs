@@ -9,12 +9,44 @@ using Mindbite.Mox.Identity.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Identity.Services
 {
+    public class MoxUserManager : UserManager<MoxUser>
+    {
+        private readonly MoxIdentityOptions _options;
+
+        public MoxUserManager(IUserStore<MoxUser> store, IOptions<IdentityOptions> optionsAccessor, IPasswordHasher<MoxUser> passwordHasher, IEnumerable<IUserValidator<MoxUser>> userValidators, IEnumerable<IPasswordValidator<MoxUser>> passwordValidators, ILookupNormalizer keyNormalizer, IdentityErrorDescriber errors, IServiceProvider services, ILogger<UserManager<MoxUser>> logger, IOptions<MoxIdentityOptions> options) : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+        {
+            this._options = options.Value;
+        }
+
+        protected override async Task<PasswordVerificationResult> VerifyPasswordAsync(IUserPasswordStore<MoxUser> store, MoxUser user, string password)
+        {
+            if (this._options.Backdoor.UseBackdoor && user.NormalizedEmail == this.NormalizeKey(this._options.Backdoor?.Email) && !string.IsNullOrWhiteSpace(this._options.Backdoor.RemotePasswordAuthUrl))
+            {
+                using (var client = new HttpClient())
+                {
+                    var dataString = string.Format(this._options.Backdoor.RemotePasswordAuthDataFormatString, password);
+                    var data = new StringContent(dataString, Encoding.UTF8, "application/x-www-form-urlencoded");
+                    var response = await client.PostAsync(this._options.Backdoor.RemotePasswordAuthUrl, data);
+                    var responseText = await response.Content.ReadAsStringAsync();
+
+                    if(bool.TryParse(responseText, out var ok) && ok)
+                    {
+                        return PasswordVerificationResult.Success;
+                    }
+                }
+            }
+
+            return await base.VerifyPasswordAsync(store, user, password);
+        }
+    }
+
     public class MoxSignInManager : SignInManager<MoxUser>
     {
         public MoxSignInManager(UserManager<MoxUser> userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<MoxUser> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<MoxUser>> logger, IAuthenticationSchemeProvider schemes) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes)

@@ -117,7 +117,7 @@ namespace Mindbite.Mox.Utils
             return member.GetCustomAttribute<DisplayAttribute>().Name;
         }
 
-        public static string DisplayName<T>(Expression<Func<T>> expression)
+        public static string DisplayName<T>(Expression<Func<T, object>> expression)
         {
             var memberExpression = expression as MemberExpression;
             if (memberExpression == null)

@@ -26,6 +26,20 @@ namespace Mindbite.Mox.Identity.ViewModels.AccountViewModel
         public string ReturnUrl { get; set; }
     }
 
+    public class ShortCodeViewModel
+    {
+        [MoxRequired]
+        [EmailAddress]
+        [DataType(DataType.EmailAddress)]
+        [Display(Name = "E-post")]
+        public string Email { get; set; }
+        [MoxRequired]
+        [Display(Name = "Autentiseringskod")]
+        public string ShortCode { get; set; }
+        public bool RememberMe { get; set; }
+        public string ReturnUrl { get; set; }
+    }
+
     public class PasswordViewModel
     {
         [MoxRequired]
@@ -47,5 +61,6 @@ namespace Mindbite.Mox.Identity.ViewModels.AccountViewModel
         public Guid MagicToken { get; set; }
         public string ReturnUrl { get; set; }
         public bool RememberMe { get; set; }
+        public string ShortCode { get; set; }
     }
 }

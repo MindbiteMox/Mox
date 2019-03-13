@@ -36,6 +36,8 @@ namespace Mindbite.Mox.Identity
             public bool UseBackdoor { get; set; }
             public string Email { get; set; }
             public string Password { get; set; }
+            public string RemotePasswordAuthUrl { get; set; }
+            public string RemotePasswordAuthDataFormatString { get; set; }
         }
 
         public class Hooks
@@ -51,7 +53,7 @@ namespace Mindbite.Mox.Identity
         public class MagicLinkOptions
         {
             // In minutes
-            public int ValidFor { get; set; } = 5;
+            public int ValidForMinutes { get; set; } = 5;
         }
 
         public BackdoorOptions Backdoor { get; set; }
@@ -91,12 +93,5 @@ namespace Mindbite.Mox.Identity
         }
 
         public List<View> AdditionalEditUserViews { get; set; } = new List<View>();
-    }
-
-    public class MoxUserManager : UserManager<MoxUser>
-    {
-        public MoxUserManager(IUserStore<MoxUser> store, IOptions<IdentityOptions> optionsAccessor, IPasswordHasher<MoxUser> passwordHasher, IEnumerable<IUserValidator<MoxUser>> userValidators, IEnumerable<IPasswordValidator<MoxUser>> passwordValidators, ILookupNormalizer keyNormalizer, IdentityErrorDescriber errors, IServiceProvider services, ILogger<UserManager<MoxUser>> logger) : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
-        {
-        }
     }
 }

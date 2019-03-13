@@ -1,0 +1,30 @@
+﻿@using Microsoft.Extensions.Localization;
+@model Mindbite.Mox.Identity.ViewModels.AccountViewModel.ShortCodeViewModel
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Identity.MoxIdentityOptions> identityOptions
+@{
+    Layout = "Mox/LogIn/_Layout";
+}
+@inject IStringLocalizer localizer
+
+
+@using (Html.BeginForm("ShortCodeLogIn", default(string)))
+{
+    <fieldset>
+        <p>@localizer["En autentiseringskod har skickats till {0}, koden är giltig i {1} minuter.", Model.Email, identityOptions.Value.MagicLink.ValidForMinutes]</p>
+
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(x => x.Email)
+        @Html.HiddenFor(x => x.RememberMe)
+        @Html.HiddenFor(x => x.ReturnUrl)
+
+        <p>
+            @Html.ValidationMessageFor(model => model.ShortCode)
+            @Html.TextBoxFor(model => model.ShortCode, new { placeholder = Html.DisplayNameFor(x => x.ShortCode), autofocus = true })
+        </p>
+
+        <p>
+            <input type="submit" value="@localizer["Logga in"]" />
+            @Html.ActionLink(localizer["Avbryt"], "Index", "LogIn")
+        </p>
+    </fieldset>
+}

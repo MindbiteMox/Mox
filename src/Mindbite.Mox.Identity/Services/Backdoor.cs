@@ -11,7 +11,7 @@ namespace Mindbite.Mox.Identity.Services
 {
     public interface IBackDoor
     {
-        Task Build(string email, string password);
+        Task Build(string email, string password = null);
 
         Task<IdentityResult> CreateRole(string role);
     }
@@ -29,9 +29,9 @@ namespace Mindbite.Mox.Identity.Services
             this._roleManager = roleManager;
         }
 
-        public async Task Build(string email, string password)
+        public async Task Build(string email, string password = null)
         {
-            var adminID = await EnsureUser(password, email);
+            var adminID = await EnsureUser(email, password);
             await this.EnsureRole(adminID, Constants.MoxRole);
             await this.EnsureRole(adminID, Constants.AdminRole);
             await this.EnsureRole(adminID, Constants.EditMyOwnAccountRole);
@@ -49,13 +49,28 @@ namespace Mindbite.Mox.Identity.Services
             return IdentityResult.Success;
         }
 
-        private async Task<string> EnsureUser(string testUserPw, string UserName)
+        private async Task<string> EnsureUser(string email, string password)
         {
-            var user = await this._userManager.FindByNameAsync(UserName);
+            var user = await this._userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                user = new MoxUserBaseImpl { UserName = UserName, Email = UserName, Name = "Back Door" };
-                await this._userManager.CreateAsync(user, testUserPw);
+                user = new MoxUserBaseImpl { UserName = email, Email = email, Name = "Back Door" };
+
+                if(!string.IsNullOrWhiteSpace(password))
+                {
+                    await this._userManager.CreateAsync(user, password);
+                }
+                else
+                {
+                    await this._userManager.CreateAsync(user);
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(password) && await this._userManager.HasPasswordAsync(user))
+                {
+                    await this._userManager.RemovePasswordAsync(user);
+                }
             }
 
             return user.Id;

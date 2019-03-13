@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Identity.Services
@@ -17,8 +19,11 @@ namespace Mindbite.Mox.Identity.Services
     public interface IMagicLinkManager
     {
         Task InvalidateAllTokensAsync(MoxUser user);
-        Task<(Guid? magicToken, GenerateMagicLinkError? error)> GenerateMagicTokenAsync(MoxUser user);
+        string GenerateNormalizedShortCode();
+        string FormatShortCode(string normalizedShortCode);
+        Task<(Guid? magicToken, string shortCode, GenerateMagicLinkError? error)> GenerateMagicTokenAsync(MoxUser user);
         Task<(bool success, SendMagicLinkError? error)> GenerateAndSendMagicLinkAsync(ActionContext actionContext, MoxUser user, string returnUrl);
+        Task<bool> ValidateShortCodeAsync(MoxUser user, string shortCode);
         Task<(bool isValid, MoxUser user)> ValidateMagicTokenAsync(Guid magicToken);
     }
 
@@ -76,11 +81,36 @@ namespace Mindbite.Mox.Identity.Services
             await this._context.SaveChangesAsync();
         }
 
-        public async Task<(Guid? magicToken, GenerateMagicLinkError? error)> GenerateMagicTokenAsync(MoxUser user)
+        public string GenerateNormalizedShortCode()
+        {
+            const int size = 6;
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+
+            var data = new byte[size];
+            using (var generator = new RNGCryptoServiceProvider())
+            {
+                generator.GetNonZeroBytes(data);
+            }
+
+            var result = new System.Text.StringBuilder(size);
+            foreach (var b in data)
+            {
+                result.Append(chars[b % chars.Length]);
+            }
+
+            return result.ToString();
+        }
+
+        public string FormatShortCode(string normalizedShortCode)
+        {
+            return $"{normalizedShortCode.Take(3)} {normalizedShortCode.Skip(3)}";
+        }
+
+        public async Task<(Guid? magicToken, string shortCode, GenerateMagicLinkError? error)> GenerateMagicTokenAsync(MoxUser user)
         {
             if(await this._userManager.IsLockedOutAsync(user))
             {
-                return (null, GenerateMagicLinkError.UserLockedOut);
+                return (null, null, GenerateMagicLinkError.UserLockedOut);
             }
 
             var httpContext = this._httpContextAccessor.HttpContext;
@@ -91,19 +121,20 @@ namespace Mindbite.Mox.Identity.Services
             {
                 RequestedByClientInfo = httpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown",
                 UserId = user.Id,
-                ValidUntil = DateTime.Now.AddMinutes(this._identityOptions.MagicLink.ValidFor),
-                Used = false
+                ValidUntil = DateTime.Now.AddMinutes(this._identityOptions.MagicLink.ValidForMinutes),
+                Used = false,
+                NormalizedShortCode = GenerateNormalizedShortCode()
             };
             this._context.Add(magicLink);
 
             await this._context.SaveChangesAsync();
 
-            return (magicLink.Id, null);
+            return (magicLink.Id, magicLink.NormalizedShortCode, null);
         }
 
         public async Task<(bool success, SendMagicLinkError? error)> GenerateAndSendMagicLinkAsync(ActionContext actionContext, MoxUser user, string returnUrl)
         {
-            var (token, error) = await GenerateMagicTokenAsync(user);
+            var (token, shortCode, error) = await GenerateMagicTokenAsync(user);
             if(token == null)
             {
                 return (false, (SendMagicLinkError)error);
@@ -111,10 +142,11 @@ namespace Mindbite.Mox.Identity.Services
 
             var emailMessage = new System.Net.Mail.MailMessage
             {
-                Subject = this._localizer["Direktinloggning till {0}", this._moxConfig.SiteTitle],
+                Subject = this._localizer["Direktinloggning"],
                 Body = await this._viewRenderer.RenderToStringAsync(actionContext, "Mox/Identity/Email/MagicLink", new ViewModels.AccountViewModel.MagicLinkEmailViewModel
                 {
                     MagicToken = token.Value,
+                    ShortCode = this.FormatShortCode(shortCode),
                     RememberMe = false,
                     ReturnUrl = returnUrl
                 }),
@@ -133,6 +165,19 @@ namespace Mindbite.Mox.Identity.Services
             }
 
             return (true, null);
+        }
+
+        public async Task<bool> ValidateShortCodeAsync(MoxUser user, string shortCode)
+        {
+            var tokens = await this._context.MagicLinkTokens.Where(x => x.UserId == user.Id && !x.Used && !x.Invalidated && x.ValidUntil > DateTime.Now && x.User != null).ToListAsync();
+            var shortCodeDidMatch = tokens.Any(x => x.NormalizedShortCode == Regex.Replace(shortCode, @"\s+", "").ToUpper());
+
+            if (shortCodeDidMatch)
+            {
+                await this.InvalidateAllTokensAsync(user);
+            }
+
+            return shortCodeDidMatch;
         }
 
         public async Task<(bool isValid, MoxUser user)> ValidateMagicTokenAsync(Guid magicToken)
