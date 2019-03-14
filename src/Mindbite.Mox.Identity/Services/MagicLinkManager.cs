@@ -103,7 +103,17 @@ namespace Mindbite.Mox.Identity.Services
 
         public string FormatShortCode(string normalizedShortCode)
         {
-            return $"{normalizedShortCode.Take(3)} {normalizedShortCode.Skip(3)}";
+            var parts = new List<string>();
+            var shortCodeView = normalizedShortCode;
+            while(shortCodeView.Length > 0)
+            {
+                var take = Math.Min(3, shortCodeView.Length);
+                var part = shortCodeView.Substring(0, take + 1);
+                parts.Add(part);
+
+                shortCodeView = shortCodeView.Substring(take);
+            }
+            return string.Join(" ", parts);
         }
 
         public async Task<(Guid? magicToken, string shortCode, GenerateMagicLinkError? error)> GenerateMagicTokenAsync(MoxUser user)
