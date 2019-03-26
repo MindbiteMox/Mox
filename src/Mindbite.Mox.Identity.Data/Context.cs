@@ -32,6 +32,9 @@ namespace Mindbite.Mox.Identity.Data
             modelBuilder.Entity<Models.MoxUser>().HasQueryFilter(x => this.IncludeDeletedUsers || !x.IsDeleted);
 
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<IdentityRole>().Property(x => x.Name).HasMaxLength(450);
+            modelBuilder.Entity<IdentityRole>().Property(x => x.NormalizedName).HasMaxLength(450);
         }
     }
 }

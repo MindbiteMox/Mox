@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Mindbite.Mox.Extensions;
 
 namespace Mindbite.Mox.Identity.ViewModels
 {
@@ -12,9 +13,9 @@ namespace Mindbite.Mox.Identity.ViewModels
 
         public EditMyAccountViewModel() : base() { }
 
-        public EditMyAccountViewModel(IEnumerable<IdentityRole> roles, IEnumerable<string> rolesForUser, Data.Models.MoxUser user, bool hasPassword) : base(roles, rolesForUser, user, hasPassword)
+        public EditMyAccountViewModel(IEnumerable<IdentityExtensions.RoleTreeNode> roles, IEnumerable<string> preselectedRoles, Data.Models.MoxUser user, bool hasPassword, bool disableRoles, string rolesDisabledLink) : base(roles, preselectedRoles, user, hasPassword, disableRoles, rolesDisabledLink)
         {
-            this.IsAdmin = rolesForUser.Contains(Constants.AdminRole);
+            this.IsAdmin = preselectedRoles.Contains(Constants.AdminRole);
         }
     }
 }

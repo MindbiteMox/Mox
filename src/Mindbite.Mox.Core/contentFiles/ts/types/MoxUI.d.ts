@@ -75,4 +75,9 @@ declare namespace Mox.UI {
         static mobileMenu: MobileMenu;
         static initDefault(): void;
     }
+    class CheckboxTree {
+        static onClick(container: HTMLElement, input: HTMLInputElement, groupName: string): void;
+        private static updateParent;
+        private static updateChildren;
+    }
 }

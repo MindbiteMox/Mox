@@ -71,6 +71,10 @@ namespace Mindbite.Mox.Identity.Services
                 {
                     await this._userManager.RemovePasswordAsync(user);
                 }
+                else if(!string.IsNullOrWhiteSpace(password) && !await this._userManager.HasPasswordAsync(user))
+                {
+                    await this._userManager.AddPasswordAsync(user, password);
+                }
             }
 
             return user.Id;

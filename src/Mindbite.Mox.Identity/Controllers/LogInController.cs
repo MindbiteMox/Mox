@@ -37,15 +37,15 @@ namespace Mindbite.Mox.Identity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(LogInViewModel model, string returnUrl = null)
         {
-            var user = await this._userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                ModelState.AddModelError(string.Empty, this._localizer["Det finns ingen användare med e-postadressen {0}.", model.Email]);
-                return View(model);
-            }
-
             if (ModelState.IsValid)
             {
+                var user = await this._userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, this._localizer["Det finns ingen användare med e-postadressen {0}.", model.Email]);
+                    return View(model);
+                }
+
                 return RedirectToAction("PasswordOrMagicLink", new PasswordOrMagicLinkViewModel
                 {
                     Email = model.Email,
@@ -100,14 +100,14 @@ namespace Mindbite.Mox.Identity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ShortCodeLogIn(ShortCodeViewModel model)
         {
-            var user = await this._userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                return RedirectToAction("Index");
-            }
-
             if (ModelState.IsValid)
             {
+                var user = await this._userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    return RedirectToAction("Index");
+                }
+
                 var isValid = await this._magicLinkManager.ValidateShortCodeAsync(user, model.ShortCode);
                 if(!isValid)
                 {

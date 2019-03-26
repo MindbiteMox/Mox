@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Mindbite.Mox.Identity.Verification
 {
-    class BackDoorVerificator : IVerificator
+    internal class BackDoorVerificator : IVerificator
     {
         public string Name => "Mox.Identity.Backdoor";
 

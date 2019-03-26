@@ -521,6 +521,41 @@ var Mox;
             return GlobalInstances;
         }());
         UI.GlobalInstances = GlobalInstances;
+        var CheckboxTree = /** @class */ (function () {
+            function CheckboxTree() {
+            }
+            CheckboxTree.onClick = function (container, input, groupName) {
+                this.updateParent(container, input, groupName);
+                this.updateChildren(container, input, groupName);
+            };
+            CheckboxTree.updateParent = function (container, input, groupName) {
+                var nameParts = groupName.split('/');
+                var parentName = nameParts.slice(0, nameParts.length - 1).join('/');
+                var parentInput = container.querySelector('input[data-id="' + parentName + '"]');
+                if (!parentInput) {
+                    return;
+                }
+                var siblingsAndChildren = container.querySelectorAll('input[data-id^="' + parentName + '/"]');
+                var allChecked = true;
+                for (var i = 0; i < siblingsAndChildren.length; i++) {
+                    var element = siblingsAndChildren.item(i);
+                    if (!element.checked) {
+                        allChecked = false;
+                        break;
+                    }
+                }
+                parentInput.checked = allChecked;
+            };
+            CheckboxTree.updateChildren = function (container, input, groupName) {
+                var children = container.querySelectorAll('input[data-id^="' + groupName + '/"]');
+                for (var i = 0; i < children.length; i++) {
+                    var element = children.item(i);
+                    element.checked = input.checked;
+                }
+            };
+            return CheckboxTree;
+        }());
+        UI.CheckboxTree = CheckboxTree;
     })(UI = Mox.UI || (Mox.UI = {}));
 })(Mox || (Mox = {}));
 //# sourceMappingURL=MoxUI.js.map

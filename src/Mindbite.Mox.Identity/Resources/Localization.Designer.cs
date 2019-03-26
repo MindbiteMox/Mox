@@ -79,20 +79,65 @@ namespace Mindbite.Mox.Identity.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hantera egna uppgifter.
-        /// </summary>
-        internal static string role_EditMyOwnAccount {
-            get {
-                return ResourceManager.GetString("role_EditMyOwnAccount", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Logga in i Mox.
         /// </summary>
         internal static string role_Mox {
             get {
                 return ResourceManager.GetString("role_Mox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hantera egna uppgifter.
+        /// </summary>
+        internal static string role_MyAccount {
+            get {
+                return ResourceManager.GetString("role_MyAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to En testbehörighet.
+        /// </summary>
+        internal static string role_SomeTestRole {
+            get {
+                return ResourceManager.GetString("role_SomeTestRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allmänt.
+        /// </summary>
+        internal static string rolegroup_MoxCommon {
+            get {
+                return ResourceManager.GetString("rolegroup_MoxCommon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Administrera inloggninskonton.
+        /// </summary>
+        internal static string rolegroup_MoxIdentity {
+            get {
+                return ResourceManager.GetString("rolegroup_MoxIdentity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Behörigheter sköts automatiskt för denna användare..
+        /// </summary>
+        internal static string RolesDisabledDescription {
+            get {
+                return ResourceManager.GetString("RolesDisabledDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Redigera behörigheterna..
+        /// </summary>
+        internal static string RolesDisabledLinkTitle {
+            get {
+                return ResourceManager.GetString("RolesDisabledLinkTitle", resourceCulture);
             }
         }
         

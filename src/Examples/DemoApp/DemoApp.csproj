@@ -7,6 +7,16 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Migrations\20190315150129_role_name_length.cs" />
+    <Compile Remove="Migrations\20190315150129_role_name_length.Designer.cs" />
+    <Compile Remove="Migrations\20190315150230_role_name_length.cs" />
+    <Compile Remove="Migrations\20190315150230_role_name_length.Designer.cs" />
+    <Compile Remove="Migrations\20190315150320_role_name_length.cs" />
+    <Compile Remove="Migrations\20190315150320_role_name_length.Designer.cs" />
+    <Compile Remove="Migrations\20190315150735_role_name_length.cs" />
+    <Compile Remove="Migrations\20190315150735_role_name_length.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" />
   </ItemGroup>
   <ItemGroup>

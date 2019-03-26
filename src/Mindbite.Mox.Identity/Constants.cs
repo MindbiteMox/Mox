@@ -7,10 +7,12 @@ namespace Mindbite.Mox.Identity
 {
     public static class Constants
     {
-        public const string MoxRole = "Mox";
-        public const string AdminRole = "Admin";
-        public const string EditMyOwnAccountRole = "EditMyOwnAccount";
+        public const string MoxRole = "MoxCommon/Mox";
+        public const string AdminRole = "MoxIdentity/Admin";
+        public const string EditMyOwnAccountRole = "MoxIdentity/MyAccount";
 
         public const string SettingsArea = "IdentitySettings";
+        public const string SettingsAppId = "MoxSettings";
+        public const string SettingsAppName = "Inställningar";
     }
 }

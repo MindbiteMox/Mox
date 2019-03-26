@@ -34,8 +34,9 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly SettingsOptions _settingsExtension;
         private readonly MoxIdentityOptions _identityOptions;
         private readonly ViewMessaging _viewMessaging;
+        private readonly IServiceProvider _serviceProvider;
 
-        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions, ViewMessaging viewMessaging)
+        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions, ViewMessaging viewMessaging, IServiceProvider serviceProvider)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userValidator = userValidator;
@@ -47,6 +48,7 @@ namespace Mindbite.Mox.Identity.Controllers
             this._settingsExtension = settingsExtension.Value;
             this._identityOptions = identityOptions.Value;
             this._viewMessaging = viewMessaging;
+            this._serviceProvider = serviceProvider;
         }
 
         [HttpGet]
@@ -60,7 +62,7 @@ namespace Mindbite.Mox.Identity.Controllers
         {
             var dataSource = this._context.Users.Where(x => x.Email != "backdoor@mindbite.se").AsQueryable(); // TODO: Make a better way to hide users from this list!
             var userRoles = await this._context.UserRoles.ToListAsync();
-            var roles = await this._context.Roles.ToListAsync();
+            var roles = (await this._context.Roles.ToListAsync()).Select(x => new { x.Id, ShortName = x.SplitIntoLocalizedGroups(this._localizer).name });
 
             if (!string.IsNullOrWhiteSpace(filter))
             {
@@ -71,10 +73,10 @@ namespace Mindbite.Mox.Identity.Controllers
             var dataTable = DataTableBuilder
                 .Create(dataSource.Select(x => new
                 {
-                    Id = x.Id,
-                    Email = x.Email,
-                    Name = x.Name,
-                    Roles = string.Join(", ", roles.Where(role => userRoles.Where(ur => ur.UserId == x.Id).Select(ur => ur.RoleId).Contains(role.Id)).Select(role => this._localizer[$"role_{role.Name}"]))
+                    x.Id,
+                    x.Email,
+                    x.Name,
+                    Roles = string.Join(", ", roles.Where(role => userRoles.Where(ur => ur.UserId == x.Id).Select(ur => ur.RoleId).Contains(role.Id)).Select(role => role.ShortName))
                 }))
                 .Sort(sort.DataTableSortColumn ?? "Email", sort.DataTableSortDirection ?? "Ascending")
                 .Page(sort.DataTablePage)
@@ -98,7 +100,10 @@ namespace Mindbite.Mox.Identity.Controllers
         public async Task<IActionResult> Create()
         {
             var roles = await this._roleManager.Roles.ToListAsync();
-            return View(new CreateUserViewModel(roles, preselectedRoles: new string[] { Constants.MoxRole }));
+            var tree = roles.BuildLocalizedTree(this._localizer);
+            var flatTree = tree.Flatten();
+
+            return View(new CreateUserViewModel(flatTree, preselectedRoles: new string[] { Constants.MoxRole }));
         }
 
         [HttpPost]
@@ -135,7 +140,7 @@ namespace Mindbite.Mox.Identity.Controllers
                         return View(newUser);
                     }
 
-                    var addRoleResult = await this._userManager.AddToRolesAsync(userToCreate, newUser.Roles.Where(x => x.Checked).Select(x => x.Name));
+                    var addRoleResult = await this._userManager.AddToRolesAsync(userToCreate, newUser.Roles.Where(x => x.Checked && !x.IsParent).Select(x => x.Id));
 
                     if (!addRoleResult.Succeeded)
                     {
@@ -175,10 +180,25 @@ namespace Mindbite.Mox.Identity.Controllers
             }
 
             var roles = await this._roleManager.Roles.ToListAsync();
+            var tree = roles.BuildLocalizedTree(this._localizer);
+            var flatTree = tree.Flatten();
+
             var userRoles = await this._userManager.GetRolesAsync(user);
             var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-            return View(new EditUserViewModel(roles, userRoles, user, hasPassword));
+            var disableRoles = false;
+            if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
+            {
+                disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
+            }
+
+            var rolesDisabledLink = default(string);
+            if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
+            {
+                rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
+            }
+
+            return View(new EditUserViewModel(flatTree, userRoles, user, hasPassword, disableRoles, rolesDisabledLink));
         }
 
         [HttpPost]
@@ -235,8 +255,8 @@ namespace Mindbite.Mox.Identity.Controllers
                     return View(editUser);
                 }
 
-                var removeRolesResult = await this._userManager.RemoveFromRolesAsync(user, editUser.Roles.Where(x => !x.Checked && userRoles.Any(y => y.UserId == user.Id && y.RoleId == x.Id)).Select(x => x.Name));
-                var addRolesResult = await this._userManager.AddToRolesAsync(user, editUser.Roles.Where(x => x.Checked && !userRoles.Any(y => y.UserId == user.Id && y.RoleId == x.Id)).Select(x => x.Name));
+                var removeRolesResult = await this._userManager.RemoveFromRolesAsync(user, await this._userManager.GetRolesAsync(user));
+                var addRolesResult = await this._userManager.AddToRolesAsync(user, editUser.Roles.Where(x => x.Checked && !x.IsParent).Select(x => x.Id));
 
                 if (removeRolesResult.Succeeded && addRolesResult.Succeeded)
                 {

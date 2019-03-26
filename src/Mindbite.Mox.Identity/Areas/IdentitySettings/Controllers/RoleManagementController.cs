@@ -8,6 +8,7 @@ using Mindbite.Mox.UI;
 using Mindbite.Mox.Services;
 using Microsoft.Extensions.Localization;
 using Mindbite.Mox.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mindbite.Mox.Identity.Controllers
 {
@@ -25,13 +26,19 @@ namespace Mindbite.Mox.Identity.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(DataTableSort sort)
+        public async Task<IActionResult> Index(DataTableSort sort)
         {
-            var dataSource = this._context.Roles.Select(x => new { Name = this._localizer[$"role_{x.Name}"].ToString() });
+            var dataSource = (await this._context.Roles.ToListAsync()).Select(x => x.SplitIntoLocalizedGroups(this._localizer)).Select(x => new
+            {
+                Name = x.name,
+                Group = string.Join("/", x.groups.Any() ? x.groups : new[] { this._localizer["rolegroup_global"].ToString() })
+            });
+
             var dataTable = DataTableBuilder
-                .Create(dataSource)
+                .Create(dataSource.AsQueryable())
                 .Sort(sort.DataTableSortColumn ?? "Name", sort.DataTableSortDirection ?? "Ascending")
                 .Page(sort.DataTablePage)
+                .GroupBy(x => x.Group)
                 .Columns(columns =>
                 {
                     columns.Add(x => x.Name).Title(this._localizer["Namn"]);

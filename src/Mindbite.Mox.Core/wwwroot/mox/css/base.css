@@ -161,12 +161,14 @@ h4, h5, h6 { font-size: 1rem; }
 
 .mox-datatable .hidden { display: none; }
 
+.mox-datatable .group { background-color: #f5f5f8; font-weight: bold; }
+
 
 /**************************************************************
     FORMS
 ***************************************************************/
 
-.mox-message { border-radius: 3px; padding: 10px 20px; padding-left: 20px; border: 1px solid #94b6af; border-left: 5px solid #20bea1; background-image: url('/static/mox/svg/message-check.svg'); background-size: 24px; background-position: 14px center; background-repeat: no-repeat; padding-left: 55px; }
+.mox-message { border-radius: 3px; padding: 10px 20px; padding-left: 20px; border: 1px solid #94b6af; border-left: 5px solid #20bea1; background-image: url('/static/mox/svg/message-check.svg'); background-size: 24px; background-position: 14px center; background-repeat: no-repeat; padding-left: 55px; margin-bottom: 10px; }
 .mox-message p { margin: 0; }
 .mox-message-neutral { border-radius: 3px; padding: 10px 20px; padding-left: 20px; border: 1px solid #bbc; border-left: 5px solid #bbc; }
 .mox-message-neutral p { margin: 0; }

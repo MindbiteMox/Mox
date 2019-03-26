@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Mindbite.Mox.Identity;
 using Mindbite.Mox.Identity.AuthorizeFilters;
 using Mindbite.Mox.Identity.Data;
@@ -89,6 +90,7 @@ namespace Mindbite.Mox.Extensions
                 options.Cookie.Name = "MoxAuthCookie";
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.Cookie.Expiration = TimeSpan.FromDays(30);
+                options.Cookie.HttpOnly = true;
                 options.SlidingExpiration = true;
                 options.ExpireTimeSpan = TimeSpan.FromDays(150);
                 options.LoginPath = $"{moxPath}/LogIn".TrimStart('/').Insert(0, "/");
@@ -102,11 +104,11 @@ namespace Mindbite.Mox.Extensions
 
             mvc.Services.Configure<Configuration.Config>(c =>
             {
-                var settingsApp = c.Apps.FirstOrDefault(x => x.AppId == "MoxSettings");
+                var settingsApp = c.Apps.FirstOrDefault(x => x.AppId == Constants.SettingsAppId);
 
                 if (settingsApp == null)
                 {
-                    settingsApp = c.Apps.Add("Inställningar", "MoxSettings");
+                    settingsApp = c.Apps.Add(Constants.SettingsAppName, Constants.SettingsAppId);
                 }
                 settingsApp.Areas.Add(Constants.SettingsArea);
                 settingsApp.Menu.Items(items =>
@@ -178,6 +180,83 @@ namespace Mindbite.Mox.Extensions
         public static void UseMoxIdentityStaticFiles(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath = "/static")
         {
             app.AddStaticFileFileProvider(typeof(IdentityExtensions), hostingEnvironment, requestPath);
+        }
+
+        public static (string name, IEnumerable<string> groups) SplitIntoLocalizedGroups(this IdentityRole role, IStringLocalizer localizer)
+        {
+            var group = role.SplitIntoGroups();
+            return (localizer[$"role_{group.name}"].ToString(), group.groups.Select(x => localizer[$"rolegroup_{x}"].ToString()));
+        }
+
+        public static (string name, IEnumerable<string> groups) SplitIntoGroups(this IdentityRole role)
+        {
+            var parts = role.Name.Split('/');
+            var name = parts.Last();
+            var groups = parts.SkipLast(1);
+
+            return (name, groups);
+        }
+
+        public class RoleTreeNode
+        {
+            public int Depth { get; set; }
+            public bool IsLeaf { get; set; }
+            public string DisplayName { get; set; }
+            public string RoleName { get; set; }
+            public IEnumerable<RoleTreeNode> Children { get; set; }
+        }
+
+        public static IEnumerable<RoleTreeNode> BuildLocalizedTree(this IEnumerable<IdentityRole> roles, IStringLocalizer localizer)
+        {
+            IEnumerable<RoleTreeNode> buildNodes(IEnumerable<(IdentityRole role, string name, IEnumerable<string> groups)> groups, string parentName = null, int depth = 0)
+            {
+                foreach(var group in groups.GroupBy(x => x.groups.FirstOrDefault()))
+                {
+                    var isLeaf = group.Key == null;
+
+                    if(isLeaf)
+                    {
+                        foreach (var x in group)
+                        {
+                            yield return new RoleTreeNode
+                            {
+                                Depth = depth,
+                                IsLeaf = true,
+                                RoleName = x.role.Name,
+                                DisplayName = localizer[$"role_{x.name}"].ToString(),
+                                Children = Enumerable.Empty<RoleTreeNode>()
+                            };
+                        }
+                    }
+                    else
+                    {
+                        var roleName = parentName != null ? $"{parentName}/{group.Key}" : group.Key;
+                        yield return new RoleTreeNode
+                        {
+                            Depth = depth,
+                            IsLeaf = false,
+                            DisplayName = localizer[$"rolegroup_{group.Key}"].ToString(),
+                            RoleName = roleName,
+                            Children = buildNodes(group.Select(x => (x.role, x.name, x.groups.Skip(1))), roleName, depth + 1).OrderBy(x => !x.IsLeaf).ThenBy(x => x.DisplayName)
+                        };
+                    }
+                }
+            }
+
+            var groupedRoles = roles.Select(x => (role: x, group: x.SplitIntoGroups())).Select(x => (x.role, x.group.name, x.group.groups));
+            return buildNodes(groupedRoles).OrderBy(x => !x.IsLeaf).ThenBy(x => x.DisplayName);
+        }
+
+        public static IEnumerable<RoleTreeNode> Flatten(this IEnumerable<RoleTreeNode> tree)
+        {
+            foreach(var node in tree)
+            {
+                yield return node;
+                foreach(var child in Flatten(node.Children))
+                {
+                    yield return child;
+                }
+            }
         }
     }
 }

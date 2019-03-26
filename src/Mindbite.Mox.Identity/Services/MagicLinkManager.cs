@@ -108,7 +108,7 @@ namespace Mindbite.Mox.Identity.Services
             while(shortCodeView.Length > 0)
             {
                 var take = Math.Min(3, shortCodeView.Length);
-                var part = shortCodeView.Substring(0, take + 1);
+                var part = shortCodeView.Substring(0, take);
                 parts.Add(part);
 
                 shortCodeView = shortCodeView.Substring(take);

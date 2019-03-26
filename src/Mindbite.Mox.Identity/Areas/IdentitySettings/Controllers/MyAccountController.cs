@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Mindbite.Mox.Extensions;
 using Mindbite.Mox.Identity.Data.Models;
 using Mindbite.Mox.Identity.ViewModels;
 using Mindbite.Mox.Services;
@@ -27,8 +29,11 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly SignInManager<MoxUser> _signinManager;
         private readonly SettingsOptions _settingsExtension;
         private readonly ViewMessaging _viewMessaging;
+        private readonly IStringLocalizer _localizer;
+        private readonly MoxIdentityOptions _identityOptions;
+        private readonly IServiceProvider _serviceProvider;
 
-        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension, ViewMessaging viewMessaging)
+        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension, ViewMessaging viewMessaging, IStringLocalizer localizer, IOptions<MoxIdentityOptions> identityOptions, IServiceProvider serviceProvider)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userManager = userManager;
@@ -37,6 +42,9 @@ namespace Mindbite.Mox.Identity.Controllers
             this._signinManager = signInManager;
             this._settingsExtension = settingsExtension.Value;
             this._viewMessaging = viewMessaging;
+            this._localizer = localizer;
+            this._identityOptions = identityOptions.Value;
+            this._serviceProvider = serviceProvider;
         }
 
         [HttpGet]
@@ -57,10 +65,25 @@ namespace Mindbite.Mox.Identity.Controllers
             }
 
             var roles = await this._roleManager.Roles.ToListAsync();
+            var tree = roles.BuildLocalizedTree(this._localizer);
+            var flatTree = tree.Flatten();
+
             var userRoles = await this._userManager.GetRolesAsync(user);
             var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-            return View(new EditMyAccountViewModel(roles, userRoles, user, hasPassword) { Id = user.Id });
+            var disableRoles = false;
+            if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
+            {
+                disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
+            }
+
+            var rolesDisabledLink = default(string);
+            if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
+            {
+                rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
+            }
+
+            return View(new EditMyAccountViewModel(flatTree, userRoles, user, hasPassword, disableRoles, rolesDisabledLink) { Id = user.Id });
         }
 
         [HttpPost]
@@ -72,10 +95,12 @@ namespace Mindbite.Mox.Identity.Controllers
             if (ModelState.IsValid)
             {
                 var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == editUser.Id);
+
                 var roles = await this._roleManager.Roles.ToListAsync();
-                var userRoles = await this._context.UserRoles.ToListAsync();
+                var tree = roles.BuildLocalizedTree(this._localizer);
+                var flatTree = tree.Flatten();
+
                 var myUserRoles = await this._userManager.GetRolesAsync(user);
-                var hasPassword = await this._userManager.HasPasswordAsync(user);
 
                 user.UserName = editUser.Email;
                 user.Email = editUser.Email;
@@ -83,7 +108,21 @@ namespace Mindbite.Mox.Identity.Controllers
 
                 if (!myUserRoles.Contains(Constants.AdminRole))
                 {
-                    var _dummy = new EditMyAccountViewModel(roles, myUserRoles, user, hasPassword);
+                    var hasPassword = await this._userManager.HasPasswordAsync(user);
+
+                    var disableRoles = false;
+                    if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
+                    {
+                        disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
+                    }
+
+                    var rolesDisabledLink = default(string);
+                    if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
+                    {
+                        rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
+                    }
+
+                    var _dummy = new EditMyAccountViewModel(flatTree, myUserRoles, user, hasPassword, disableRoles, rolesDisabledLink);
                     editUser.Roles = _dummy.Roles;
                 }
 
@@ -124,8 +163,8 @@ namespace Mindbite.Mox.Identity.Controllers
                     return View(editUser);
                 }
 
-                var removeRolesResult = await this._userManager.RemoveFromRolesAsync(user, editUser.Roles.Where(x => !x.Checked && userRoles.Any(y => y.UserId == user.Id && y.RoleId == x.Id)).Select(x => x.Name));
-                var addRolesResult = await this._userManager.AddToRolesAsync(user, editUser.Roles.Where(x => x.Checked && !userRoles.Any(y => y.UserId == user.Id && y.RoleId == x.Id)).Select(x => x.Name));
+                var removeRolesResult = await this._userManager.RemoveFromRolesAsync(user, await this._userManager.GetRolesAsync(user));
+                var addRolesResult = await this._userManager.AddToRolesAsync(user, editUser.Roles.Where(x => x.Checked && !x.IsParent).Select(x => x.Id));
 
                 if (removeRolesResult.Succeeded && addRolesResult.Succeeded)
                 {
@@ -150,12 +189,30 @@ namespace Mindbite.Mox.Identity.Controllers
             else
             {
                 var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == editUser.Id);
+
                 var roles = await this._roleManager.Roles.ToListAsync();
+                var tree = roles.BuildLocalizedTree(this._localizer);
+                var flatTree = tree.Flatten();
+
                 var userRoles = await this._context.UserRoles.ToListAsync();
                 var myUserRoles = await this._userManager.GetRolesAsync(user);
                 var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-                var _dummy = new EditMyAccountViewModel(roles, myUserRoles, user, hasPassword);
+
+                var disableRoles = false;
+                if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
+                {
+                    disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
+                }
+
+                var rolesDisabledLink = default(string);
+                if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
+                {
+                    rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
+                }
+
+                var _dummy = new EditMyAccountViewModel(flatTree, myUserRoles, user, hasPassword, disableRoles, rolesDisabledLink);
+
                 //editUser.Roles = _dummy.Roles;
                 editUser.IsAdmin = myUserRoles.Contains(Constants.AdminRole);
             }

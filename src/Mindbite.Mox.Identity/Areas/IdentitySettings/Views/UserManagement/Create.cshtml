@@ -31,14 +31,16 @@
     <fieldset>
         <legend>@localizer["Behörigheter"]</legend>
 
-        <ul class="checkbox">
+        <ul class="checkbox" id="js-groups">
             @for (var i = 0; i < Model.Roles.Length; i++)
             {
-                <li>
+                <li class="mox-group-depth-@Model.Roles[i].Depth @(Model.Roles[i].IsParent ? "mox-group-parent" : "")">
                     @Html.HiddenFor(model => model.Roles[i].Id)
                     @Html.HiddenFor(model => model.Roles[i].Name)
-                    @Html.CheckBoxFor(model => model.Roles[i].Checked)
-                    @Html.LabelFor(model => model.Roles[i].Checked, localizer[$"role_{Model.Roles[i].Name}"])
+                    @Html.HiddenFor(model => model.Roles[i].Depth)
+                    @Html.HiddenFor(model => model.Roles[i].IsParent)
+                    @Html.CheckBoxFor(model => model.Roles[i].Checked, new { onclick = $"Mox.UI.CheckboxTree.onClick(document.getElementById('js-groups'), this, '{Model.Roles[i].Id}');", data_id = Model.Roles[i].Id })
+                    @Html.LabelFor(model => model.Roles[i].Checked, Model.Roles[i].Name)
                 </li>
             }
         </ul>

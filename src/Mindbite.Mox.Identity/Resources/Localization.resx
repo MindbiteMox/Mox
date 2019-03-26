@@ -120,7 +120,7 @@
   <data name="role_Admin" xml:space="preserve">
     <value>Hantera användare</value>
   </data>
-  <data name="role_EditMyOwnAccount" xml:space="preserve">
+  <data name="role_MyAccount" xml:space="preserve">
     <value>Hantera egna uppgifter</value>
   </data>
   <data name="role_Mox" xml:space="preserve">
@@ -131,5 +131,20 @@
   </data>
   <data name="{0} is required" xml:space="preserve">
     <value>Obligatorisk</value>
+  </data>
+  <data name="rolegroup_MoxIdentity" xml:space="preserve">
+    <value>Administrera inloggninskonton</value>
+  </data>
+  <data name="RolesDisabledDescription" xml:space="preserve">
+    <value>Behörigheter sköts automatiskt för denna användare.</value>
+  </data>
+  <data name="RolesDisabledLinkTitle" xml:space="preserve">
+    <value>Redigera behörigheterna.</value>
+  </data>
+  <data name="role_SomeTestRole" xml:space="preserve">
+    <value>En testbehörighet</value>
+  </data>
+  <data name="rolegroup_MoxCommon" xml:space="preserve">
+    <value>Allmänt</value>
   </data>
 </root>

@@ -6,19 +6,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Mindbite.Mox.Attributes;
+using Mindbite.Mox.Extensions;
 
 namespace Mindbite.Mox.Identity.ViewModels
 {
+    public class RoleViewModel
+    {
+        [Required]
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public bool Checked { get; set; }
+        public int Depth { get; set; }
+        public bool IsParent { get; set; }
+        public bool Disabled { get; set; }
+    }
+
     public class CreateUserViewModel
     {
-        public class RoleViewModel
-        {
-            [Required]
-            public string Id { get; set; }
-            public string Name { get; set; }
-            public bool Checked { get; set; }
-        }
-
         [MoxRequired]
         [MaxLength(255)]
         [Display(Name = "Namn")]
@@ -35,22 +39,21 @@ namespace Mindbite.Mox.Identity.ViewModels
 
         public CreateUserViewModel() { }
 
-        public CreateUserViewModel(IEnumerable<IdentityRole> roles, string[] preselectedRoles = null)
+        public CreateUserViewModel(IEnumerable<IdentityExtensions.RoleTreeNode> roles, string[] preselectedRoles = null)
         {
-            this.Roles = roles.Select(x => new RoleViewModel() { Id = x.Id, Name = x.Name, Checked = preselectedRoles?.Contains(x.Name) ?? false }).ToArray();
+            this.Roles = roles.Select(x => new RoleViewModel
+            {
+                Id = x.RoleName,
+                Name = x.DisplayName,
+                Checked = roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Any(z => z.StartsWith(y.RoleName)) ?? false),
+                Depth = x.Depth,
+                IsParent = !x.IsLeaf
+            }).ToArray();
         }
     }
 
     public class EditUserViewModel
     {
-        public class RoleViewModel
-        {
-            [MoxRequired]
-            public string Id { get; set; }
-            public string Name { get; set; }
-            public bool Checked { get; set; }
-        }
-
         [MoxRequired]
         public string Id { get; set; }
 
@@ -80,19 +83,31 @@ namespace Mindbite.Mox.Identity.ViewModels
         [MoxRequiredIf("WantsPassword", AndNot = "HasPassword")]
         public string RepeatPassword { get; set; }
 
+        public bool RolesDisabled { get; set; }
+        public string RolesDisabledLink { get; set; }
         public RoleViewModel[] Roles { get; set; }
 
         public EditUserViewModel() { }
 
-        public EditUserViewModel(IEnumerable<IdentityRole> roles, IEnumerable<string> rolesForUser, Data.Models.MoxUser user, bool hasPassword)
+        public EditUserViewModel(IEnumerable<IdentityExtensions.RoleTreeNode> roles, IEnumerable<string> preselectedRoles, Data.Models.MoxUser user, bool hasPassword, bool disableRoles, string rolesDisabledLink)
         {
-            this.Roles = roles.Select(x => new RoleViewModel() { Id = x.Id, Name = x.Name, Checked = rolesForUser.Contains(x.Name) }).ToArray();
+            this.Roles = roles.Select(x => new RoleViewModel
+            {
+                Id = x.RoleName,
+                Name = x.DisplayName,
+                Checked = roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Any(z => z.StartsWith(y.RoleName)) ?? false),
+                Depth = x.Depth,
+                IsParent = !x.IsLeaf,
+                Disabled = disableRoles
+            }).ToArray();
 
             this.Id = user.Id;
             this.Name = user.Name;
             this.Email = user.Email;
             this.HasPassword = hasPassword;
             this.WantsPassword = hasPassword;
+            this.RolesDisabled = disableRoles;
+            this.RolesDisabledLink = rolesDisabledLink;
         }
     }
 }

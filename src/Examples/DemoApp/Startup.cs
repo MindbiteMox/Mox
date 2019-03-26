@@ -12,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Mindbite.Mox.Identity;
 using Mindbite.Mox.NotificationCenter;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Mindbite.Mox.DemoApp
 {
@@ -59,20 +61,30 @@ namespace Mindbite.Mox.DemoApp
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("SomeTestRole"));
             });
 
-            //services.AddDbContext<AppDbContext>(options =>
-            //{
-            //    options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this.HostingEnvironment.ApplicationName));
-            //});
-
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseInMemoryDatabase("DemoApp");
+                options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this.HostingEnvironment.ApplicationName));
             });
+
+            //services.AddDbContext<AppDbContext>(options =>
+            //{
+            //    options.UseInMemoryDatabase("DemoApp");
+            //});
 
             services.Configure<MoxIdentityOptions>(this.Configuration.GetSection("MoxIdentityOptions"));
             services.Configure<MoxIdentityOptions>(config =>
             {
                 //config.LoginStaticFiles.Add(Mox.Configuration.StaticIncludes.StaticFile.Style("asdkajlsdjlsdj"));
+                config.Groups.DisableGroupSettingsCallback = (serviceProvider, user) =>
+                {
+                    return Task.FromResult(true);
+                };
+
+                config.Groups.GroupSettingsMovedToThisUrl = (serviceProvider, user, url) =>
+                {
+                    var settingsOptions = serviceProvider.GetRequiredService<IOptions<SettingsOptions>>().Value;
+                    return Task.FromResult(url.Action("EditOther", new { user.Id, View = settingsOptions.AdditionalEditUserViews.First().ViewName }));
+                };
             });
         }
 

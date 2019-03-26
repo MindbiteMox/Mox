@@ -497,4 +497,43 @@
             GlobalInstances.mobileMenu = MobileMenu.initDefault();
         }
     }
+
+    export class CheckboxTree {
+        static onClick(container: HTMLElement, input: HTMLInputElement, groupName: string) {
+            this.updateParent(container, input, groupName);
+            this.updateChildren(container, input, groupName);
+        }
+
+        private static updateParent(container: HTMLElement, input: HTMLInputElement, groupName: string) {
+            const nameParts = groupName.split('/');
+            const parentName = nameParts.slice(0, nameParts.length - 1).join('/');
+            const parentInput = container.querySelector('input[data-id="' + parentName + '"]') as HTMLInputElement;
+            if (!parentInput) {
+                return;
+            }
+
+            const siblingsAndChildren = container.querySelectorAll('input[data-id^="' + parentName + '/"]');
+
+            let allChecked = true;
+
+            for (let i = 0; i < siblingsAndChildren.length; i++) {
+                const element = siblingsAndChildren.item(i) as HTMLInputElement;
+                if (!element.checked) {
+                    allChecked = false;
+                    break;
+                }
+            }
+
+            parentInput.checked = allChecked;
+        }
+
+        private static updateChildren(container: HTMLElement, input: HTMLInputElement, groupName: string) {
+            const children = container.querySelectorAll('input[data-id^="' + groupName + '/"]');
+
+            for (let i = 0; i < children.length; i++) {
+                const element = children.item(i) as HTMLInputElement;
+                element.checked = input.checked;
+            }
+        }
+    }
 }
