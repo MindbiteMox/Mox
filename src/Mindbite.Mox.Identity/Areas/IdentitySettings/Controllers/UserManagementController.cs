@@ -103,7 +103,7 @@ namespace Mindbite.Mox.Identity.Controllers
             var tree = roles.BuildLocalizedTree(this._localizer);
             var flatTree = tree.Flatten();
 
-            return View(new CreateUserViewModel(flatTree, preselectedRoles: new string[] { Constants.MoxRole }));
+            return View(new CreateUserViewModel(flatTree, preselectedRoles: new string[] { Configuration.Constants.MoxRole }));
         }
 
         [HttpPost]

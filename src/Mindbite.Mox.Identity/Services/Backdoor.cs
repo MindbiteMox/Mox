@@ -32,7 +32,7 @@ namespace Mindbite.Mox.Identity.Services
         public async Task Build(string email, string password = null)
         {
             var adminID = await EnsureUser(email, password);
-            await this.EnsureRole(adminID, Constants.MoxRole);
+            await this.EnsureRole(adminID, Configuration.Constants.MoxRole);
             await this.EnsureRole(adminID, Constants.AdminRole);
             await this.EnsureRole(adminID, Constants.EditMyOwnAccountRole);
 

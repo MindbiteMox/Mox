@@ -27,7 +27,21 @@
 .mox-side-menu { height: unset; width: unset; display: block; float: unset; border: 0; padding-top: 16px; border-bottom: 1px solid #eee; }
 .mox-side-menu .app-title { display: none; }
 
-.mox-header-mobile-app-name { line-height: 50px; color: white; margin: 0 16px; display: block; white-space: nowrap; }
+.mox-header-mobile-app-name { line-height: 50px; color: white; margin: 0 16px; display: block; padding-left: 42px; background-image: url('/static/mox/svg/hamburger.svg'); background-size: 23px; background-position: center left; background-repeat: no-repeat; overflow: hidden; white-space: nowrap; }
 
 .mox-modal .mox-modal-content, .mox-modal .mox-modal-wrapper { margin: 0; border-radius: 0; width: 100%; max-width: unset; max-height: unset; height: 100%; }
 .mox-modal-content { width: 100%; }
+
+
+.mox-datatable tr td.buttons .buttons-list,
+.mox-datatable tr th > a,
+.mox-datatable tr th > span,
+.mox-datatable tr td a { white-space: nowrap; }
+
+@media only screen and (max-width: 600px) {
+    .mox-content .mox-filters > .break { flex-grow: 0; }
+    .mox-content .mox-filters > .break.hard~li input,
+    .mox-content .mox-filters > .break.hard~li select { width: 100%; }
+    .mox-content .mox-filters > .break.hard { width: 100%; }
+    .mox-content .mox-filters > .break.hard~li { width: 48%; max-width: unset; }
+}

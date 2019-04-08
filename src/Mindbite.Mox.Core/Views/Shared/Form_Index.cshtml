@@ -1,0 +1,31 @@
+﻿@using Mindbite.Mox.Extensions
+@{
+    Layout = (string)ViewData["Layout"];
+}
+
+@model Mindbite.Mox.UI.IDataTable
+
+@if ((bool)ViewData["RenderBreadCrumbs"])
+{
+    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = false }.ToExpando())
+}
+
+<h1>@ViewData["IndexTitle"]</h1>
+@await Html.PartialAsync("Mox/UI/Message")
+
+<ul class="mox-filters">
+    <li>
+        @Html.ActionLink($"Skapa {ViewData["ModelDisplayName"]?.ToString().ToLower()}", "Create", null, ViewContext.RouteData.Values, new { @class = "mox-button" })
+    </li>
+</ul>
+
+<div id="js-table"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Mox.UI.DataTable.create({
+            container: document.getElementById('js-table'),
+            url: '@Url.Action("Table", ViewContext.RouteData.Values)'
+        })
+    });
+</script>

@@ -1,0 +1,45 @@
+﻿@using Mindbite.Mox.Extensions
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = (string)ViewData["Layout"];
+}
+
+@if ((bool)ViewData["RenderBreadCrumbs"])
+{
+    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+}
+
+<h1>Ta bort @ViewData["ModelDisplayName"]?.ToString().ToLower()</h1>
+
+@if ((bool)ViewData["CanDelete"])
+{
+    <p class="text-danger">@ViewData["ErrorMessage"]</p>
+    <p>Är du säker på att du vill ta bort @Html.Value(ViewData["ModelTitleFieldName"]?.ToString())?</p>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        <fieldset style="display: none">
+            @await Html.PartialAsync("_Form_Fields", (object)Model)
+        </fieldset>
+
+        <fieldset>
+            <p>
+                <input type="submit" value="Ta bort" />
+                @Html.ActionLink("Avbryt", "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "cancel" })
+            </p>
+        </fieldset>
+    }
+}
+else
+{
+    <p>
+        <strong>@Html.Value(ViewData["ModelTitleFieldName"]?.ToString()) kan inte tas bort!</strong><br/>
+        @ViewData["CanDeleteErrorMessage"]
+    </p>
+    <fieldset>
+        @Html.ActionLink("Tillbaka", "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "mox-button" })
+    </fieldset>
+}

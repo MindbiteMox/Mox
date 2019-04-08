@@ -63,7 +63,7 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.Configure<MvcOptions>(options => {
                 var policy = new AuthorizationPolicyBuilder()
                      .RequireAuthenticatedUser()
-                     .RequireRole(Constants.MoxRole)
+                     .RequireRole(Configuration.Constants.MoxRole)
                      .Build();
                 options.Filters.Add(new MoxAuthorizeFilter(policy, moxPath));
             });
@@ -161,7 +161,7 @@ namespace Mindbite.Mox.Extensions
             {
                 c.Verificators.Add(new Identity.Verification.BackDoorVerificator());
                 c.Verificators.Add(new Identity.Verification.EmailConfigSetVerificator());
-                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.MoxRole));
+                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Configuration.Constants.MoxRole));
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.AdminRole));
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.EditMyOwnAccountRole));
             });

@@ -7,7 +7,6 @@ namespace Mindbite.Mox.Identity
 {
     public static class Constants
     {
-        public const string MoxRole = "MoxCommon/Mox";
         public const string AdminRole = "MoxIdentity/Admin";
         public const string EditMyOwnAccountRole = "MoxIdentity/MyAccount";
 

@@ -1,0 +1,53 @@
+﻿@{
+    var modelType = ((object)Model).GetType();
+    var formFields = modelType.GetProperties();
+    var hiddenFields = new List<System.Reflection.PropertyInfo>();
+    var excludedFields = new List<System.Reflection.PropertyInfo>();
+
+    if (typeof(Mindbite.Mox.Core.Models.ISoftDeleted).IsAssignableFrom(modelType))
+    {
+        var interfaceFields = typeof(Mindbite.Mox.Core.Models.ISoftDeleted).GetProperties().Select(x => x.Name);
+        excludedFields.AddRange(formFields.Where(x => interfaceFields.Contains(x.Name)));
+    }
+
+    if (typeof(Mindbite.Mox.Core.Models.IUIDEntity).IsAssignableFrom(modelType))
+    {
+        var interfaceFields = typeof(Mindbite.Mox.Core.Models.IUIDEntity).GetProperties().Select(x => x.Name);
+        excludedFields.AddRange(formFields.Where(x => interfaceFields.Contains(x.Name)));
+    }
+
+    var hasRenderedFirstField = false;
+}
+
+@foreach (var field in formFields)
+{
+    if (excludedFields.Contains(field))
+    {
+        continue;
+    }
+
+    if (hiddenFields.Contains(field) || field.GetCustomAttributes(typeof(HiddenInputAttribute), true).Any())
+    {
+        @Html.Hidden(field.Name)
+    }
+    else
+    {
+    <p>
+        @Html.Label(field.Name)
+        @Html.ValidationMessage(field.Name)
+
+        @if (!hasRenderedFirstField)
+        {
+            @Html.Editor(field.Name, new { htmlAttributes = new { autofocus = "autofocus" } })
+        }
+        else
+        {
+            @Html.Editor(field.Name)
+        }
+
+        @{
+            hasRenderedFirstField = true;
+        }
+    </p>
+    }
+}
