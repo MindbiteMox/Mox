@@ -10,6 +10,7 @@ using Mindbite.Mox.Extensions;
 using Mindbite.Mox.DesignDemoApp.Configuration;
 using Microsoft.Extensions.Configuration;
 using Mindbite.Mox.Identity;
+using Mindbite.Mox.Identity.AzureAD;
 using Mindbite.Mox.NotificationCenter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -54,7 +55,8 @@ namespace Mindbite.Mox.DemoApp
                 .AddMox<AppDbContext>(this.HostingEnvironment)
                 .AddDesignDemoMoxApp(this.HostingEnvironment, this.Configuration)
                 .AddMoxNotificationCenter(this.HostingEnvironment, this.Configuration)
-                .AddMoxIdentity<AppDbContext>(this.HostingEnvironment, this.Configuration);
+                .AddMoxIdentity<AppDbContext>(this.HostingEnvironment, this.Configuration)
+                .AddMoxIdentityAzureADAuthentication(this.Configuration);
 
             services.Configure<Verification.Services.VerificationOptions>(c =>
             {
@@ -125,13 +127,19 @@ namespace Mindbite.Mox.DemoApp
                 SupportedUICultures = supportedCultures
             });
 
+            //app.Use((context, next) =>
+            //{
+            //    context.Request.Scheme = "http";
+            //    return next();
+            //});
+
             app.UseMvc(routes =>
             {
                 routes.MapMoxRoutes();
                 routes.MapDesignDemoRoutes();
                 routes.MapMoxIdentityRoutes();
                 routes.MapMoxNotificationCenterRoutes();
-                routes.MapRedirectToMoxRoutes();
+                //routes.MapRedirectToMoxRoutes();
             });
 
             Verification.Startup.VerifyAsync(app.ApplicationServices).Wait();
