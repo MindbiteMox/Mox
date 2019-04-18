@@ -137,16 +137,16 @@ namespace Mindbite.Mox.Attributes
             var type = instance.GetType();
             var result = EvaluateProperty(type, instance, this._propertyName);
 
-            if(!string.IsNullOrWhiteSpace(this.And))
+            if (!string.IsNullOrWhiteSpace(this.And))
             {
                 result = result && EvaluateProperty(type, instance, this.And);
             }
-            else if(!string.IsNullOrWhiteSpace(this.AndNot))
+            else if (!string.IsNullOrWhiteSpace(this.AndNot))
             {
                 result = result && !EvaluateProperty(type, instance, this.AndNot);
             }
 
-            if(!result)
+            if (!result)
             {
                 return ValidationResult.Success;
             }
@@ -249,11 +249,11 @@ namespace Mindbite.Mox.Attributes
             var type = instance.GetType();
             var result = true;
 
-            if(!string.IsNullOrWhiteSpace(this.If))
+            if (!string.IsNullOrWhiteSpace(this.If))
             {
                 result = EvaluateProperty(type, instance, this.If);
             }
-            else if(!string.IsNullOrWhiteSpace(this.IfNot))
+            else if (!string.IsNullOrWhiteSpace(this.IfNot))
             {
                 result = !EvaluateProperty(type, instance, this.IfNot);
             }
@@ -273,6 +273,24 @@ namespace Mindbite.Mox.Attributes
                 return Activator.CreateInstance(type);
             }
             return null;
+        }
+    }
+
+    public enum Render
+    {
+        DropDown,
+        CheckBoxList,
+        Radio
+    }
+
+    public class MoxFormFieldTypeAttribute : Attribute
+    {
+        public Render Render { get; set; }
+        public string EmptyLabel { get; set; }
+
+        public MoxFormFieldTypeAttribute(Render render)
+        {
+            this.Render = render;
         }
     }
 }

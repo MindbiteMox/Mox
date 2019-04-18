@@ -133,7 +133,7 @@
                         }
                         else
                         {
-                            @Html.CheckBoxFor(model => model.Roles[i].Checked, new { disabled = "disabled", onclick = $"Mox.UI.CheckboxTree.onClick(document.getElementById('js-groups'), this, '{Model.Roles[i].Id}');", data_id = Model.Roles[i].Id })
+                            @Html.CheckBoxFor(model => model.Roles[i].Checked, new { onclick = $"Mox.UI.CheckboxTree.onClick(document.getElementById('js-groups'), this, '{Model.Roles[i].Id}');", data_id = Model.Roles[i].Id })
                         }
                         @Html.LabelFor(model => model.Roles[i].Checked, Model.Roles[i].Name)
                     </li>

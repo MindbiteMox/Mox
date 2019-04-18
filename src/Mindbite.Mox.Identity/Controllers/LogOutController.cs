@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Identity.Controllers
 {
+    [AllowAnonymous]
     public class LogOutController : Controller
     {
         private readonly SignInManager<Data.Models.MoxUser> _signInManager;
