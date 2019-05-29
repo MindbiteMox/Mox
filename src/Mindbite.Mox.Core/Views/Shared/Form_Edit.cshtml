@@ -3,13 +3,17 @@
     Layout = (string)ViewData["Layout"];
 }
 
-@if ((bool)ViewData["RenderBreadCrumbs"])
+@if ((bool)ViewData["RenderDefaultEditHeader"])
 {
     @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    <h1>Redigera @ViewData["ModelDisplayName"]?.ToString().ToLower()</h1>
+    @await Html.PartialAsync("Mox/UI/Message")
 }
 
-<h1>Redigera @ViewData["ModelDisplayName"]?.ToString().ToLower()</h1>
-@await Html.PartialAsync("Mox/UI/Message")
+@if (!string.IsNullOrWhiteSpace((string)ViewData["EditHeaderPartial"]))
+{
+    @await Html.PartialAsync((string)ViewData["EditHeaderPartial"], (object)Model)
+}
 
 @using (Html.BeginForm(FormMethod.Post, new { enctype = "multipart/form-data" }))
 {

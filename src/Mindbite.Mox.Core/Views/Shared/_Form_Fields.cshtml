@@ -32,14 +32,28 @@
     {
         @Html.Hidden(field.Name)
     }
-    else if (typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType) && field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any())
+    else if ((field.PropertyType.IsEnum || typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType)) && field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any())
     {
         var attribute = field.GetCustomAttribute<MoxFormFieldTypeAttribute>();
-        var items = ((IEnumerable<SelectListItem>)field.GetValue((object)Model)).ToArray();
+        var items = default(SelectListItem[]);
+
+        if (field.PropertyType.IsEnum)
+        {
+            items = Html.GetEnumSelectList(field.PropertyType).ToArray();
+        }
+        else
+        {
+            items = ((IEnumerable<SelectListItem>)field.GetValue((object)Model)).ToArray();
+        }
+
         switch (attribute.Render)
         {
             case Render.DropDown:
-                @Html.DropDownList(field.Name, attribute.EmptyLabel)
+                <p>
+                    @Html.Label(field.Name)
+                    @Html.ValidationMessage(field.Name)
+                    @Html.DropDownList(field.Name, items, attribute.EmptyLabel)
+                </p>
                 break;
             case Render.CheckBoxList:
                 <ul class="checkbox">
@@ -61,22 +75,39 @@
     }
     else
     {
-        <p>
-            @Html.Label(field.Name)
-            @Html.ValidationMessage(field.Name)
+        var renderAttribute = field.GetCustomAttributes<MoxFormFieldTypeAttribute>().FirstOrDefault();
 
-            @if (!hasRenderedFirstField)
-            {
-                @Html.Editor(field.Name, new { htmlAttributes = new { autofocus = "autofocus" } })
-            }
-            else
+        @if (field.PropertyType == typeof(bool))
+        {
+            <p class="checkbox">
+                @Html.Editor(field.Name)
+                @Html.Label(field.Name)
+                @Html.ValidationMessage(field.Name)
+            </p>
+        }
+        else
+        {
+            @if (renderAttribute?.Render == Render.EditorOnly)
             {
                 @Html.Editor(field.Name)
             }
+            else
+            {
+                <p>
+                    @Html.Label(field.Name)
+                    @Html.ValidationMessage(field.Name)
 
-            @{
-                hasRenderedFirstField = true;
+                    @if (!hasRenderedFirstField)
+                    {
+                        @Html.Editor(field.Name, new { htmlAttributes = new { autofocus = "autofocus" } })
+                    }
+                    else
+                    {
+                        @Html.Editor(field.Name)
+                    }
+                </p>
             }
-        </p>
+            hasRenderedFirstField = true;
+        }
     }
 }

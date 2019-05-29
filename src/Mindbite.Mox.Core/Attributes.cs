@@ -89,6 +89,45 @@ namespace Mindbite.Mox.Attributes
         }
     }
 
+    public class MoxRequiredIfEqualsAttribute : MoxRequiredAttribute, IClientModelValidator
+    {
+        private readonly string _propertyName;
+        private readonly object _value;
+
+        public MoxRequiredIfEqualsAttribute(string propertyName, object value) : base()
+        {
+            this._propertyName = propertyName;
+            this._value = value;
+            this.DataAttributeKey = "data-val-requiredifequals";
+        }
+
+        public new void AddValidation(ClientModelValidationContext context)
+        {
+            base.AddValidation(context);
+            AddAttribute(context.Attributes, "data-val-requiredifequals-propertyname", this._propertyName);
+        }
+
+        private object GetPropertyValue(Type type, object instance, string propertyName)
+        {
+            var property = type.GetProperty(propertyName);
+            return property.GetValue(instance);
+        }
+
+        protected override ValidationResult IsValid(object valueToValidate, ValidationContext validationContext)
+        {
+            var instance = validationContext.ObjectInstance;
+            var type = instance.GetType();
+            var value = GetPropertyValue(type, instance, this._propertyName);
+
+            if (!value.Equals(this._value))
+            {
+                return ValidationResult.Success;
+            }
+
+            return base.IsValid(valueToValidate, validationContext);
+        }
+    }
+
     public class MoxRequiredIfAttribute : MoxRequiredAttribute, IClientModelValidator
     {
         private readonly string _propertyName;
@@ -280,7 +319,8 @@ namespace Mindbite.Mox.Attributes
     {
         DropDown,
         CheckBoxList,
-        Radio
+        Radio,
+        EditorOnly
     }
 
     public class MoxFormFieldTypeAttribute : Attribute

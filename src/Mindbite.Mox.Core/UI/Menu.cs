@@ -81,6 +81,7 @@ namespace Mindbite.Mox.UI.Menu
             }
 
             var selectedMenus = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<SelectMenuAttribute>();
+            selectedMenus = selectedMenus.Concat(actionDescriptor.MethodInfo.GetCustomAttributes<SelectMenuAttribute>());
 
             return selectedMenus.Any(x => x.MenuId.ToLower() == menuItem.Id.ToLower());
         }

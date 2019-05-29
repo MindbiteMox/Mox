@@ -84,7 +84,7 @@ namespace Mindbite.Mox.Identity.Services
         public string GenerateNormalizedShortCode()
         {
             const int size = 6;
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+            var chars = "ABCDEFGHJKMNPQRTWXYZ2346789".ToCharArray();
 
             var data = new byte[size];
             using (var generator = new RNGCryptoServiceProvider())

@@ -1,6 +1,8 @@
 ﻿html, body { margin: 0; height: 100%; overflow: hidden; background-color: #fff; color: #24292e; position: relative; padding: 0; font-size: 14px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+
 input, textarea, select, button { font-size: 1rem; line-height: 1.5em; color: #24292e; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
 input[type=button], input[type=submit], button { line-height: 1.2em; }
+select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('/static/mox/images/icons/arrow-down.svg'); background-position: right 10px center; background-repeat: no-repeat; background-size: 11px; padding-right: 28px !important; }
 
 h1 { font-size: 2rem; }
 h2 { font-size: 1.5rem; }
@@ -184,6 +186,8 @@ h4, h5, h6 { font-size: 1rem; }
 
 .mox-content fieldset > p:first-child { margin-top: 0; }
 .mox-content fieldset p label { display: inline-block; margin-bottom: 4px; }
+
+.mox-modal .mox-content fieldset.buttons > p { margin-top: 1em; }
 
 .mox-content fieldset p input[type="color"],
 .mox-content fieldset p input[type="date"],

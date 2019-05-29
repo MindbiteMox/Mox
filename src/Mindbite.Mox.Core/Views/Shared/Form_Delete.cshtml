@@ -5,12 +5,17 @@
     Layout = (string)ViewData["Layout"];
 }
 
-@if ((bool)ViewData["RenderBreadCrumbs"])
+@if ((bool)ViewData["RenderDefaultDeleteHeader"])
 {
     @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    <h1>Ta bort @ViewData["ModelDisplayName"]?.ToString().ToLower()</h1>
+    @await Html.PartialAsync("Mox/UI/Message")
 }
 
-<h1>Ta bort @ViewData["ModelDisplayName"]?.ToString().ToLower()</h1>
+@if (!string.IsNullOrWhiteSpace((string)ViewData["DeleteHeaderPartial"]))
+{
+    @await Html.PartialAsync((string)ViewData["DeleteHeaderPartial"], (object)Model)
+}
 
 @if ((bool)ViewData["CanDelete"])
 {
@@ -36,7 +41,7 @@
 else
 {
     <p>
-        <strong>@Html.Value(ViewData["ModelTitleFieldName"]?.ToString()) kan inte tas bort!</strong><br/>
+        <strong>@Html.Value(ViewData["ModelTitleFieldName"]?.ToString()) kan inte tas bort!</strong><br />
         @ViewData["CanDeleteErrorMessage"]
     </p>
     <fieldset>

@@ -85,7 +85,7 @@ namespace Mindbite.Mox.Identity.Controllers
                 {
                     columns.Add(x => x.Email).Title(this._localizer["E-post"]).Width(250);
                     columns.Add(x => x.Name).Title(this._localizer["Namn"]);
-                    columns.Add(x => x.Roles).Title(this._localizer["Behörigheter"]);
+                    //columns.Add(x => x.Roles).Title(this._localizer["Behörigheter"]);
                 })
                 .Buttons(buttons =>
                 {

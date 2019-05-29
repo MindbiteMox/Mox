@@ -22,23 +22,41 @@ namespace Mindbite.Mox.Core.Controllers
         public abstract string IndexTitle { get; }
         public abstract string ModelTitleFieldName { get; }
         public virtual Func<ViewModel_T, object> RedirectToIndexRouteValues => _ => new object();
-        public virtual bool RenderBreadCrumbs => true;
+        public virtual string EditHeaderPartial { get; }
+        public virtual string CreateHeaderPartial { get; }
+        public virtual string IndexHeaderPartial { get; }
+        public virtual string DeleteHeaderPartial { get; }
+        public virtual bool RenderDefaultEditHeader => true;
+        public virtual bool RenderDefaultCreateHeader => true;
+        public virtual bool RenderDefaultIndexHeader => true;
+        public virtual bool RenderDefaultDeleteHeader => true;
+
+        public virtual Func<Id_T> GetId => null;
 
         public virtual Task InitViewDataAsync(string actionName, ViewModel_T viewModel)
         {
             var modelDisplayAttribute = typeof(ViewModel_T).GetCustomAttributes(typeof(DisplayAttribute)).FirstOrDefault() as DisplayAttribute;
 
-            ViewData["Layout"] = this.Layout;
-            ViewData["IndexTitle"] = this.IndexTitle;
-            ViewData["ModelDisplayName"] = this.ModelDisplayName ?? modelDisplayAttribute?.GetName();
-            ViewData["ModelTitleFieldName"] = this.ModelTitleFieldName;
-            ViewData["RedirectToIndexRouteValues"] = viewModel != null ? this.RedirectToIndexRouteValues(viewModel) : new object();
-            ViewData["RenderBreadCrumbs"] = this.RenderBreadCrumbs;
+            ViewData[nameof(Layout)] = this.Layout;
+            ViewData[nameof(IndexTitle)] = this.IndexTitle;
+            ViewData[nameof(ModelDisplayName)] = this.ModelDisplayName ?? modelDisplayAttribute?.GetName();
+            ViewData[nameof(ModelTitleFieldName)] = this.ModelTitleFieldName;
+            ViewData[nameof(RedirectToIndexRouteValues)] = viewModel != null ? this.RedirectToIndexRouteValues(viewModel) : new object();
+            ViewData[nameof(RenderDefaultCreateHeader)] = this.RenderDefaultCreateHeader;
+            ViewData[nameof(RenderDefaultEditHeader)] = this.RenderDefaultEditHeader;
+            ViewData[nameof(RenderDefaultIndexHeader)] = this.RenderDefaultIndexHeader;
+            ViewData[nameof(RenderDefaultDeleteHeader)] = this.RenderDefaultDeleteHeader;
+            ViewData[nameof(CreateHeaderPartial)] = this.CreateHeaderPartial;
+            ViewData[nameof(EditHeaderPartial)] = this.EditHeaderPartial;
+            ViewData[nameof(IndexHeaderPartial)] = this.IndexHeaderPartial;
+            ViewData[nameof(DeleteHeaderPartial)] = this.DeleteHeaderPartial;
 
             return Task.CompletedTask;
         }
+
         public virtual void BeforeValidation() { }
         public virtual Task<(bool canDelete, string errorMessage)> CanDeleteAsync(Id_T id, ViewModel_T viewModel) => Task.FromResult((true, default(string)));
+        public virtual Task ValidateAsync(NullableId_T id, ViewModel_T viewModel) { return Task.CompletedTask; }
 
         public abstract Task<ViewModel_T> GetViewModelAsync(NullableId_T id);
         public abstract Task SaveViewModelAsync(NullableId_T id, ViewModel_T viewModel);
@@ -71,6 +89,7 @@ namespace Mindbite.Mox.Core.Controllers
         public async Task<IActionResult> Create(ViewModel_T viewModel)
         {
             this.BeforeValidation();
+            await this.ValidateAsync(default, viewModel);
 
             if (ModelState.IsValid)
             {
@@ -88,7 +107,9 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Id_T id)
         {
-            var viewModel = await this.GetViewModelAsync((NullableId_T)(object)id);
+            var _id = this.GetId != null ? this.GetId() : id;
+
+            var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
             await InitViewDataAsync(nameof(Edit), viewModel);
             return View("Form_Edit", viewModel);
         }
@@ -97,11 +118,14 @@ namespace Mindbite.Mox.Core.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Id_T id, ViewModel_T viewModel)
         {
+            var _id = this.GetId != null ? this.GetId() : id;
+
             this.BeforeValidation();
+            await this.ValidateAsync((NullableId_T)(object)_id, viewModel);
 
             if (ModelState.IsValid)
             {
-                await SaveViewModelAsync((NullableId_T)(object)id, viewModel);
+                await SaveViewModelAsync((NullableId_T)(object)_id, viewModel);
 
                 var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
                 viewMessage.DisplayMessage(this.ModelUpdatedMessage);
@@ -115,10 +139,12 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(Id_T id)
         {
-            var viewModel = await this.GetViewModelAsync((NullableId_T)(object)id);
+            var _id = this.GetId != null ? this.GetId() : id;
+
+            var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
             await InitViewDataAsync(nameof(Delete), viewModel);
 
-            var (canDelete, errorMessage) = await this.CanDeleteAsync(id, viewModel);
+            var (canDelete, errorMessage) = await this.CanDeleteAsync(_id, viewModel);
 
             ViewData["CanDelete"] = canDelete;
             ViewData["CanDeleteErrorMessage"] = errorMessage;
@@ -131,17 +157,20 @@ namespace Mindbite.Mox.Core.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DoDelete(Id_T id, ViewModel_T viewModel)
         {
-            var (canDelete, _) = await this.CanDeleteAsync(id, viewModel);
+            var _id = this.GetId != null ? this.GetId() : id;
+
+            var (canDelete, _) = await this.CanDeleteAsync(_id, viewModel);
             if (!canDelete)
             {
                 return BadRequest();
             }
 
             this.BeforeValidation();
+            await this.ValidateAsync((NullableId_T)(object)_id, viewModel);
 
             if (ModelState.IsValid)
             {
-                await DeleteAsync(id);
+                await DeleteAsync(_id);
 
                 var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Mindbite.Mox.Services.ViewMessaging>();
                 viewMessage.DisplayMessage(this.ModelDeletedMessage);
