@@ -57,7 +57,7 @@ namespace Mindbite.Mox.UI
     public class DataTableSort
     {
         public string DataTableSortColumn { get; set; }
-        public string DataTableSortDirection { get; set; } = "Descending";
+        public string DataTableSortDirection { get; set; }
         public int? DataTablePage { get; set; }
     }
 

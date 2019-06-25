@@ -5,7 +5,10 @@
 
 @if ((bool)ViewData["RenderDefaultEditHeader"])
 {
-    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    @if (!Context.Request.IsAjaxRequest())
+    {
+        @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    }
     <h1>Redigera @ViewData["ModelDisplayName"]?.ToString().ToLower()</h1>
     @await Html.PartialAsync("Mox/UI/Message")
 }
@@ -25,6 +28,8 @@
     </fieldset>
 
     <fieldset class="buttons">
-        <input type="submit" value="Spara ändringar" />
+        <p>
+            <input type="submit" value="Spara ändringar" />
+        </p>
     </fieldset>
 }

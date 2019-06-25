@@ -25,9 +25,9 @@ namespace Mindbite.Mox.Services
             this._localizerFactory = localizerFactory;
         }
 
-        public LocalizedString this[string name] => this[name, arguments: new object[0]];
+        public virtual LocalizedString this[string name] => this[name, arguments: new object[0]];
 
-        public LocalizedString this[string name, params object[] arguments]
+        public virtual LocalizedString this[string name, params object[] arguments]
         {
             get
             {
@@ -43,12 +43,12 @@ namespace Mindbite.Mox.Services
             }
         }
 
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
             return this._sources.ResouceTypes.SelectMany(x => this._localizerFactory.Create(x).GetAllStrings());
         }
 
-        public IStringLocalizer WithCulture(CultureInfo culture)
+        public virtual IStringLocalizer WithCulture(CultureInfo culture)
         {
             throw new NotImplementedException();
         }

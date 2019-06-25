@@ -50,7 +50,7 @@ namespace Mindbite.Mox.Identity.Services
 
         public void ClearCache(string userId)
         {
-            this._cache.Remove(UserRolesFetcher.CacheKey(userId));
+            this._cache.Remove(CacheKey(userId));
         }
     }
 }

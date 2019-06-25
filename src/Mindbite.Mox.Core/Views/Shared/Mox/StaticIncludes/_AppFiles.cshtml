@@ -5,14 +5,17 @@
 
 @{
     var renderInHead = true;
-    try 
+    var area = ViewContext.RouteData.Values["Area"]?.ToString();
+    try
     {
         renderInHead = Model.RenderInHead;
     }
     catch { }
+
+
 }
 
-@foreach (var include in Config.Value.Apps.Select(x => x.StaticIncludes))
+@foreach (var include in Config.Value.Apps.Where(x => x.Areas.Contains(area)).Select(x => x.StaticIncludes))
 {
     @foreach (var style in include.Files.Where(x => x.RenderInHead == renderInHead))
     {

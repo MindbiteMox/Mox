@@ -57,6 +57,7 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual void BeforeValidation() { }
         public virtual Task<(bool canDelete, string errorMessage)> CanDeleteAsync(Id_T id, ViewModel_T viewModel) => Task.FromResult((true, default(string)));
         public virtual Task ValidateAsync(NullableId_T id, ViewModel_T viewModel) { return Task.CompletedTask; }
+        public virtual Task SetStaticViewModelData(ViewModel_T viewModel) => Task.CompletedTask;
 
         public abstract Task<ViewModel_T> GetViewModelAsync(NullableId_T id);
         public abstract Task SaveViewModelAsync(NullableId_T id, ViewModel_T viewModel);
@@ -64,29 +65,30 @@ namespace Mindbite.Mox.Core.Controllers
         public abstract Task DeleteAsync(Id_T id);
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public virtual async Task<IActionResult> Index()
         {
             await InitViewDataAsync(nameof(Index), default);
             return View("Form_Index");
         }
 
         [HttpGet]
-        public async Task<IActionResult> Table(DataTableSort sort)
+        public virtual async Task<IActionResult> Table(DataTableSort sort)
         {
             return PartialView("Mox/UI/DataTable", await this.GetDataTableAsync(sort));
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public virtual async Task<IActionResult> Create()
         {
             var viewModel = await this.GetViewModelAsync(default);
+            await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Create), viewModel);
             return View("Form_Create", viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ViewModel_T viewModel)
+        public virtual async Task<IActionResult> Create(ViewModel_T viewModel)
         {
             this.BeforeValidation();
             await this.ValidateAsync(default, viewModel);
@@ -100,23 +102,25 @@ namespace Mindbite.Mox.Core.Controllers
                 return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
             }
 
+            await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Create), viewModel);
             return View("Form_Create", viewModel);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(Id_T id)
+        public virtual async Task<IActionResult> Edit(Id_T id)
         {
             var _id = this.GetId != null ? this.GetId() : id;
 
             var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
+            await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Edit), viewModel);
             return View("Form_Edit", viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Id_T id, ViewModel_T viewModel)
+        public virtual async Task<IActionResult> Edit(Id_T id, ViewModel_T viewModel)
         {
             var _id = this.GetId != null ? this.GetId() : id;
 
@@ -132,16 +136,18 @@ namespace Mindbite.Mox.Core.Controllers
                 return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
             }
 
+            await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Edit), viewModel);
             return View("Form_Edit", viewModel);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Delete(Id_T id)
+        public virtual async Task<IActionResult> Delete(Id_T id)
         {
             var _id = this.GetId != null ? this.GetId() : id;
 
             var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
+            await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Delete), viewModel);
 
             var (canDelete, errorMessage) = await this.CanDeleteAsync(_id, viewModel);
@@ -155,7 +161,7 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DoDelete(Id_T id, ViewModel_T viewModel)
+        public virtual async Task<IActionResult> DoDelete(Id_T id, ViewModel_T viewModel)
         {
             var _id = this.GetId != null ? this.GetId() : id;
 
@@ -177,6 +183,7 @@ namespace Mindbite.Mox.Core.Controllers
                 return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
             }
 
+            await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Delete), viewModel);
             return View("Form_Delete", viewModel);
         }

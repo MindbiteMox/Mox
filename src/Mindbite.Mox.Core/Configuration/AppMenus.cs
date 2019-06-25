@@ -256,9 +256,9 @@ namespace Mindbite.Mox.Configuration.AppMenus
             return this;
         }
 
-        public AppMenuItemBuilder Role(string role)
+        public AppMenuItemBuilder Role(params string[] roles)
         {
-            this._menuItem.Roles = this._menuItem.Roles.Append(role).ToHashSet();
+            this._menuItem.Roles = this._menuItem.Roles.Concat(roles).ToHashSet();
             return this;
         }
     }

@@ -119,7 +119,7 @@ namespace Mindbite.Mox.Attributes
             var type = instance.GetType();
             var value = GetPropertyValue(type, instance, this._propertyName);
 
-            if (!value.Equals(this._value))
+            if (value != null && !value.Equals(this._value))
             {
                 return ValidationResult.Success;
             }
@@ -327,10 +327,21 @@ namespace Mindbite.Mox.Attributes
     {
         public Render Render { get; set; }
         public string EmptyLabel { get; set; }
+        public string DataSourcePropertyName { get; set; }
 
         public MoxFormFieldTypeAttribute(Render render)
         {
             this.Render = render;
+        }
+    }
+
+    public class MoxFormFieldSetAttribute : Attribute
+    {
+        public string Name { get; set; }
+
+        public MoxFormFieldSetAttribute(string name)
+        {
+            this.Name = name;
         }
     }
 }

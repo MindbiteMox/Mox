@@ -19,10 +19,20 @@
     }
 
     var hasRenderedFirstField = false;
+    var currentFieldSet = default(string);
 }
 
-@foreach (var field in formFields)
+@foreach (var field in formFields.OrderBy(x => x.GetCustomAttribute<MoxFormFieldSetAttribute>(true)?.Name))
 {
+    var fieldSetAttribute = field.GetCustomAttribute<MoxFormFieldSetAttribute>(true);
+    if (currentFieldSet != fieldSetAttribute?.Name)
+    {
+        currentFieldSet = fieldSetAttribute?.Name;
+        @Html.Raw("</fieldset>")
+        @Html.Raw("<fieldset>")
+        <legend>@currentFieldSet</legend>
+    }
+
     if (excludedFields.Contains(field))
     {
         continue;
@@ -32,7 +42,7 @@
     {
         @Html.Hidden(field.Name)
     }
-    else if ((field.PropertyType.IsEnum || typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType)) && field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any())
+    else if (field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any() && (field.PropertyType.IsEnum || typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType) || field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any(x => !string.IsNullOrWhiteSpace(x.DataSourcePropertyName))))
     {
         var attribute = field.GetCustomAttribute<MoxFormFieldTypeAttribute>();
         var items = default(SelectListItem[]);
@@ -43,7 +53,15 @@
         }
         else
         {
-            items = ((IEnumerable<SelectListItem>)field.GetValue((object)Model)).ToArray();
+            var dataSourceProperty = formFields.FirstOrDefault(x => x.Name == attribute.DataSourcePropertyName);
+            if (dataSourceProperty == null)
+            {
+                items = ((IEnumerable<SelectListItem>)field.GetValue((object)Model)).ToArray();
+            }
+            else
+            {
+                items = ((IEnumerable<SelectListItem>)dataSourceProperty.GetValue((object)Model)).ToArray();
+            }
         }
 
         switch (attribute.Render)
@@ -57,12 +75,13 @@
                 break;
             case Render.CheckBoxList:
                 <ul class="checkbox">
+                    <li><p>@Html.DisplayName(field.Name)</p></li>
                     @for (int i = 0; i < items.Length; i++)
                     {
                         <li>
-                            @Html.Hidden($"{field.Name}[{i}].Value")
-                            @Html.Hidden($"{field.Name}[{i}].Text")
-                            @Html.CheckBox($"{field.Name}[{i}].Selected")
+                            @Html.Hidden($"{field.Name}[{i}].Value", items[i].Value)
+                            @Html.Hidden($"{field.Name}[{i}].Text", items[i].Text)
+                            @Html.CheckBox($"{field.Name}[{i}].Selected", items[i].Selected)
                             @Html.Label($"{field.Name}[{i}].Selected", items[i].Text)
                         </li>
                     }
