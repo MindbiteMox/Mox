@@ -26,9 +26,9 @@
         @Html.AntiForgeryToken()
         @Html.ValidationSummary(true)
 
-        <fieldset style="display: none">
+        <div style="display: none">
             @await Html.PartialAsync("_Form_Fields", (object)Model)
-        </fieldset>
+        </div>
 
         <fieldset>
             <p>

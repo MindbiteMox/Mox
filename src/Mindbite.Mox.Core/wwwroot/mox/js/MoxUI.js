@@ -362,10 +362,11 @@ var Mox;
         var DataTable = /** @class */ (function () {
             function DataTable(options) {
                 this.options = options || {};
+                this.options.filters = this.options.filters || [];
             }
             Object.defineProperty(DataTable.prototype, "tableId", {
                 get: function () {
-                    return DataTable.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
+                    return Mox.Utils.URL.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
                 },
                 enumerable: true,
                 configurable: true
@@ -377,35 +378,108 @@ var Mox;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(DataTable.prototype, "filterQueryString", {
+                get: function () {
+                    var result = {};
+                    this.filters.forEach(function (x) {
+                        switch (x.nodeName) {
+                            case 'INPUT':
+                                switch (x.type) {
+                                    case 'checkbox':
+                                        result[x.name] = x.checked;
+                                        break;
+                                    default:
+                                        result[x.name] = x.value;
+                                        break;
+                                }
+                                break;
+                            case 'SELECT':
+                                result[x.name] = x.value;
+                                break;
+                            default:
+                                throw new TypeError('Filter "' + x.name + '" is not an input or select');
+                        }
+                    });
+                    return Mox.Utils.URL.queryStringFromObject(result);
+                },
+                enumerable: true,
+                configurable: true
+            });
             DataTable.create = function (options) {
                 return __awaiter(this, void 0, void 0, function () {
-                    var table, renderUrl;
+                    var table, savedFiltersQuery, queryParams_1, renderUrl, addedQuery, url;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 table = new DataTable(options);
+                                table.filters = table.options.filters.map(function (x) { return typeof (x) === 'string' ? document.getElementById(x) : x; });
+                                table.filters.forEach(function (x) {
+                                    switch (x.nodeName) {
+                                        case 'INPUT':
+                                            switch (x.type) {
+                                                case 'text':
+                                                case 'search':
+                                                    {
+                                                        var refreshTimeout_1 = null;
+                                                        x.addEventListener('keyup', function () {
+                                                            if (refreshTimeout_1) {
+                                                                clearTimeout(refreshTimeout_1);
+                                                            }
+                                                            refreshTimeout_1 = setTimeout(function () {
+                                                                table.refresh();
+                                                                refreshTimeout_1 = null;
+                                                            }, 300);
+                                                        });
+                                                    }
+                                                    break;
+                                                default:
+                                                    x.addEventListener('change', function () { return table.refresh(); });
+                                                    break;
+                                            }
+                                            break;
+                                        case 'SELECT':
+                                            x.addEventListener('change', function () { return table.refresh(); });
+                                            break;
+                                        default:
+                                            throw new TypeError('Filter "' + x.name + '" is not an input or select');
+                                    }
+                                });
+                                savedFiltersQuery = localStorage.getItem(table.tableId + '_filtersquery');
+                                if (savedFiltersQuery && URLSearchParams) {
+                                    queryParams_1 = new URLSearchParams(savedFiltersQuery);
+                                    table.filters.forEach(function (x) {
+                                        if (queryParams_1.get(x.name) === null) {
+                                            return;
+                                        }
+                                        switch (x.nodeName) {
+                                            case 'INPUT':
+                                                switch (x.type) {
+                                                    case 'checkbox':
+                                                        x.checked = queryParams_1.get(x.name).toLowerCase() === 'true';
+                                                        break;
+                                                    default:
+                                                        x.value = queryParams_1.get(x.name);
+                                                        break;
+                                                }
+                                                break;
+                                            case 'SELECT':
+                                                x.value = queryParams_1.get(x.name);
+                                                break;
+                                            default:
+                                                throw new TypeError('Filter "' + x.name + '" is not an input or select');
+                                        }
+                                    });
+                                }
                                 renderUrl = localStorage.getItem(table.tableId) || table.options.url;
-                                return [4 /*yield*/, table.render(table.addWindowQueryTo(renderUrl))];
+                                addedQuery = table.options.addQuery ? table.options.addQuery(table) : '';
+                                url = Mox.Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random()]);
+                                return [4 /*yield*/, table.render(url)];
                             case 1:
                                 _a.sent();
                                 return [2 /*return*/, table];
                         }
                     });
                 });
-            };
-            DataTable.prototype.addWindowQueryTo = function (url) {
-                var urlQuery = DataTable.splitUrl(url).query;
-                var windowQuery = DataTable.splitUrl(window.location.href).query;
-                var addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
-                var newQuery = [urlQuery, addedQuery, windowQuery, 'r=' + Math.random()].filter(function (x) { return !!x; }).join('&');
-                var baseUrl = url.split('?')[0];
-                return baseUrl + '?' + newQuery;
-            };
-            DataTable.splitUrl = function (url) {
-                var s = url.split('?');
-                if (s.length > 1)
-                    return { domainAndPath: s[0], query: s[1] };
-                return { domainAndPath: s[0], query: '' };
             };
             DataTable.prototype.render = function (url) {
                 return __awaiter(this, void 0, void 0, function () {
@@ -430,13 +504,16 @@ var Mox;
                             case 1:
                                 _a.innerHTML = _b.sent();
                                 localStorage.setItem(this.tableId + '_fullurl', url);
+                                localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
                                 sortLinks = Mox.Utils.DOM.nodeListOfToArray(this.options.container.querySelectorAll('th.sortable a, .mox-pager a'));
                                 sortLinks.forEach(function (x) { return x.addEventListener('click', function (e) {
                                     e.preventDefault();
-                                    var fullUrl = _this.addWindowQueryTo(x.href);
+                                    var addedQuery = _this.options.addQuery ? _this.options.addQuery(_this) : '';
+                                    var fullUrl = Mox.Utils.URL.addWindowQueryTo(x.href, [addedQuery, _this.filterQueryString, 'r=' + Math.random()]);
                                     _this.render(fullUrl);
                                     localStorage.setItem(_this.tableId, x.href);
                                     localStorage.setItem(_this.tableId + '_fullurl', fullUrl);
+                                    localStorage.setItem(_this.tableId + '_filtersquery', _this.filterQueryString);
                                 }); });
                                 this.options.container.classList.remove('mox-datatable-loader');
                                 if (!this.options.onRenderComplete) return [3 /*break*/, 3];
@@ -449,24 +526,16 @@ var Mox;
                     });
                 });
             };
-            DataTable.getStoredParam = function (tableElementId, key, defaultValue) {
-                var renderUrl = localStorage.getItem(tableElementId + '_fullurl');
-                if (!renderUrl) {
-                    return defaultValue;
-                }
-                var query = DataTable.splitUrl(renderUrl).query;
-                var queries = query.split(/&/g);
-                var result = queries.map(function (x) { return x.split('='); }).filter(function (x) { return x[0].toLowerCase() === key.toLowerCase(); }).map(function (x) { return x[1]; });
-                return result.length ? result[0] : defaultValue;
-            };
             DataTable.prototype.refresh = function () {
                 return __awaiter(this, void 0, void 0, function () {
-                    var renderUrl;
+                    var renderUrl, addedQuery, url;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 renderUrl = localStorage.getItem(this.tableId) || this.options.url;
-                                return [4 /*yield*/, this.render(this.addWindowQueryTo(renderUrl))];
+                                addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
+                                url = Mox.Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
+                                return [4 /*yield*/, this.render(url)];
                             case 1:
                                 _a.sent();
                                 return [2 /*return*/];

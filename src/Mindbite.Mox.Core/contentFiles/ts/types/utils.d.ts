@@ -26,4 +26,12 @@ declare namespace Mox.Utils {
         static getJSON(url: string): Promise<object>;
         static postJSON(url: string, data: object): Promise<object>;
     }
+    namespace URL {
+        function addWindowQueryTo(url: string, additionalQueries?: string[]): string;
+        function splitUrl(url: string): {
+            domainAndPath: string;
+            query: string;
+        };
+        function queryStringFromObject(object: Object): string;
+    }
 }

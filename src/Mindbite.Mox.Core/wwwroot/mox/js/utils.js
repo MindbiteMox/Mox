@@ -233,6 +233,36 @@ var Mox;
             return Ajax;
         }());
         Utils.Ajax = Ajax;
+        var URL;
+        (function (URL) {
+            function addWindowQueryTo(url, additionalQueries) {
+                var urlQuery = URL.splitUrl(url).query;
+                var windowQuery = URL.splitUrl(window.location.href).query;
+                var newQuery = [urlQuery, windowQuery].concat(additionalQueries || []).filter(function (x) { return !!x; }).join('&');
+                var baseUrl = url.split('?')[0];
+                return baseUrl + '?' + newQuery;
+            }
+            URL.addWindowQueryTo = addWindowQueryTo;
+            function splitUrl(url) {
+                var s = url.split('?');
+                if (s.length > 1)
+                    return { domainAndPath: s[0], query: s[1] };
+                return { domainAndPath: s[0], query: '' };
+            }
+            URL.splitUrl = splitUrl;
+            function queryStringFromObject(object) {
+                var params = [];
+                for (var key in object) {
+                    var value = object[key];
+                    if (value === null) {
+                        continue;
+                    }
+                    params.push(key + '=' + value);
+                }
+                return params.join("&");
+            }
+            URL.queryStringFromObject = queryStringFromObject;
+        })(URL = Utils.URL || (Utils.URL = {}));
     })(Utils = Mox.Utils || (Mox.Utils = {}));
 })(Mox || (Mox = {}));
 //# sourceMappingURL=utils.js.map

@@ -12,6 +12,12 @@ using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Core.Controllers
 {
+    public enum FormControllerRedirectTarget
+    {
+        Self,
+        Index
+    }
+
     public abstract class FormController<ViewModel_T, Id_T, NullableId_T> : Controller where ViewModel_T : new()
     {
         public virtual string Layout => "Mox/_Layout";
@@ -19,7 +25,6 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual string ModelCreatedMessage => this.ModelUpdatedMessage;
         public virtual string ModelDeletedMessage => this.ModelUpdatedMessage;
         public virtual string ModelUpdatedMessage => "Ändringarna sparades!";
-        public abstract string IndexTitle { get; }
         public abstract string ModelTitleFieldName { get; }
         public virtual Func<ViewModel_T, object> RedirectToIndexRouteValues => _ => new object();
         public virtual string EditHeaderPartial { get; }
@@ -30,6 +35,21 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual bool RenderDefaultCreateHeader => true;
         public virtual bool RenderDefaultIndexHeader => true;
         public virtual bool RenderDefaultDeleteHeader => true;
+        public abstract string IndexPageHeading { get; }
+        public virtual string EditPageHeading(ViewModel_T viewModel) => typeof(ViewModel_T).GetProperty(this.ModelTitleFieldName).GetValue(viewModel)?.ToString() ?? $"Redigera {this.ModelDisplayName}";
+        public virtual FormControllerRedirectTarget RedirectAfterSaveTarget => FormControllerRedirectTarget.Index;
+        public virtual RedirectToActionResult RedirectAfterSave(Id_T id, ViewModel_T viewModel)
+        {
+            switch (this.RedirectAfterSaveTarget)
+            {
+                case FormControllerRedirectTarget.Self:
+                    return RedirectToAction("Edit", new { id });
+                case FormControllerRedirectTarget.Index:
+                    return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
+            }
+
+            throw new NotImplementedException();
+        }
 
         public virtual Func<Id_T> GetId => null;
 
@@ -38,8 +58,9 @@ namespace Mindbite.Mox.Core.Controllers
             var modelDisplayAttribute = typeof(ViewModel_T).GetCustomAttributes(typeof(DisplayAttribute)).FirstOrDefault() as DisplayAttribute;
 
             ViewData[nameof(Layout)] = this.Layout;
-            ViewData[nameof(IndexTitle)] = this.IndexTitle;
+            ViewData[nameof(IndexPageHeading)] = this.IndexPageHeading;
             ViewData[nameof(ModelDisplayName)] = this.ModelDisplayName ?? modelDisplayAttribute?.GetName();
+            ViewData[nameof(EditPageHeading)] = this.EditPageHeading(viewModel);
             ViewData[nameof(ModelTitleFieldName)] = this.ModelTitleFieldName;
             ViewData[nameof(RedirectToIndexRouteValues)] = viewModel != null ? this.RedirectToIndexRouteValues(viewModel) : new object();
             ViewData[nameof(RenderDefaultCreateHeader)] = this.RenderDefaultCreateHeader;
@@ -60,7 +81,7 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual Task SetStaticViewModelData(ViewModel_T viewModel) => Task.CompletedTask;
 
         public abstract Task<ViewModel_T> GetViewModelAsync(NullableId_T id);
-        public abstract Task SaveViewModelAsync(NullableId_T id, ViewModel_T viewModel);
+        public abstract Task<Id_T> SaveViewModelAsync(NullableId_T id, ViewModel_T viewModel);
         public abstract Task<IDataTable> GetDataTableAsync(DataTableSort sort);
         public abstract Task DeleteAsync(Id_T id);
 
@@ -95,11 +116,11 @@ namespace Mindbite.Mox.Core.Controllers
 
             if (ModelState.IsValid)
             {
-                await SaveViewModelAsync(default, viewModel);
+                var id = await SaveViewModelAsync(default, viewModel);
 
                 var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
                 viewMessage.DisplayMessage(this.ModelCreatedMessage);
-                return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
+                return RedirectAfterSave(id, viewModel);
             }
 
             await this.SetStaticViewModelData(viewModel);
@@ -133,7 +154,8 @@ namespace Mindbite.Mox.Core.Controllers
 
                 var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
                 viewMessage.DisplayMessage(this.ModelUpdatedMessage);
-                return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
+
+                return RedirectAfterSave(_id, viewModel);
             }
 
             await this.SetStaticViewModelData(viewModel);
@@ -258,7 +280,7 @@ namespace Mindbite.Mox.Core.Controllers
             }
         }
 
-        public async override Task SaveViewModelAsync(Guid? id, T viewModel)
+        public async override Task<Guid> SaveViewModelAsync(Guid? id, T viewModel)
         {
             var entity = await this._context.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => x.UID == id);
 
@@ -286,6 +308,8 @@ namespace Mindbite.Mox.Core.Controllers
             }
 
             await this._context.SaveChangesAsync();
+
+            return entity.UID;
         }
     }
 }

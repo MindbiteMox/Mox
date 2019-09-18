@@ -49,17 +49,18 @@ declare namespace Mox.UI {
         tableId?: string;
         onRenderComplete?: (dataTable: DataTable) => Promise<void>;
         addQuery?: (dataTable: DataTable) => string;
+        filters: (HTMLInputElement | HTMLSelectElement | string)[];
+        rememberFilters: boolean;
     }
     class DataTable {
-        private options;
-        private readonly tableId;
+        options: DataTableOptions;
+        filters: (HTMLInputElement | HTMLSelectElement)[];
+        readonly tableId: string;
         readonly containerElement: HTMLElement;
+        readonly filterQueryString: string;
         static create(options: DataTableOptions): Promise<DataTable>;
-        private addWindowQueryTo;
-        private static splitUrl;
         private constructor();
         private render;
-        static getStoredParam(tableElementId: string, key: string, defaultValue: string): string;
         refresh(): Promise<void>;
     }
     type CloseOnEscapeHandle = number;

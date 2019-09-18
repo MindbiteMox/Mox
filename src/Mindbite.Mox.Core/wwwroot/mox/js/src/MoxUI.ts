@@ -352,45 +352,128 @@
         tableId?: string;
         onRenderComplete?: (dataTable: DataTable) => Promise<void>;
         addQuery?: (dataTable: DataTable) => string;
+        filters: (HTMLInputElement | HTMLSelectElement | string)[];
+        rememberFilters: boolean;
     }
 
     export class DataTable {
-        private options: DataTableOptions;
+        options: DataTableOptions;
+        filters: (HTMLInputElement | HTMLSelectElement)[];
 
-        private get tableId() {
-            return DataTable.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
+        get tableId() {
+            return Utils.URL.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
         }
 
         get containerElement() {
             return this.options.container;
         }
 
+        get filterQueryString(): string {
+            const result = {};
+
+            this.filters.forEach(x => {
+                switch (x.nodeName) {
+                    case 'INPUT':
+                        switch (x.type) {
+                            case 'checkbox':
+                                result[x.name] = (x as HTMLInputElement).checked;
+                                break;
+                            default:
+                                result[x.name] = (x as HTMLInputElement).value;
+                                break;
+                        }
+                        break;
+                    case 'SELECT':
+                        result[x.name] = (x as HTMLSelectElement).value;
+                        break;
+                    default:
+                        throw new TypeError('Filter "' + x.name + '" is not an input or select');
+                }
+            });
+
+            return Utils.URL.queryStringFromObject(result);
+        }
+
         static async create(options: DataTableOptions): Promise<DataTable> {
             const table = new DataTable(options);
 
+
+            table.filters = table.options.filters.map(x => typeof (x) === 'string' ? document.getElementById(x) as (HTMLInputElement | HTMLSelectElement) : x);
+            table.filters.forEach(x => {
+                switch (x.nodeName) {
+                    case 'INPUT':
+                        switch (x.type) {
+                            case 'text':
+                            case 'search':
+                                {
+                                    let refreshTimeout = null;
+                                    x.addEventListener('keyup', () => {
+                                        if (refreshTimeout) {
+                                            clearTimeout(refreshTimeout);
+                                        }
+
+                                        refreshTimeout = setTimeout(() => {
+                                            table.refresh();
+                                            refreshTimeout = null;
+                                        }, 300);
+                                    });
+                                }
+                                break;
+                            default:
+                                x.addEventListener('change', () => table.refresh());
+                                break;
+                        }
+                        break;
+                    case 'SELECT':
+                        x.addEventListener('change', () => table.refresh());
+                        break;
+                    default:
+                        throw new TypeError('Filter "' + x.name + '" is not an input or select');
+                }
+            });
+
+            const savedFiltersQuery = localStorage.getItem(table.tableId + '_filtersquery');
+            if (savedFiltersQuery && URLSearchParams) {
+                const queryParams = new URLSearchParams(savedFiltersQuery);
+
+                table.filters.forEach(x => {
+
+                    if (queryParams.get(x.name) === null) {
+                        return;
+                    }
+
+                    switch (x.nodeName) {
+                        case 'INPUT':
+                            switch (x.type) {
+                                case 'checkbox':
+                                    (x as HTMLInputElement).checked = queryParams.get(x.name).toLowerCase() === 'true';
+                                    break;
+                                default:
+                                    x.value = queryParams.get(x.name);
+                                    break;
+                            }
+                            break;
+                        case 'SELECT':
+                            x.value = queryParams.get(x.name);
+                            break;
+                        default:
+                            throw new TypeError('Filter "' + x.name + '" is not an input or select');
+                    }
+                });
+            }
+
             const renderUrl = localStorage.getItem(table.tableId) || table.options.url;
-            await table.render(table.addWindowQueryTo(renderUrl));
+            const addedQuery = table.options.addQuery ? table.options.addQuery(table) : '';
+            const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random()]);
+            await table.render(url);
 
             return table;
         }
 
-        private addWindowQueryTo(url: string): string {
-            const urlQuery = DataTable.splitUrl(url).query;
-            const windowQuery = DataTable.splitUrl(window.location.href).query;
-            const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
-            const newQuery = [urlQuery, addedQuery, windowQuery, 'r=' + Math.random()].filter(x => !!x).join('&');
-            const baseUrl = url.split('?')[0];
-            return baseUrl + '?' + newQuery;
-        }
-
-        private static splitUrl(url: string): { domainAndPath: string, query: string } {
-            const s = url.split('?');
-            if (s.length > 1) return { domainAndPath: s[0], query: s[1] };
-            return { domainAndPath: s[0], query: '' };
-        }
 
         private constructor(options: DataTableOptions) {
             this.options = options || {} as DataTableOptions;
+            this.options.filters = this.options.filters || [];
         }
 
         private async render(url: string) {
@@ -410,14 +493,17 @@
                 .then(Mox.Utils.Fetch.parseText);
 
             localStorage.setItem(this.tableId + '_fullurl', url);
+            localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
 
             const sortLinks = Mox.Utils.DOM.nodeListOfToArray(this.options.container.querySelectorAll('th.sortable a, .mox-pager a')) as HTMLAnchorElement[];
             sortLinks.forEach(x => x.addEventListener('click', e => {
                 e.preventDefault();
-                const fullUrl = this.addWindowQueryTo(x.href);
+                const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
+                const fullUrl = Utils.URL.addWindowQueryTo(x.href, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
                 this.render(fullUrl);
                 localStorage.setItem(this.tableId, x.href);
                 localStorage.setItem(this.tableId + '_fullurl', fullUrl);
+                localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
             }));
 
             this.options.container.classList.remove('mox-datatable-loader');
@@ -427,20 +513,11 @@
             }
         }
 
-        static getStoredParam(tableElementId: string, key: string, defaultValue: string): string {
-            const renderUrl = localStorage.getItem(tableElementId + '_fullurl');
-            if (!renderUrl) {
-                return defaultValue;
-            }
-            const query = DataTable.splitUrl(renderUrl).query;
-            const queries = query.split(/&/g);
-            const result = queries.map(x => x.split('=')).filter(x => x[0].toLowerCase() === key.toLowerCase()).map(x => x[1]);
-            return result.length ? result[0] : defaultValue;
-        }
-
         async refresh() {
             const renderUrl = localStorage.getItem(this.tableId) || this.options.url;
-            await this.render(this.addWindowQueryTo(renderUrl));
+            const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
+            const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
+            await this.render(url);
         }
     }
 

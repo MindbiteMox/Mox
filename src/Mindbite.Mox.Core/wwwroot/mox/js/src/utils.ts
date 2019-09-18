@@ -175,4 +175,35 @@
             });
         }
     }
+
+    export namespace URL {
+        export function addWindowQueryTo(url: string, additionalQueries?: string[]): string {
+            const urlQuery = URL.splitUrl(url).query;
+            const windowQuery = URL.splitUrl(window.location.href).query;
+            const newQuery = [urlQuery, windowQuery].concat(additionalQueries || []).filter(x => !!x).join('&');
+            const baseUrl = url.split('?')[0];
+            return baseUrl + '?' + newQuery;
+        }
+
+        export function splitUrl(url: string): { domainAndPath: string, query: string } {
+            const s = url.split('?');
+            if (s.length > 1) return { domainAndPath: s[0], query: s[1] };
+            return { domainAndPath: s[0], query: '' };
+        }
+
+        export function queryStringFromObject(object: Object): string {
+            const params = [];
+
+            for (let key in object) {
+                var value = object[key];
+                if (value === null) {
+                    continue;
+                }
+
+                params.push(key + '=' + value);
+            }
+
+            return params.join("&");
+        }
+    }
 }
