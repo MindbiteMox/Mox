@@ -57,7 +57,7 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
 
             mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
-                c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(ConfigExtensions).GetTypeInfo().Assembly, hostingEnvironment));
+                //c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(ConfigExtensions).GetTypeInfo().Assembly, hostingEnvironment));
             });
 
             mvc.Services.AddTransient<Data.Models.DesignDbContextActions>();
@@ -71,9 +71,9 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
             return mvc;
         }
 
-        public static void MapDesignDemoRoutes(this IRouteBuilder routes, string moxPath = "Mox")
+        public static void MapDesignDemoRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox")
         {
-            routes.MapAreaRoute("Design", Constants.MainArea, $"{moxPath}/Designs/{{controller}}/{{action=Index}}/{{id?}}");
+            endpoints.MapAreaControllerRoute("Design", Constants.MainArea, $"{moxPath}/Designs/{{controller}}/{{action=Index}}/{{id?}}");
         }
 
         public static void UseDesignDemoStaticFiles(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath = "/static")

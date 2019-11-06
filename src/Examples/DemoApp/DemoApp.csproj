@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
   <PropertyGroup>
@@ -17,9 +17,6 @@
     <Compile Remove="Migrations\20190315150735_role_name_length.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Mindbite.Mox.Identity.AzureAD\Mindbite.Mox.Identity.AzureAD.csproj" />
     <ProjectReference Include="..\Mindbite.Mox.DesignDemoApp\Mindbite.Mox.DesignDemoApp.csproj" />
     <ProjectReference Include="..\..\Mindbite.Mox.Identity\Mindbite.Mox.Identity.csproj" />
@@ -29,5 +26,13 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\media\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

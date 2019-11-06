@@ -89,17 +89,16 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.ConfigureApplicationCookie(options => {
                 options.Cookie.Name = "MoxAuthCookie";
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                options.Cookie.Expiration = TimeSpan.FromDays(30);
                 options.Cookie.HttpOnly = true;
                 options.SlidingExpiration = true;
-                options.ExpireTimeSpan = TimeSpan.FromDays(150);
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.LoginPath = $"{moxPath}/LogIn".TrimStart('/').Insert(0, "/");
                 options.LogoutPath = $"{moxPath}/LogOut".TrimStart('/').Insert(0, "/");
             });
 
             mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
-                c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(IdentityExtensions).GetTypeInfo().Assembly, hostingEnvironment));
+                //c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(IdentityExtensions).GetTypeInfo().Assembly, hostingEnvironment));
             });
 
             mvc.Services.Configure<Configuration.Config>(c =>
@@ -169,12 +168,12 @@ namespace Mindbite.Mox.Extensions
             return mvc;
         }
 
-        public static void MapMoxIdentityRoutes(this IRouteBuilder routes, string moxPath = "Mox")
+        public static void MapMoxIdentityRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox")
         {
-            routes.MapRoute("IdentityLogIn", $"{moxPath}/LogIn/{{action=Index}}".TrimStart('/'), new { Controller = "LogIn" });
-            routes.MapRoute("IdentityLogOut", $"{moxPath}/LogOut/{{action=Index}}".TrimStart('/'), new { Controller = "LogOut" });
-            routes.MapRoute("IdentityForgotPassword", $"{moxPath}/Forgot/{{action=Index}}".TrimStart('/'), new { Controller = "ForgotPassword" });
-            routes.MapAreaRoute("Identity", Constants.SettingsArea, $"{moxPath}/Settings/Identity/{{controller=MyAccount}}/{{action=Index}}/{{id?}}".TrimStart('/'));
+            endpoints.MapControllerRoute("IdentityLogIn", $"{moxPath}/LogIn/{{action=Index}}".TrimStart('/'), new { Controller = "LogIn" });
+            endpoints.MapControllerRoute("IdentityLogOut", $"{moxPath}/LogOut/{{action=Index}}".TrimStart('/'), new { Controller = "LogOut" });
+            endpoints.MapControllerRoute("IdentityForgotPassword", $"{moxPath}/Forgot/{{action=Index}}".TrimStart('/'), new { Controller = "ForgotPassword" });
+            endpoints.MapAreaControllerRoute("Identity", Constants.SettingsArea, $"{moxPath}/Settings/Identity/{{controller=MyAccount}}/{{action=Index}}/{{id?}}".TrimStart('/'));
         }
 
         public static void UseMoxIdentityStaticFiles(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath = "/static")

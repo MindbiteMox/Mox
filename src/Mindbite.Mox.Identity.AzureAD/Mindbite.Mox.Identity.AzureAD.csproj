@@ -4,9 +4,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
-    <FileVersion>2.2.0.0</FileVersion>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
     <Version>2.2.0</Version>
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
@@ -15,9 +15,8 @@
     <Copyright>Mindbite AB</Copyright>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Graph" Version="1.14.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Graph" Version="1.20.0" />
   </ItemGroup>
 
   <ItemGroup>

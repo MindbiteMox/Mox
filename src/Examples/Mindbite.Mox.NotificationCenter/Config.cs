@@ -76,7 +76,7 @@ namespace Mindbite.Mox.NotificationCenter
 
             mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
-                c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(Configuration).Assembly, hostingEnvironment));
+                //c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(Configuration).Assembly, hostingEnvironment));
             });
 
             mvc.Services.Configure<Mox.Configuration.StaticIncludes.IncludeConfig>(c =>
@@ -92,9 +92,9 @@ namespace Mindbite.Mox.NotificationCenter
             return mvc;
         }
 
-        public static void MapMoxNotificationCenterRoutes(this IRouteBuilder routes, string moxPath = "Mox")
+        public static void MapMoxNotificationCenterRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox")
         {
-            routes.MapAreaRoute("Notifications", Constants.MainArea, $"{moxPath}/{Constants.MainArea}/{{controller}}/{{action=Index}}/{{id?}}");
+            endpoints.MapAreaControllerRoute("Notifications", Constants.MainArea, $"{moxPath}/{Constants.MainArea}/{{controller}}/{{action=Index}}/{{id?}}");
         }
 
         public static void UseMoxNotificationCenterStaticFiles(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath = "/static")

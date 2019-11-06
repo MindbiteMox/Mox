@@ -16,6 +16,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    @await Html.PartialAsync("Mox/LayoutParts/_Head")
     <title>@(ViewData["Title"] ?? currentSelectedMenu?.Title ?? "Mox") - @(Config.Value.SiteTitle)</title>
     <meta name="viewport" content="width=device-width">
     @await Html.PartialAsync("Mox/StaticIncludes/_Files", new { RenderInHead = true }.ToExpando())

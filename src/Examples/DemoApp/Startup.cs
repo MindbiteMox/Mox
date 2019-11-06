@@ -55,8 +55,8 @@ namespace Mindbite.Mox.DemoApp
                 .AddMox<AppDbContext>(this.HostingEnvironment)
                 .AddDesignDemoMoxApp(this.HostingEnvironment, this.Configuration)
                 .AddMoxNotificationCenter(this.HostingEnvironment, this.Configuration)
-                .AddMoxIdentity<AppDbContext>(this.HostingEnvironment, this.Configuration)
-                .AddMoxIdentityAzureADAuthentication(this.Configuration);
+                .AddMoxIdentity<AppDbContext>(this.HostingEnvironment, this.Configuration);
+                //.AddMoxIdentityAzureADAuthentication(this.Configuration);
 
             services.Configure<Verification.Services.VerificationOptions>(c =>
             {
@@ -112,8 +112,12 @@ namespace Mindbite.Mox.DemoApp
             app.UseMoxIdentityStaticFiles(env, staticRoot);
             app.UseMoxNotificationCenterStaticFiles(env, staticRoot);
 
+            app.UseRouting();
+            app.UseCors();
+
             app.UseSession();
             app.UseAuthentication();
+            app.UseAuthorization();
 
             var supportedCultures = new List<System.Globalization.CultureInfo>
             {
@@ -133,14 +137,23 @@ namespace Mindbite.Mox.DemoApp
             //    return next();
             //});
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapMoxRoutes();
-                routes.MapDesignDemoRoutes();
-                routes.MapMoxIdentityRoutes();
-                routes.MapMoxNotificationCenterRoutes();
-                //routes.MapRedirectToMoxRoutes();
+                endpoints.MapMoxRoutes();
+                endpoints.MapDesignDemoRoutes();
+                endpoints.MapMoxIdentityRoutes();
+                endpoints.MapMoxNotificationCenterRoutes();
+                endpoints.MapRedirectToMoxRoutes();
             });
+
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapMoxRoutes();
+            //    routes.MapDesignDemoRoutes();
+            //    routes.MapMoxIdentityRoutes();
+            //    routes.MapMoxNotificationCenterRoutes();
+            //    routes.MapRedirectToMoxRoutes();
+            //});
 
             Verification.Startup.VerifyAsync(app.ApplicationServices).Wait();
         }

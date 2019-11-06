@@ -18,7 +18,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 
 namespace Mindbite.Mox.DesignDemoApp.Controllers
 {

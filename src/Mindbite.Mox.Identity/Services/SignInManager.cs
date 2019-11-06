@@ -27,7 +27,7 @@ namespace Mindbite.Mox.Identity.Services
 
         protected override async Task<PasswordVerificationResult> VerifyPasswordAsync(IUserPasswordStore<MoxUser> store, MoxUser user, string password)
         {
-            if (this._options.Backdoor.UseBackdoor && user.NormalizedEmail == this.NormalizeKey(this._options.Backdoor?.Email) && !string.IsNullOrWhiteSpace(this._options.Backdoor.RemotePasswordAuthUrl))
+            if (this._options.Backdoor.UseBackdoor && user.NormalizedEmail == this.NormalizeEmail(this._options.Backdoor?.Email) && !string.IsNullOrWhiteSpace(this._options.Backdoor.RemotePasswordAuthUrl))
             {
                 using (var client = new HttpClient())
                 {
@@ -49,7 +49,7 @@ namespace Mindbite.Mox.Identity.Services
 
     public class MoxSignInManager : SignInManager<MoxUser>
     {
-        public MoxSignInManager(UserManager<MoxUser> userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<MoxUser> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<MoxUser>> logger, IAuthenticationSchemeProvider schemes) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes)
+        public MoxSignInManager(UserManager<MoxUser> userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<MoxUser> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<MoxUser>> logger, IAuthenticationSchemeProvider schemes, IUserConfirmation<MoxUser> confirmation) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
         {
         }
 

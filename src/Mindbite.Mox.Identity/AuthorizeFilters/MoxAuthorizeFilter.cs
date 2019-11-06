@@ -20,11 +20,14 @@ namespace Mindbite.Mox.Identity.AuthorizeFilters
 
         public override Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
-            var route = context.RouteData.Routers.FirstOrDefault(x => x is Route) as Route;
-            if (route?.RouteTemplate.ToLower().TrimStart('/').StartsWith(MoxPath.ToLower()) ?? false)
+            if(context.HttpContext.Request.Path.StartsWithSegments($"/{MoxPath.TrimStart('/')}"))
             {
                 return base.OnAuthorizationAsync(context);
             }
+            //var route = context.RouteData.Routers.FirstOrDefault(x => x is Route) as Route;
+            //if (route?.RouteTemplate.ToLower().TrimStart('/').StartsWith(MoxPath.ToLower()) ?? false)
+            //{
+            //}
             return Task.CompletedTask;
         }
     }

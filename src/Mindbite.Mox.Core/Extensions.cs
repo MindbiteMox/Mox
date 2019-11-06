@@ -76,7 +76,7 @@ namespace Mindbite.Mox.Extensions
 
             mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
-                c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(MoxExtensions).GetTypeInfo().Assembly, hostingEnvironment));
+                //c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(MoxExtensions).GetTypeInfo().Assembly, hostingEnvironment)); // No need when precompiled
                 c.ViewLocationExpanders.Add(new AlwaysLookForSharedLocationExpander());
             });
 
@@ -108,15 +108,15 @@ namespace Mindbite.Mox.Extensions
             return mvc;
         }
 
-        public static void MapMoxRoutes(this IRouteBuilder routes, string path = "Mox")
+        public static void MapMoxRoutes(this IEndpointRouteBuilder endpoints, string path = "Mox")
         {
-            routes.MapAreaRoute("Mox Start", "Mox", path, new
+            endpoints.MapAreaControllerRoute("Mox Start", "Mox", path, new
             {
                 Area = "Mox",
                 Controller = "Home",
                 Action = "Index",
             });
-            routes.MapAreaRoute("Mox Error", "Mox", "Mox/Error/{errorCode}", new
+            endpoints.MapAreaControllerRoute("Mox Error", "Mox", "Mox/Error/{errorCode}", new
             {
                 Area = "Mox",
                 Controller = "Home",
@@ -124,9 +124,9 @@ namespace Mindbite.Mox.Extensions
             });
         }
 
-        public static void MapRedirectToMoxRoutes(this IRouteBuilder routes)
+        public static void MapRedirectToMoxRoutes(this IEndpointRouteBuilder endpoints)
         {
-            routes.MapAreaRoute(nameof(MapRedirectToMoxRoutes), "Mox", "{*wildcard}", new
+            endpoints.MapAreaControllerRoute(nameof(MapRedirectToMoxRoutes), "Mox", "{*wildcard}", new
             {
                 Area = "Mox",
                 Controller = "RedirectToMox",
@@ -150,7 +150,16 @@ namespace Mindbite.Mox.Extensions
             app.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = requestPath,
-                FileProvider = fileProvider
+                FileProvider = fileProvider,
+                OnPrepareResponse = ctx =>
+                {
+                    if (hostingEnvironment.IsDevelopment())
+                    {
+                        return;
+                    }
+
+                    ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age=2592000");
+                }
             });
 
             var staticFileProviders = app.ApplicationServices.GetService<IOptions<StaticFileProviderOptions>>();

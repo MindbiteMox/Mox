@@ -4,10 +4,10 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>2.2.1.0</AssemblyVersion>
-    <FileVersion>2.2.1.0</FileVersion>
-    <Version>2.2.1</Version>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
+    <Version>3.0.0</Version>
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <IsPackable>true</IsPackable>
@@ -15,7 +15,8 @@
     <Copyright>Mindbite AB</Copyright>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mindbite.Mox.Core\Mindbite.Mox.Core.csproj" />

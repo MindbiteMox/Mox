@@ -60,8 +60,8 @@ namespace Mindbite.Mox.Identity.Controllers
         [HttpGet]
         public async Task<IActionResult> Table(DataTableSort sort, string filter)
         {
-            var dataSource = this._context.Users.Where(x => x.Email != "backdoor@mindbite.se").AsQueryable(); // TODO: Make a better way to hide users from this list!
-            var userRoles = await this._context.UserRoles.ToListAsync();
+            var dataSource = this._context.Users.Where(x => x.Email != "backdoor@mindbite.se"); // TODO: Make a better way to hide users from this list!
+            var userRoles = this._context.UserRoles;
             var roles = (await this._context.Roles.ToListAsync()).Select(x => new { x.Id, ShortName = x.SplitIntoLocalizedGroups(this._localizer).name });
 
             if (!string.IsNullOrWhiteSpace(filter))
@@ -76,7 +76,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     x.Id,
                     x.Email,
                     x.Name,
-                    Roles = string.Join(", ", roles.Where(role => userRoles.Where(ur => ur.UserId == x.Id).Select(ur => ur.RoleId).Contains(role.Id)).Select(role => role.ShortName))
+                    Roles = userRoles.Where(ur => ur.UserId == x.Id).Select(x => x.RoleId).ToList()// string.Join(", ", userRoles.Where(ur => ur.UserId == x.Id).Select(x => roles.First(y => y.Id == x.RoleId).ShortName))
                 }))
                 .Sort(sort.DataTableSortColumn ?? "Email", sort.DataTableSortDirection ?? "Ascending")
                 .Page(sort.DataTablePage)
