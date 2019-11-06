@@ -15,21 +15,22 @@ using Mindbite.Mox.NotificationCenter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace Mindbite.Mox.DemoApp
 {
     public class Startup
     {
-        private IHostingEnvironment HostingEnvironment;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public Startup(IHostingEnvironment hostingEnvironment)
+        public Startup(IWebHostEnvironment webHostEnvironment)
         {
-            this.HostingEnvironment = hostingEnvironment;
+            this._webHostEnvironment = webHostEnvironment;
 
             var builder = new ConfigurationBuilder()
-                .SetBasePath(hostingEnvironment.ContentRootPath)
+                .SetBasePath(webHostEnvironment.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: true)
+                .AddJsonFile($"appsettings.{webHostEnvironment.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -52,10 +53,10 @@ namespace Mindbite.Mox.DemoApp
 
             var mvc = services.AddMvc()
                 .AddViewLocalization()
-                .AddMox<AppDbContext>(this.HostingEnvironment)
-                .AddDesignDemoMoxApp(this.HostingEnvironment, this.Configuration)
-                .AddMoxNotificationCenter(this.HostingEnvironment, this.Configuration)
-                .AddMoxIdentity<AppDbContext>(this.HostingEnvironment, this.Configuration);
+                .AddMox<AppDbContext>(this._webHostEnvironment)
+                .AddDesignDemoMoxApp(this._webHostEnvironment, this.Configuration)
+                .AddMoxNotificationCenter(this._webHostEnvironment, this.Configuration)
+                .AddMoxIdentity<AppDbContext>(this._webHostEnvironment, this.Configuration);
                 //.AddMoxIdentityAzureADAuthentication(this.Configuration);
 
             services.Configure<Verification.Services.VerificationOptions>(c =>
@@ -65,7 +66,7 @@ namespace Mindbite.Mox.DemoApp
 
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this.HostingEnvironment.ApplicationName));
+                options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this._webHostEnvironment.ApplicationName));
             });
 
             //services.AddDbContext<AppDbContext>(options =>
@@ -91,7 +92,7 @@ namespace Mindbite.Mox.DemoApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {

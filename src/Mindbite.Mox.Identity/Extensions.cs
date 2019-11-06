@@ -32,12 +32,12 @@ namespace Mindbite.Mox.Extensions
         {
         }
 
-        public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext
         {
-            return AddMoxIdentity<AppDbContext_T, MoxUserManager>(mvc, hostingEnvironment, appConfiguration, moxPath, staticRequestPath);
+            return AddMoxIdentity<AppDbContext_T, MoxUserManager>(mvc, webHostEnvironment, appConfiguration, moxPath, staticRequestPath);
         }
 
-        public static IMvcBuilder AddMoxIdentity<AppDbContext_T, UserManager_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext where UserManager_T : MoxUserManager
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T, UserManager_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext where UserManager_T : MoxUserManager
         {
             var thisAssembly = typeof(IdentityExtensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);
@@ -176,9 +176,9 @@ namespace Mindbite.Mox.Extensions
             endpoints.MapAreaControllerRoute("Identity", Constants.SettingsArea, $"{moxPath}/Settings/Identity/{{controller=MyAccount}}/{{action=Index}}/{{id?}}".TrimStart('/'));
         }
 
-        public static void UseMoxIdentityStaticFiles(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath = "/static")
+        public static void UseMoxIdentityStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "/static")
         {
-            app.AddStaticFileFileProvider(typeof(IdentityExtensions), hostingEnvironment, requestPath);
+            app.AddStaticFileFileProvider(typeof(IdentityExtensions), webHostEnvironment, requestPath);
         }
 
         public static (string name, IEnumerable<string> groups) SplitIntoLocalizedGroups(this IdentityRole role, IStringLocalizer localizer)

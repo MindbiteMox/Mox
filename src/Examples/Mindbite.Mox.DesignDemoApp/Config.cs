@@ -27,7 +27,7 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
 
     public static class ConfigExtensions
     {
-        public static IMvcBuilder AddDesignDemoMoxApp(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, IConfigurationRoot appConfiguration)
+        public static IMvcBuilder AddDesignDemoMoxApp(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration)
         {
             var thisAssembly = typeof(ConfigExtensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);
@@ -76,9 +76,9 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
             endpoints.MapAreaControllerRoute("Design", Constants.MainArea, $"{moxPath}/Designs/{{controller}}/{{action=Index}}/{{id?}}");
         }
 
-        public static void UseDesignDemoStaticFiles(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath = "/static")
+        public static void UseDesignDemoStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "/static")
         {
-            app.AddStaticFileFileProvider(typeof(ConfigExtensions), hostingEnvironment, requestPath);
+            app.AddStaticFileFileProvider(typeof(ConfigExtensions), webHostEnvironment, requestPath);
         }
     }
 }

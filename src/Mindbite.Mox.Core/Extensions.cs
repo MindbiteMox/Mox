@@ -26,10 +26,12 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Hosting;
 
 namespace Mindbite.Mox.Extensions
 {
-    public static partial class MoxExtensions
+    public static class Conversions
     {
         public static ExpandoObject ToExpando(this object anonymousObject)
         {
@@ -40,8 +42,105 @@ namespace Mindbite.Mox.Extensions
             return (ExpandoObject)expando;
         }
 
-        public static IMvcBuilder AddMoxWithoutDb(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, string path = "Mox", string siteTitle = "Mox", string staticRequestPath = "/static")
+        public static int? TryToInt(this object input)
         {
+            if (int.TryParse(input?.ToString(), out var result))
+                return result;
+            return null;
+        }
+
+        public static DateTime? TryToDateTime(this object input)
+        {
+            if (DateTime.TryParse(input?.ToString(), out var result))
+                return result;
+            return null;
+        }
+
+        public static T? TryCast<T>(this object input) where T : struct
+        {
+            try
+            {
+                return (T)input;
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="trimAndReplaceCommas">Trim spaces and replace ',' with '.'</param>
+        /// <param name="format">Defaults to System.Globalization.CultureInfo.InvariantCulture if this parameter is null.</param>
+        /// <returns></returns>
+        public static double? TryToDouble(this object input, bool trimAndReplaceCommas = true, IFormatProvider format = null)
+        {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            var _input = input.ToString();
+            var _format = format ?? System.Globalization.CultureInfo.InvariantCulture;
+            var _numberStyle = System.Globalization.NumberStyles.Any;
+
+            if (trimAndReplaceCommas)
+            {
+                _input = _input?.Replace(',', '.')?.Replace(" ", "");
+            }
+
+            if (double.TryParse(_input, _numberStyle, _format, out var result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Tries to convert an int to <typeparamref name="T"/>, and returns null if it cannot be converted.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static T? TryToEnum<T>(this int value) where T : struct, IComparable, IFormattable, IConvertible // Try to catch as many non-enum types as early as possible
+        {
+            if (!typeof(T).IsEnum)
+            {
+                throw new ArgumentException("T must be and Enum");
+            }
+
+            if (Enum.IsDefined(typeof(T), value))
+                return (T)Enum.ToObject(typeof(T), value);
+            return null;
+        }
+
+        public static string GetDescription(this Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+
+            DisplayAttribute[] attributes = (DisplayAttribute[])fi.GetCustomAttributes(typeof(DisplayAttribute), false);
+
+            if (attributes != null && attributes.Length > 0)
+            {
+                return attributes[0].Name;
+            }
+            else
+            {
+                return value.ToString();
+            }
+        }
+    }
+
+    public static partial class MoxExtensions
+    {
+        public static IMvcBuilder AddMoxWithoutDb(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, string path = "Mox", string siteTitle = "Mox", string staticRequestPath = "/static")
+        {
+            if (webHostEnvironment == null)
+            {
+                throw new ArgumentNullException($"Parameter {nameof(webHostEnvironment)} cannot be null!");
+            }
+
             var thisAssembly = typeof(MoxExtensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);
             var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
@@ -55,9 +154,6 @@ namespace Mindbite.Mox.Extensions
                 var viewAssemblyPart = new CompiledRazorAssemblyPart(thisAssembly);
                 mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
             }
-
-            if (hostingEnvironment == null)
-                throw new ArgumentNullException($"Parameter {nameof(hostingEnvironment)} cannot be null!");
 
             mvc.Services.Configure<Configuration.Config>(c =>
             {
@@ -94,15 +190,15 @@ namespace Mindbite.Mox.Extensions
 
             mvc.Services.Configure<StaticFileProviderOptions>(c =>
             {
-                c.FileProviders.Add(new Microsoft.Extensions.FileProviders.PhysicalFileProvider(hostingEnvironment.WebRootPath));
+                c.FileProviders.Add(new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webHostEnvironment.WebRootPath));
             });
 
             return mvc;
         }
 
-        public static IMvcBuilder AddMox<AppDbContext_T>(this IMvcBuilder mvc, IHostingEnvironment hostingEnvironment, string path = "Mox") where AppDbContext_T : DbContext, IDbContext
+        public static IMvcBuilder AddMox<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, string path = "Mox") where AppDbContext_T : DbContext, IDbContext
         {
-            mvc.AddMoxWithoutDb(hostingEnvironment, path);
+            mvc.AddMoxWithoutDb(webHostEnvironment, path);
             mvc.Services.AddScoped<IDbContextFetcher, DbContextFetcher<AppDbContext_T>>();
 
             return mvc;
@@ -134,26 +230,26 @@ namespace Mindbite.Mox.Extensions
             });
         }
 
-        public static void UseMoxStaticFiles(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath = "/static")
+        public static void UseMoxStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "/static")
         {
-            app.AddStaticFileFileProvider(typeof(MoxExtensions), hostingEnvironment, requestPath);
+            app.AddStaticFileFileProvider(typeof(MoxExtensions), webHostEnvironment, requestPath);
         }
 
-        public static void AddStaticFileFileProvider<T>(this IApplicationBuilder app, IHostingEnvironment hostingEnvironment, string requestPath)
+        public static void AddStaticFileFileProvider<T>(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath)
         {
-            app.AddStaticFileFileProvider(typeof(T), hostingEnvironment, requestPath);
+            app.AddStaticFileFileProvider(typeof(T), webHostEnvironment, requestPath);
         }
 
-        public static void AddStaticFileFileProvider(this IApplicationBuilder app, Type type, IHostingEnvironment hostingEnvironment, string requestPath)
+        public static void AddStaticFileFileProvider(this IApplicationBuilder app, Type type, IWebHostEnvironment webHostEnvironment, string requestPath)
         {
-            var fileProvider = new StaticFilesInAssemblyFileProvider(type.GetTypeInfo().Assembly, hostingEnvironment);
+            var fileProvider = new StaticFilesInAssemblyFileProvider(type.GetTypeInfo().Assembly, webHostEnvironment);
             app.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = requestPath,
                 FileProvider = fileProvider,
                 OnPrepareResponse = ctx =>
                 {
-                    if (hostingEnvironment.IsDevelopment())
+                    if (webHostEnvironment.IsDevelopment())
                     {
                         return;
                     }

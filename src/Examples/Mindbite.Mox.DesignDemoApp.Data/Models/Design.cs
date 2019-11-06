@@ -49,11 +49,11 @@ namespace Mindbite.Mox.DesignDemoApp.Data.Models
 
     public class DesignDbContextActions
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DesignDbContextActions(IHostingEnvironment hostingEnvironment)
+        public DesignDbContextActions(IWebHostEnvironment webHostEnvironment)
         {
-            this._hostingEnvironment = hostingEnvironment;
+            this._webHostEnvironment = webHostEnvironment;
         }
 
         public void Remove<TEntity>(IDesignDbContext dbContext, TEntity entity)
@@ -61,7 +61,7 @@ namespace Mindbite.Mox.DesignDemoApp.Data.Models
             if(entity is UserImage)
             {
                 var userImage = entity as UserImage;
-                var webroot = this._hostingEnvironment.WebRootPath;
+                var webroot = this._webHostEnvironment.WebRootPath;
                 var filePath = System.IO.Path.Combine(webroot, userImage.FilePath);
                 if (System.IO.File.Exists(filePath))
                 {

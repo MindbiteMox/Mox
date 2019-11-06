@@ -11,73 +11,73 @@ namespace Mindbite.Mox.Utils.FileProviders
 {
     public class EmbeddedFilesInAssemblyFileProvider : IFileProvider
     {
-        private EmbeddedFileProvider EmbeddedFileProvider;
-        private IHostingEnvironment HostingEnvironment;
+        private readonly EmbeddedFileProvider _embeddedFileProvider;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public EmbeddedFilesInAssemblyFileProvider(Assembly assembly, IHostingEnvironment hostingEnvironment)
+        public EmbeddedFilesInAssemblyFileProvider(Assembly assembly, IWebHostEnvironment webHostEnvironment)
         {
-            this.EmbeddedFileProvider = new EmbeddedFileProvider(assembly);
-            this.HostingEnvironment = hostingEnvironment;
+            this._embeddedFileProvider = new EmbeddedFileProvider(assembly);
+            this._webHostEnvironment = webHostEnvironment;
         }
 
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            return this.EmbeddedFileProvider.GetDirectoryContents(subpath);
+            return this._embeddedFileProvider.GetDirectoryContents(subpath);
         }
 
         public IFileInfo GetFileInfo(string subpath)
         {
             // Look for file in the current hosting environment (Your app project), if a file is found, don't look for it in the assembly
-            if (this.HostingEnvironment != null)
+            if (this._webHostEnvironment != null)
             {
-                var filepath = Path.Combine(this.HostingEnvironment.ContentRootPath, subpath.TrimStart('/'));
+                var filepath = Path.Combine(this._webHostEnvironment.ContentRootPath, subpath.TrimStart('/'));
                 if (File.Exists(filepath))
                     return new NotFoundFileInfo(filepath);
             }
 
-            return this.EmbeddedFileProvider.GetFileInfo(subpath);
+            return this._embeddedFileProvider.GetFileInfo(subpath);
         }
 
         public IChangeToken Watch(string filter)
         {
-            return this.EmbeddedFileProvider.Watch(filter);
+            return this._embeddedFileProvider.Watch(filter);
         }
     }
 
     public class StaticFilesInAssemblyFileProvider : IFileProvider
     {
-        private EmbeddedFileProvider EmbeddedFileProvider;
-        private IHostingEnvironment HostingEnvironment;
-        private string StaticRoot;
+        private readonly EmbeddedFileProvider _embeddedFileProvider;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly string _staticRoot;
 
-        public StaticFilesInAssemblyFileProvider(Assembly assembly, IHostingEnvironment hostingEnvironment, string staticRoot = "/wwwroot")
+        public StaticFilesInAssemblyFileProvider(Assembly assembly, IWebHostEnvironment webHostEnvironment, string staticRoot = "/wwwroot")
         {
-            this.EmbeddedFileProvider = new EmbeddedFileProvider(assembly);
-            this.HostingEnvironment = hostingEnvironment;
-            this.StaticRoot = staticRoot;
+            this._embeddedFileProvider = new EmbeddedFileProvider(assembly);
+            this._webHostEnvironment = webHostEnvironment;
+            this._staticRoot = staticRoot;
         }
 
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            return this.EmbeddedFileProvider.GetDirectoryContents(Path.Combine(this.StaticRoot, subpath.TrimStart('/')));
+            return this._embeddedFileProvider.GetDirectoryContents(Path.Combine(this._staticRoot, subpath.TrimStart('/')));
         }
 
         public IFileInfo GetFileInfo(string subpath)
         {
             // Look for file in the current hosting environment (Your app project), if a file is found, don't look for it in the assembly
-            if (this.HostingEnvironment != null)
+            if (this._webHostEnvironment != null)
             {
-                var filepath = Path.Combine(this.HostingEnvironment.WebRootPath, subpath.TrimStart('/'));
+                var filepath = Path.Combine(this._webHostEnvironment.WebRootPath, subpath.TrimStart('/'));
                 if (File.Exists(filepath))
                     return new NotFoundFileInfo(filepath);
             }
 
-            return this.EmbeddedFileProvider.GetFileInfo(Path.Combine(this.StaticRoot, subpath.TrimStart('/')));
+            return this._embeddedFileProvider.GetFileInfo(Path.Combine(this._staticRoot, subpath.TrimStart('/')));
         }
 
         public IChangeToken Watch(string filter)
         {
-            return this.EmbeddedFileProvider.Watch(filter);
+            return this._embeddedFileProvider.Watch(filter);
         }
     }
 }

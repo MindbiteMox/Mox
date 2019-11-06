@@ -24,16 +24,16 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
     [Area(Constants.MainArea)]
     public class DesignsController : Controller
     {
-        private Data.IDesignDbContext _context;
-        private UserManager<MoxUser> _userManager;
-        private IHostingEnvironment _hostingEnvironment;
-        private INotificationSender _notificationSender;
+        private readonly Data.IDesignDbContext _context;
+        private readonly UserManager<MoxUser> _userManager;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly INotificationSender _notificationSender;
 
-        public DesignsController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, IHostingEnvironment hostingEnvironment, INotificationSender notificationSender)
+        public DesignsController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, IWebHostEnvironment webHostEnvironment, INotificationSender notificationSender)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.IDesignDbContext>();
             this._userManager = userManager;
-            this._hostingEnvironment = hostingEnvironment;
+            this._webHostEnvironment = webHostEnvironment;
             this._notificationSender = notificationSender;
         }
 
@@ -134,7 +134,7 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
                     Title = model.ImageForm.Title,
                 };
 
-                var webRoot = this._hostingEnvironment.WebRootPath;
+                var webRoot = this._webHostEnvironment.WebRootPath;
                 var fileDirPath = Path.Combine(webRoot, newImage.RelativeDirPath);
                 var filePath = Path.Combine(webRoot, newImage.RelativePath);
 

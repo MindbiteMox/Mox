@@ -11,13 +11,13 @@ namespace Mindbite.Mox.DesignDemoApp.IdentityExtensions
 {
     public class UserImage : SettingsOptions.SettingsExtension<ViewModels.UserImage>
     {
-        private Data.IDesignDbContext _context;
-        private IHostingEnvironment _hostingEnvironment;
+        private readonly Data.IDesignDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UserImage(IDbContextFetcher dbContextFetcher, IHostingEnvironment hostingEnvironment)
+        public UserImage(IDbContextFetcher dbContextFetcher, IWebHostEnvironment webHostEnvironment)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.IDesignDbContext>();
-            this._hostingEnvironment = hostingEnvironment;
+            this._webHostEnvironment = webHostEnvironment;
         }
 
         public override async Task<object> GetViewModel(string userId)
@@ -50,7 +50,7 @@ namespace Mindbite.Mox.DesignDemoApp.IdentityExtensions
                 Filename = userImageViewModel.Upload.FileName
             };
 
-            var filePath = System.IO.Path.Combine(this._hostingEnvironment.WebRootPath, newUserImage.FilePath);
+            var filePath = System.IO.Path.Combine(this._webHostEnvironment.WebRootPath, newUserImage.FilePath);
             var fileDir = System.IO.Path.GetDirectoryName(filePath);
             System.IO.Directory.CreateDirectory(fileDir);
 
