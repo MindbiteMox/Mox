@@ -77,7 +77,6 @@ namespace Mindbite.Mox.DemoApp
             services.Configure<MoxIdentityOptions>(this.Configuration.GetSection("MoxIdentityOptions"));
             services.Configure<MoxIdentityOptions>(config =>
             {
-                //config.LoginStaticFiles.Add(Mox.Configuration.StaticIncludes.StaticFile.Style("asdkajlsdjlsdj"));
                 config.Groups.DisableGroupSettingsCallback = (serviceProvider, user) =>
                 {
                     return Task.FromResult(true);
@@ -132,12 +131,6 @@ namespace Mindbite.Mox.DemoApp
                 SupportedUICultures = supportedCultures
             });
 
-            //app.Use((context, next) =>
-            //{
-            //    context.Request.Scheme = "http";
-            //    return next();
-            //});
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapMoxRoutes();
@@ -146,15 +139,6 @@ namespace Mindbite.Mox.DemoApp
                 endpoints.MapMoxNotificationCenterRoutes();
                 endpoints.MapRedirectToMoxRoutes();
             });
-
-            //app.UseMvc(routes =>
-            //{
-            //    routes.MapMoxRoutes();
-            //    routes.MapDesignDemoRoutes();
-            //    routes.MapMoxIdentityRoutes();
-            //    routes.MapMoxNotificationCenterRoutes();
-            //    routes.MapRedirectToMoxRoutes();
-            //});
 
             Verification.Startup.VerifyAsync(app.ApplicationServices).Wait();
         }
