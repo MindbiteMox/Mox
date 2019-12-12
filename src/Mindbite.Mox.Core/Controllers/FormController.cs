@@ -60,7 +60,7 @@ namespace Mindbite.Mox.Core.Controllers
             ViewData[nameof(Layout)] = this.Layout;
             ViewData[nameof(IndexPageHeading)] = this.IndexPageHeading;
             ViewData[nameof(ModelDisplayName)] = this.ModelDisplayName ?? modelDisplayAttribute?.GetName();
-            ViewData[nameof(EditPageHeading)] = this.EditPageHeading(viewModel);
+            ViewData[nameof(EditPageHeading)] = viewModel != null ? this.EditPageHeading(viewModel) : string.Empty;
             ViewData[nameof(ModelTitleFieldName)] = this.ModelTitleFieldName;
             ViewData[nameof(RedirectToIndexRouteValues)] = viewModel != null ? this.RedirectToIndexRouteValues(viewModel) : new object();
             ViewData[nameof(RenderDefaultCreateHeader)] = this.RenderDefaultCreateHeader;

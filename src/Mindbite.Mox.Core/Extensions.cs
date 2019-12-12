@@ -150,7 +150,16 @@ namespace Mindbite.Mox.Extensions
             app.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = requestPath,
-                FileProvider = fileProvider
+                FileProvider = fileProvider,
+                OnPrepareResponse = ctx =>
+                {
+                    if (hostingEnvironment.IsDevelopment())
+                    {
+                        return;
+                    }
+
+                    ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age=2592000");
+                }
             });
 
             var staticFileProviders = app.ApplicationServices.GetService<IOptions<StaticFileProviderOptions>>();
