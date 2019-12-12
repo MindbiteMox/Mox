@@ -88,7 +88,7 @@ namespace Mindbite.Mox.UI.Menu
 
         public static IEnumerable<MenuItem> Flatten(this IEnumerable<MenuItem> menu)
         {
-            IEnumerable<MenuItem> addChildren(IEnumerable<MenuItem> menuItems)
+            static IEnumerable<MenuItem> addChildren(IEnumerable<MenuItem> menuItems)
             {
                 foreach (var item in menuItems)
                 {
@@ -105,7 +105,7 @@ namespace Mindbite.Mox.UI.Menu
 
         public static void FixParents(this List<MenuItem> menu)
         {
-            void fixParents(List<MenuItem> parents)
+            static void fixParents(List<MenuItem> parents)
             {
                 foreach(var parent in parents)
                 {

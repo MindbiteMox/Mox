@@ -1,0 +1,358 @@
+﻿html, body { margin: 0; height: 100%; overflow: hidden; background-color: #fff; color: #24292e; position: relative; padding: 0; font-size: 14px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+
+input, textarea, select, button { font-size: 1rem; line-height: 1.5em; color: #24292e; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+input[type=button], input[type=submit], button { line-height: 1.2em; }
+select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('/mox/static/svg/arrow-down.svg'); background-position: right 10px center; background-repeat: no-repeat; background-size: 11px; padding-right: 28px !important; }
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.8rem; }
+h4, h5, h6 { font-size: 1rem; }
+
+.mox-header { background-color: #24292e; position: relative; z-index: 10; }
+.mox-header-menu-container {  }
+.mox-header-menu-container .mox-menu { list-style: none; margin: 0; padding: 0; float: left; }
+.mox-header-menu-container .mox-menu li { display: block; float: left; }
+.mox-header-menu-container .mox-menu li a { display: inline-block; padding: 0 10px; line-height: 40px; text-wrap: none; text-decoration: none; color: #fff; }
+.mox-header-menu-container .mox-menu li a:hover,
+.mox-header-menu-container .mox-menu li a.selected { background-color: rgba(255, 255, 255, .1); }
+
+.mox-header-sub-menu { background-color: #f5f5f8; }
+.mox-header-sub-menu .mox-menu { list-style: none; margin: 0; padding: 0; height: 40px; margin-left: 20px; }
+.mox-header-sub-menu .mox-menu li { display: block; float: left; }
+.mox-header-sub-menu .mox-menu li a { display: inline-block; padding: 0 10px; line-height: 36px; text-decoration: none; text-wrap: none; color: #666; padding-top: 2px; padding-bottom: 2px; }
+.mox-header-sub-menu .mox-menu li a:hover { background-color: rgba(0, 0, 0, .05); }
+.mox-header-sub-menu .mox-menu li a.selected { color: #000; border-bottom: 2px solid #555; padding-bottom: 0; margin-bottom: 2px; }
+
+.mox-header-apps-button { float: left; width: 32px; height: 32px; margin: 4px 20px; background-image: url('/mox/static/images/logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; }
+.mox-header-app-menu { float: left; height: 40px; }
+.mox-header-app-menu .menu-item { display: inline-block; padding: 0 10px; line-height: 40px; text-wrap: none; text-decoration: none; color: #fff; }
+.mox-header-app-menu .menu-item+.menu-item { margin-left: 20px; }
+.mox-header-app-menu .menu-item:hover { color: #cacaca; }
+.mox-header-app-menu .selected { color: #fff; background-color: rgba(255, 255, 255, 0.1); }
+
+.mox-header-mobile-app-name { display: none; }
+
+.mox-apps { position: fixed; top: 0px; bottom: 0; padding-top: 72px; left: -251px; width: 250px; transition: left .2s; background-color: #212529; z-index: 9; }
+.mox-apps.open { left: 0; }
+
+.mox-apps-menu { list-style: none; margin: 0; padding: 10px; }
+.mox-apps .menu-heading { font-size: 20px; margin: 15px 15px 10px; color: #fff; }
+.mox-apps-menu .menu-item { margin-bottom: 5px; }
+.mox-apps-menu .menu-item a { display: block; color: #fff; text-decoration: none; padding: 7px 10px 9px; border-radius: 3px; line-height: 1em; }
+.mox-apps-menu .selected a { background-color: #2e3238; }
+.mox-apps-menu .menu-item a:hover { color: #cacaca; }
+
+.mox-side-menu { height: 100%; width: 300px; background-color: #fff; border-right: 1px solid #cacaca; float: left; }
+.mox-side-menu .app-title { display: block; margin: 30px 15px 0.6em; font-size: 0.85em; color: #777; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+.mox-side-menu .mox-menu { list-style: none; padding: 0; margin: 0 15px 10px 1em; }
+.mox-side-menu .mox-menu li { margin-bottom: 2px; }
+.mox-side-menu .mox-menu li a { padding: 8px 10px; display: block; border-radius: 3px; color: #777; text-decoration: none; }
+.mox-side-menu .mox-menu li a:hover { background-color: #f5f5f8; }
+.mox-side-menu .mox-menu li a.selected { background-color: #eee; color: #24292e; font-weight: 500; }
+.mox-side-menu .mox-menu li a.selected-parent { background-color: #fafafa; border: 1px solid #f4f4f4; }
+
+.mox-side-menu .mox-menu .mox-menu { margin-left: 15px; margin-right: 0; margin-top: 5px; }
+
+.mox-header-logo { color: white; font-size: 14px; font-weight: bold; height: 40px; line-height: 40px; margin: 0 20px; float: left; }
+
+.mox-header-right-menu { float: right; margin: 0; height: 40px; }
+.mox-header-right-menu-list { list-style: none; padding: 0; margin: 0; height: 40px; }
+.mox-header-right-menu-item { position: relative; display: inline-block; float: left; }
+
+.mox-header-right-menu-item+.mox-header-right-menu-item { border-right: 1px solid #eee; }
+
+.mox-header-dropdown-items { list-style: none; padding: 5px 0; }
+.mox-header-dropdown-item { display: block; }
+.mox-header-dropdown-item span,
+.mox-header-dropdown-item a { display: block; padding: 5px 10px; color: #24292e; text-decoration: none; }
+.mox-header-dropdown-item a:hover { background-color: #f5f5f8; }
+
+.mox-content-wrapper { position: relative; height: calc(100% - 40px); }
+.mox-content-wrapper.mox-with-side-menu { }
+.mox-content { background-color: #fff; margin: 0; padding: 25px 25px; padding-bottom: 200px; }
+.mox-content-scroll-wrapper { height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; }
+
+.mox-content input[type=checkbox] { width: 16px; height: 16px; padding: 0; margin:0; vertical-align: middle; position: relative; top: -1px; }
+.mox-content h2:not(:first-of-type) { border-top: 1px solid #eee; padding-top: 8px; margin-top: 30px; }
+
+.mox-content form { max-width: 960px; }
+
+.mox-content article { max-width: 960px; }
+.mox-content article :first-child h1:first-of-type,
+.mox-content article > h1:first-of-type { margin-top: 1.5rem; }
+.mox-content article h1 { margin-bottom: 1rem; }
+
+.mox-button { padding: 6px 10px; border-radius: 3px; background-color: #eee; text-decoration: none; color: #24292e; font-size: 1rem; font-weight: 500; display: inline-block; line-height: 1.2rem; cursor: pointer; }
+.mox-button:hover { background-color: #cacaca; }
+
+.mox-button.save { background-color: #efe; }
+.mox-button.save:hover { background-color: #cec; }
+
+.mox-button.plain { background-color: #eee; color: #24292e; }
+.mox-button.plain:hover { background-color: #cacaca; }
+
+.mox-header-apps-button:hover { cursor: pointer; transition: transform .125s ease-out; transform: rotate(-10deg); animation: swag .5s ease-in-out infinite; animation-delay: .125s; }
+@keyframes swag { 0% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(-10deg); } }
+
+/**************************************************************
+    DATATABLE
+***************************************************************/
+.mox-datatable { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.mox-datatable a { text-decoration: none; color: #24292e; }
+.mox-datatable tr th { padding: 0; text-align: left; background-color: #f5f5f8; }
+.mox-datatable tr th > a,
+.mox-datatable tr th > span { padding: 8px 10px; display: block; border-bottom: 1px solid #eaeaea; border-top: 1px solid #eaeaea; font-weight: 500; }
+.mox-datatable tr td { text-align: left; padding: 0; border-bottom: 1px solid #eaeaea; }
+.mox-datatable tr td a { padding: 8px 10px; display: block; }
+.mox-datatable tr td span { padding: 8px 10px; display: block; }
+
+.mox-datatable-empty { font-weight: 500; text-align: center; padding: 8px 10px; background-color: #f5f5f8; border-bottom: 1px solid #eaeaea; border-top: 1px solid #eaeaea; }
+.mox-datatable-loader { background-image: url('/mox/static/svg/loader-button-black.svg'); height: 40px; background-position: center; background-size: 28px; background-repeat: no-repeat; }
+
+.mox-datatable tr th.buttons { width: 180px; }
+.mox-datatable tr td.buttons .buttons-list { list-style: none; padding: 0 8px; margin: 0; text-align: right; }
+.mox-datatable tr td.buttons .buttons-list li { display: inline-block; }
+
+.mox-datatable .buttons-list .mox-datatable-button { text-indent: -9999px; text-align: left; width: 2em; height: 2em; background-size: 20px; background-position: center; background-repeat: no-repeat; padding: 0; border-radius: 3px; }
+.mox-datatable .buttons-list .mox-datatable-button:hover { background-color: #ccc; }
+
+.mox-datatable .buttons-list .mox-datatable-button.display { background-image: url('/mox/static/images/display.png') }
+.mox-datatable .buttons-list .mox-datatable-button.edit { background-image: url('/mox/static/images/edit.png') }
+.mox-datatable .buttons-list .mox-datatable-button.delete { background-image: url('/mox/static/images/delete.png') }
+.mox-datatable .buttons-list .mox-datatable-button.delete:hover { background-color: #faa; }
+
+.mox-datatable tr th.sortable a:hover { background-color: #eee; }
+.mox-datatable tr:hover td { background-color: #eee; }
+
+.mox-datatable tr th.sortable.ascending { }
+.mox-datatable tr th.sortable.descending { }
+
+.mox-pager { list-style: none; margin: 0; padding: 0; border-radius: 3px; border: 1px solid #cacaca; display: inline-block; }
+.mox-pager li { display: block; float: left; text-align: center; }
+.mox-pager li a { text-decoration: none; color: #24292e; display: block; padding: 6px 4px; font-weight: 500; min-width: 28px; }
+.mox-pager li.disabled a { color: #bbb; pointer-events: none; }
+.mox-pager li.selected,
+.mox-pager li:not(.disabled):hover { background-color: #f5f5f8; }
+
+.mox-pager li+li { border-left: 1px solid #cacaca; }
+
+.mox-content .mox-filters { display: flex; flex-direction: row; list-style: none; padding: 0; margin: 0; margin-top: 10px; margin-bottom: 0; flex-wrap: wrap; }
+.mox-content .mox-filters input[type=text],
+.mox-content .mox-filters input[type=date],
+.mox-content .mox-filters input[type=number] { box-sizing: border-box; border: 1px solid #cacaca; padding: 4.5px; border-radius: 3px; margin: 0; line-height: 17px; }
+.mox-content .mox-filters select { box-sizing: border-box; border: 1px solid #cacaca; padding: 0 4.5px; border-radius: 3px; margin: 0; height: 28px; }
+.mox-content .mox-filters > li { margin-bottom: 10px; margin-right: 5px; }
+.mox-content .mox-filters > .break { flex-grow: 1; }
+.mox-content .mox-filters > .spacing { padding-right: 10px; border-right: 1px solid #eee; margin-right: 10px; }
+
+.mox-table-scroll-wrapper { margin: 0 -16px; padding: 0 16px; overflow-x: auto; }
+
+.mox-datatable.clean tr:nth-of-type(2n+1) td { background-color: #fff; }
+.mox-datatable.clean tr th > a, .mox-datatable.clean tr th > span { padding: 4px 8px; border: 0; font-weight: normal; font-size: 0.85em }
+.mox-datatable.clean tr th { padding-bottom: 5px; color: #777; }
+.mox-datatable.clean tr td span { padding: 4px 8px; }
+.mox-datatable.clean tr td a { padding: 4px 8px; }
+.mox-datatable.clean tr:hover td { background-color: #eee; }
+.mox-datatable input[type=text], .mox-datatable input[type=date], .mox-datatable input[type=time] { background-color: transparent; margin-left: -4px; border: 1px solid transparent; padding: 1px 4px; -webkit-appearance: none; -moz-appearance: none; -ms-appearance: none; -o-appearance: none; appearance: none; }
+
+.mox-datatable tr:hover input[type=text], .mox-datatable tr:hover input[type=date], .mox-datatable tr:hover input[type=time] { background-color: white; border: 1px solid #bbb; }
+
+.mox-datatable tr td.unpadded span { padding: 0 10px; }
+.mox-datatable.clean tr td.unpadded span { padding: 0 8px; }
+.mox-datatable tr td.unpadded a { padding: 0 10px; }
+.mox-datatable.clean tr td.unpadded a { padding: 0 8px; }
+
+.mox-datatable .hidden { display: none; }
+
+.mox-datatable .group { background-color: #f5f5f8; font-weight: bold; }
+
+
+/**************************************************************
+    FORMS
+***************************************************************/
+
+.mox-message { border-radius: 3px; padding: 10px 20px; padding-left: 20px; border: 1px solid #94b6af; border-left: 5px solid #20bea1; background-image: url('/mox/static/svg/message-check.svg'); background-size: 24px; background-position: 14px center; background-repeat: no-repeat; padding-left: 55px; margin-bottom: 10px; }
+.mox-message p { margin: 0; }
+.mox-message-neutral { border-radius: 3px; padding: 10px 20px; padding-left: 20px; border: 1px solid #bbc; border-left: 5px solid #bbc; }
+.mox-message-neutral p { margin: 0; }
+
+.validation-summary-errors { background-color: #faa; border-radius: 3px; padding: 10px 20px; }
+.validation-summary-errors ul { list-style: none; padding: 0; margin: 0; }
+.field-validation-error { color: #f33; }
+
+.mox-content fieldset { border: 0; padding: 0; margin-bottom: 15px; }
+.mox-content fieldset legend { padding: 0; display: block; font-size: 20px; margin-bottom: 0; }
+
+.mox-content fieldset > p:first-child { margin-top: 0; }
+.mox-content fieldset p label { display: inline-block; margin-bottom: 4px; }
+
+.mox-modal .mox-content fieldset.buttons > p { margin-top: 1em; }
+
+.mox-content fieldset p input[type="color"],
+.mox-content fieldset p input[type="date"],
+.mox-content fieldset p input[type="datetime"],
+.mox-content fieldset p input[type="datetime-local"],
+.mox-content fieldset p input[type="email"],
+.mox-content fieldset p input[type="month"],
+.mox-content fieldset p input[type="number"],
+.mox-content fieldset p input[type="password"],
+.mox-content fieldset p input[type="search"],
+.mox-content fieldset p input[type="tel"],
+.mox-content fieldset p input[type="text"],
+.mox-content fieldset p input[type="time"],
+.mox-content fieldset p input[type="url"],
+.mox-content fieldset p input[type="week"],
+.mox-content fieldset p select,
+.mox-content fieldset p textarea { width: 100%; box-sizing: border-box; border: 1px solid #cacaca; padding: 5px 8px; border-radius: 3px; }
+.mox-content fieldset p input[type=file] { width: 100%; box-sizing: border-box; }
+
+.mox-content fieldset input[type=submit],
+.mox-content fieldset button.save { cursor: pointer; padding: 6px 10px; border: 0; border-radius: 3px; background-color: #20bea1; text-decoration: none; color: #fff; font-weight: 500; -webkit-appearance: none; }
+.mox-content fieldset input[type=submit]:hover,
+.mox-content fieldset button.save:hover { background-color: #1dab91; }
+
+.mox-content fieldset a.cancel { text-decoration: none; color: #333; margin-left: 20px; }
+
+.mox-content fieldset ul.checkbox { list-style: none; margin: 1em 0; padding: 0; display: inline-block; }
+.mox-content fieldset ul.checkbox li { display: block; }
+
+.mox-content fieldset.buttons { width: 100%; box-sizing: border-box; }
+
+.mox-hidden-if-not-checked { display: none; padding-top: 1em; margin-bottom: 30px; }
+input[type="checkbox"]:checked ~ .mox-hidden-if-not-checked { display: block; }
+.mox-hidden-if-not-checked > p:first-of-type { margin-top: 0; }
+
+input[type="date"] { display: block; -webkit-appearance: textfield; -moz-appearance: textfield; appearance: textfield; min-height: 1.2em; }
+
+input[type="color"],
+input[type="date"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="email"],
+input[type="month"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="time"],
+input[type="url"],
+input[type="week"],
+select,
+textarea { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+
+input[type="color"]:read-only,
+input[type="date"]:read-only,
+input[type="datetime"]:read-only,
+input[type="datetime-local"]:read-only,
+input[type="email"]:read-only,
+input[type="month"]:read-only,
+input[type="number"]:read-only,
+input[type="password"]:read-only,
+input[type="search"]:read-only,
+input[type="tel"]:read-only,
+input[type="text"]:read-only,
+input[type="time"]:read-only,
+input[type="url"]:read-only,
+input[type="week"]:read-only,
+textarea:read-only { background-color: #e3e3e3; opacity: 0.5; }
+
+/**************************************************************
+    DISPLAY
+***************************************************************/
+.mox-display {  }
+.mox-display label { display: block; margin-bottom: 4px; margin-top: 15px; }
+.mox-display-content { padding: 5px 8px; background-color: #fafafe; border-radius: 3px; white-space: pre-line; border: 1px solid #f0f0f0; line-height: 1.5em; }
+
+.mox-content-infobox { background-color: #f5f5f8; display: flex; flex-direction: row; padding: 10px 16px; border-radius: 3px; border: 1px solid #eaeaea; margin-bottom: 10px; }
+.mox-content-infobox > .column { display: flex; flex-direction: column; margin-right: 50px; flex-wrap: wrap; }
+.mox-content-infobox a { color: #005; }
+dl { display: flex; flex-direction: column; margin: 0; }
+dt { font-size: 12px; color: #888; margin-bottom: 2px; white-space: nowrap; }
+dd { margin: 0; color: #000; word-break: keep-all; }
+dd + dt { margin-top: 10px; }
+
+
+/**************************************************************
+    MENUS
+***************************************************************/
+.mox-content .mox-menu { display: block; list-style: none; padding: 0; margin: 0; margin-bottom: 20px; border-bottom: 1px solid #eaeaea; }
+.mox-content .mox-menu li { display: inline-block; margin-right: 5px; padding: 0; }
+.mox-content .mox-menu li a { padding: 0.9em 0.7em; display: block; text-decoration: none; color: #666; border-bottom: 2px solid transparent; border-top: 2px solid transparent; transition: border-bottom .2s, color .2s; }
+.mox-content .mox-menu li a:hover { border-bottom: 2px solid #999; color: #24292e; }
+.mox-content .mox-menu li a.selected { border-bottom: 2px solid #20bea1; color: #24292e; }
+
+.mox-breadcrumbs { list-style: none; padding: 0; margin: 0; display: block; margin-bottom: -16px; }
+.mox-breadcrumbs li { display: inline-block; color: #a9a9a9; font-weight: 500; }
+.mox-breadcrumbs li a { text-decoration: none; color: #a9a9a9; }
+.mox-breadcrumbs li+li::before { content: '>'; margin: 0 6px; }
+.mox-breadcrumbs li a:hover { text-decoration: underline; }
+
+
+/**************************************************************
+    MODALS
+***************************************************************/
+.mox-modal { position: fixed; top: 0; bottom: 0; left: 0; right: 0; transition: opacity .2s; opacity: 1; z-index: 100; }
+.mox-modal-shadow { overflow-y: auto; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.4); }
+.mox-modal-shadow.loading:before { display: block; content: ''; position: absolute; top: calc(5vh + 100px); left: calc(50% - 30px); background width: 60px; height: 60px; background-image: url('/mox/static/svg/loader-button-white.svg'); background-size: 28px; background-repeat: no-repeat; background-position: center; }
+.mox-modal-wrapper { width: 100%; max-width: 600px; margin: 5vh auto; background-color: #fff; border-radius: 5px; box-sizing: border-box; box-shadow: rgba(0, 0, 0, 0.25) 0 0 20px; position: relative; overflow: hidden; transition: opacity .2s, transform .2s; }
+.mox-modal-content { overflow-y: auto; box-sizing: border-box; }
+.mox-modal-content.mox-content { padding-bottom: 16px; background-color: unset; }
+.mox-modal-content.mox-content h1 { margin-top: 0; }
+
+.mox-modal.hidden { opacity: 0; }
+
+.mox-modal-wrapper.loading { opacity: 0; transform: translateY(-10px); }
+
+.mox-modal-close { background-image: url('/mox/static/svg/x.svg'); background-size: 20px; background-repeat: no-repeat; background-position: center; position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; border-radius: 50%; color: #000; opacity: 0.6; transition: background-color .1s, opacity .1s; }
+.mox-modal-close:hover { background-color: #f0f0f0; opacity: 1; }
+
+.mox-dialog .mox-modal-content, .mox-dialog .mox-modal-wrapper { max-height: 800px; }
+.mox-dialog form { padding-bottom: 40px; }
+.mox-dialog .buttons { margin: 0; padding: 0 16px; border-top: 1px solid #eee; position: absolute; left: 0; right: 0; bottom: 0; background-color: #fff; }
+.mox-dialog .buttons p { float: right; }
+
+.mox-content fieldset input[type=submit],
+.mox-content fieldset button.save { background-position-x: -16px; transition: padding-left .2s, background-position .2s; }
+.mox-content fieldset input[type=submit].loading,
+.mox-content fieldset button.save.loading { padding-left: 28px; background-image: url('/mox/static/svg/loader-button-white.svg'); background-position: 6px center; background-size: 16px; background-repeat: no-repeat; }
+
+@media (pointer: coarse) {
+
+    .mox-breadcrumbs { padding: 10px 0; margin: -10px 0; margin-bottom: -26px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+    .mox-breadcrumbs::-webkit-scrollbar { display: none; }
+    .mox-breadcrumbs li:first-of-type { }
+    .mox-breadcrumbs li:last-of-type { margin-right: 10px; }
+
+    .mox-content fieldset ul.checkbox { display: block; }
+    .mox-content fieldset ul.checkbox li { display: flex; align-items: center; }
+    .mox-content input[type="checkbox"] { transform: scale(1.3); margin: 10px 8px 10px 0; }
+
+    .mox-datatable tr td a,
+    .mox-datatable tr td span { padding: 12px 10px; }
+
+    input[type="color"],
+    input[type="date"],
+    input[type="datetime"],
+    input[type="datetime-local"],
+    input[type="email"],
+    input[type="month"],
+    input[type="number"],
+    input[type="password"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="text"],
+    input[type="time"],
+    input[type="url"],
+    input[type="week"],
+    select,
+    select:focus,
+    textarea { font-size: 16px !important; }
+
+    .mox-content fieldset input[type="submit"], .mox-content fieldset button.save { padding: 8px 14px; }
+    .mox-button { padding: 8px 14px; }
+
+    .mox-content .mox-filters input[type="text"], .mox-content .mox-filters input[type="date"], .mox-content .mox-filters input[type="number"] { height: 32px; line-height: 32px; }
+    .mox-content .mox-filters select { height: 32px; }
+}

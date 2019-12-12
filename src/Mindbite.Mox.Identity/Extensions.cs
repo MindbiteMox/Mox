@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Mindbite.Mox.Identity;
 using Mindbite.Mox.Identity.AuthorizeFilters;
 using Mindbite.Mox.Identity.Data;
@@ -32,12 +33,12 @@ namespace Mindbite.Mox.Extensions
         {
         }
 
-        public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "") where AppDbContext_T : MoxIdentityDbContext, IDbContext
         {
             return AddMoxIdentity<AppDbContext_T, MoxUserManager>(mvc, webHostEnvironment, appConfiguration, moxPath, staticRequestPath);
         }
 
-        public static IMvcBuilder AddMoxIdentity<AppDbContext_T, UserManager_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static") where AppDbContext_T : MoxIdentityDbContext, IDbContext where UserManager_T : MoxUserManager
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T, UserManager_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "") where AppDbContext_T : MoxIdentityDbContext, IDbContext where UserManager_T : MoxUserManager
         {
             var thisAssembly = typeof(IdentityExtensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);
@@ -138,11 +139,17 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.Configure<Configuration.StaticIncludes.IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
-                c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("identity/css/mox_base.css"));
-                c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("identity/css/mox_base_mobile.css", maxWidth: 960));
+                c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/css/mox_base.css"));
+                c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/css/mox_base_mobile.css", maxWidth: 960));
             });
 
             mvc.Services.Configure<SettingsOptions>(c => { });
+
+            mvc.Services.Configure<MoxIdentityOptions>(x =>
+            {
+                x.LoginStaticFiles.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/login/css/base.css"));
+                x.LoginStaticFiles.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/login/css/base_mobile.css", maxWidth: 960));
+            });
 
             var userRolesFetcher = mvc.Services.FirstOrDefault(x => x.ServiceType == typeof(IUserRolesFetcher));
             if (userRolesFetcher != null)
@@ -176,9 +183,52 @@ namespace Mindbite.Mox.Extensions
             endpoints.MapAreaControllerRoute("Identity", Constants.SettingsArea, $"{moxPath}/Settings/Identity/{{controller=MyAccount}}/{{action=Index}}/{{id?}}".TrimStart('/'));
         }
 
-        public static void UseMoxIdentityStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "/static")
+        public static void UseMoxIdentityStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "")
         {
             app.AddStaticFileFileProvider(typeof(IdentityExtensions), webHostEnvironment, requestPath);
+        }
+
+        public static void UseMoxStaticFileAuthorization(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment)
+        {
+            if(app.ApplicationServices.GetService<Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware>() != null)
+            {
+                throw new Exception("Put me before UseStaticFiles(), after UseAuthentication()");
+            }
+
+            var config = app.ApplicationServices.GetRequiredService<IOptions<MoxIdentityOptions>>().Value;
+            var staticFilesOptions = app.ApplicationServices.GetRequiredService<IOptions<StaticFileOptions>>().Value;
+
+            app.Use(async (context, next) =>
+            {
+                if (context.User.Identity.IsAuthenticated)
+                {
+                    goto Success;
+                }
+
+                var allowed = new[]
+                {
+                    $"{(staticFilesOptions.RequestPath.ToString().Trim('/') == string.Empty ? "/" : $"/{staticFilesOptions.RequestPath.ToString().Trim('/')}/")}public", // TODO: cleanup
+                    $"{(staticFilesOptions.RequestPath.ToString().Trim('/') == string.Empty ? "/" : $"/{staticFilesOptions.RequestPath.ToString().Trim('/')}/")}mox/static/identity/login" // TODO: cleanup
+                }.Concat(config.AdditionalAllowedStaticFileLocations);
+
+                if (allowed.Any(x => context.Request.Path.StartsWithSegments(x)))
+                {
+                    goto Success;
+                }
+
+                var staticFileProviders = app.ApplicationServices.GetService<IOptions<Configuration.StaticIncludes.StaticFileProviderOptions>>().Value.FileProviders;
+                staticFileProviders.Add(context.RequestServices.GetRequiredService<IOptions<StaticFileOptions>>().Value.FileProvider ?? webHostEnvironment.WebRootFileProvider);
+
+                var fileInfo = staticFileProviders.Select(x => x.GetFileInfo(context.Request.Path)).FirstOrDefault(x => x.Exists);
+                if (fileInfo?.Exists ?? false)
+                {
+                    context.Response.StatusCode = 403;
+                    return;
+                }
+
+                Success:
+                await next();
+            });
         }
 
         public static (string name, IEnumerable<string> groups) SplitIntoLocalizedGroups(this IdentityRole role, IStringLocalizer localizer)

@@ -49,7 +49,7 @@ namespace Mindbite.Mox.Controllers
             }
             else
             {
-                return View(viewName: "Shared/Error");
+                return View(viewName: "Public/Error");
             }
         }
     }

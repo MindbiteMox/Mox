@@ -41,6 +41,7 @@ namespace Mindbite.Mox.DemoApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
             services.AddRouting();
             services.AddOptions();
             services.AddMemoryCache();
@@ -56,37 +57,37 @@ namespace Mindbite.Mox.DemoApp
                 .AddMox<AppDbContext>(this._webHostEnvironment)
                 .AddDesignDemoMoxApp(this._webHostEnvironment, this.Configuration)
                 .AddMoxNotificationCenter(this._webHostEnvironment, this.Configuration)
+                .AddMoxIdentityAzureADAuthentication(this.Configuration)
                 .AddMoxIdentity<AppDbContext>(this._webHostEnvironment, this.Configuration);
-                //.AddMoxIdentityAzureADAuthentication(this.Configuration);
 
             services.Configure<Verification.Services.VerificationOptions>(c =>
             {
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("SomeTestRole"));
             });
 
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this._webHostEnvironment.ApplicationName));
-            });
-
             //services.AddDbContext<AppDbContext>(options =>
             //{
-            //    options.UseInMemoryDatabase("DemoApp");
+            //    options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly(this._webHostEnvironment.ApplicationName));
             //});
+
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseInMemoryDatabase("DemoApp");
+            });
 
             services.Configure<MoxIdentityOptions>(this.Configuration.GetSection("MoxIdentityOptions"));
             services.Configure<MoxIdentityOptions>(config =>
             {
-                config.Groups.DisableGroupSettingsCallback = (serviceProvider, user) =>
-                {
-                    return Task.FromResult(true);
-                };
+                //config.Groups.DisableGroupSettingsCallback = (serviceProvider, user) =>
+                //{
+                //    return Task.FromResult(true);
+                //};
 
-                config.Groups.GroupSettingsMovedToThisUrl = (serviceProvider, user, url) =>
-                {
-                    var settingsOptions = serviceProvider.GetRequiredService<IOptions<SettingsOptions>>().Value;
-                    return Task.FromResult(url.Action("EditOther", new { user.Id, View = settingsOptions.AdditionalEditUserViews.First().ViewName }));
-                };
+                //config.Groups.GroupSettingsMovedToThisUrl = (serviceProvider, user, url) =>
+                //{
+                //    var settingsOptions = serviceProvider.GetRequiredService<IOptions<SettingsOptions>>().Value;
+                //    return Task.FromResult(url.Action("EditOther", new { user.Id, View = settingsOptions.AdditionalEditUserViews.First().ViewName }));
+                //};
             });
         }
 
@@ -96,8 +97,6 @@ namespace Mindbite.Mox.DemoApp
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                //app.UseExceptionHandler("/Mox/Error/500");
-                //app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
             }
             else
             {
@@ -105,7 +104,11 @@ namespace Mindbite.Mox.DemoApp
                 app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
             }
 
-            var staticRoot = "/static";
+            app.UseAuthentication();
+
+            app.UseMoxStaticFileAuthorization(env);
+            
+            var staticRoot = "";
             app.UseStaticFiles(staticRoot);
             app.UseMoxStaticFiles(env, staticRoot);
             app.UseDesignDemoStaticFiles(env, staticRoot);
@@ -116,7 +119,6 @@ namespace Mindbite.Mox.DemoApp
             app.UseCors();
 
             app.UseSession();
-            app.UseAuthentication();
             app.UseAuthorization();
 
             var supportedCultures = new List<System.Globalization.CultureInfo>
@@ -137,6 +139,7 @@ namespace Mindbite.Mox.DemoApp
                 endpoints.MapDesignDemoRoutes();
                 endpoints.MapMoxIdentityRoutes();
                 endpoints.MapMoxNotificationCenterRoutes();
+                endpoints.MapMoxIdentityAzureADRoutes();
                 endpoints.MapRedirectToMoxRoutes();
             });
 

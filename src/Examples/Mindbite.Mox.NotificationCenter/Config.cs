@@ -28,7 +28,7 @@ namespace Mindbite.Mox.NotificationCenter
 
     public static class Configuration
     {
-        public static IMvcBuilder AddMoxNotificationCenter(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "/static")
+        public static IMvcBuilder AddMoxNotificationCenter(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "")
         {
             var thisAssembly = typeof(Configuration).Assembly;
             mvc.AddApplicationPart(thisAssembly);
@@ -97,7 +97,7 @@ namespace Mindbite.Mox.NotificationCenter
             endpoints.MapAreaControllerRoute("Notifications", Constants.MainArea, $"{moxPath}/{Constants.MainArea}/{{controller}}/{{action=Index}}/{{id?}}");
         }
 
-        public static void UseMoxNotificationCenterStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "/static")
+        public static void UseMoxNotificationCenterStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "")
         {
             app.AddStaticFileFileProvider(typeof(Configuration), webHostEnvironment, requestPath);
         }

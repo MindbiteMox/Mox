@@ -76,7 +76,7 @@ namespace Mindbite.Mox.DesignDemoApp.Configuration
             endpoints.MapAreaControllerRoute("Design", Constants.MainArea, $"{moxPath}/Designs/{{controller}}/{{action=Index}}/{{id?}}");
         }
 
-        public static void UseDesignDemoStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "/static")
+        public static void UseDesignDemoStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "")
         {
             app.AddStaticFileFileProvider(typeof(ConfigExtensions), webHostEnvironment, requestPath);
         }

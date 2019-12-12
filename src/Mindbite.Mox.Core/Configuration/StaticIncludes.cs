@@ -21,20 +21,20 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
         public string WebRootRelativePath { get; set; }
         public bool RenderInHead { get; private set; }
 
-        private FileVersionHash HashType { get; set; }
-        private string FileHash { get; set; }
+        protected FileVersionHash HashType { get; set; }
+        protected string FileHash { get; set; }
 
-        private string TagName { get; set; }
-        private bool OpenTag { get; set; }
-        private string UrlAttributeName { get; set; }
-        private Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
+        protected string TagName { get; set; }
+        protected bool OpenTag { get; set; }
+        protected string UrlAttributeName { get; set; }
+        protected Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
 
-        private StaticFile()
+        protected StaticFile()
         {
 
         }
 
-        private void UpdateHash(FileVersionHash withHash, IEnumerable<IFileProvider> fileProviders)
+        protected void UpdateHash(FileVersionHash withHash, IEnumerable<IFileProvider> fileProviders)
         {
             if(this.HashType != withHash)
             {
@@ -42,7 +42,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
                 switch(this.HashType)
                 {
                     case FileVersionHash.FileHash:
-                        var file = fileProviders.Select(x => x.GetFileInfo(this.WebRootRelativePath)).FirstOrDefault(x => x.Exists);
+                        var file = fileProviders.Select(x => x.GetFileInfo($"/{this.WebRootRelativePath.TrimStart('/')}")).FirstOrDefault(x => x.Exists);
                         if(file == null)
                         {
                             throw new Exception($"Static file {this.WebRootRelativePath} could not be found!");
@@ -141,13 +141,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
 
     public class IncludeConfig
     {
-        public List<StaticFile> Files { get; private set; }
-        public string StaticRoot { get; set; }
-
-        public IncludeConfig()
-        {
-            this.Files = new List<StaticFile>();
-            this.StaticRoot = "/";
-        }
+        public List<StaticFile> Files { get; private set; } = new List<StaticFile>();
+        public string StaticRoot { get; set; } = "";
     }
 }

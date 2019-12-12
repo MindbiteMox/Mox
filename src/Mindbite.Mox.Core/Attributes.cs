@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Attributes
@@ -338,10 +339,12 @@ namespace Mindbite.Mox.Attributes
     public class MoxFormFieldSetAttribute : Attribute
     {
         public string Name { get; set; }
+        public int Order { get; set; }
 
-        public MoxFormFieldSetAttribute(string name)
+        public MoxFormFieldSetAttribute(string name, [CallerLineNumber] int order = 0)
         {
             this.Name = name;
+            this.Order = order;
         }
     }
 }

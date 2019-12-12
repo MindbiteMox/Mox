@@ -37,22 +37,32 @@ namespace Mindbite.Mox.Extensions
         {
             IDictionary<string, object> anonymousDictionary = new RouteValueDictionary(anonymousObject);
             IDictionary<string, object> expando = new ExpandoObject();
+            
             foreach (var item in anonymousDictionary)
+            {
                 expando.Add(item);
+            }
+
             return (ExpandoObject)expando;
         }
 
         public static int? TryToInt(this object input)
         {
             if (int.TryParse(input?.ToString(), out var result))
+            {
                 return result;
+            }
+
             return null;
         }
 
         public static DateTime? TryToDateTime(this object input)
         {
             if (DateTime.TryParse(input?.ToString(), out var result))
+            {
                 return result;
+            }
+
             return null;
         }
 
@@ -103,38 +113,29 @@ namespace Mindbite.Mox.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static T? TryToEnum<T>(this int value) where T : struct, IComparable, IFormattable, IConvertible // Try to catch as many non-enum types as early as possible
+        public static T? TryToEnum<T>(this int value) where T : struct, Enum
         {
-            if (!typeof(T).IsEnum)
+            if (Enum.IsDefined(typeof(T), value))
             {
-                throw new ArgumentException("T must be and Enum");
+                return (T)Enum.ToObject(typeof(T), value);
             }
 
-            if (Enum.IsDefined(typeof(T), value))
-                return (T)Enum.ToObject(typeof(T), value);
             return null;
         }
 
         public static string GetDescription(this Enum value)
         {
-            FieldInfo fi = value.GetType().GetField(value.ToString());
+            var field = value.GetType().GetField(value.ToString());
 
-            DisplayAttribute[] attributes = (DisplayAttribute[])fi.GetCustomAttributes(typeof(DisplayAttribute), false);
+            var attributes = (DisplayAttribute[])field.GetCustomAttributes(typeof(DisplayAttribute), false);
 
-            if (attributes != null && attributes.Length > 0)
-            {
-                return attributes[0].Name;
-            }
-            else
-            {
-                return value.ToString();
-            }
+            return attributes?.FirstOrDefault()?.Name ?? value.ToString();
         }
     }
 
     public static partial class MoxExtensions
     {
-        public static IMvcBuilder AddMoxWithoutDb(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, string path = "Mox", string siteTitle = "Mox", string staticRequestPath = "/static")
+        public static IMvcBuilder AddMoxWithoutDb(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, string path = "Mox", string siteTitle = "Mox", string staticRequestPath = "")
         {
             if (webHostEnvironment == null)
             {
@@ -146,33 +147,35 @@ namespace Mindbite.Mox.Extensions
             var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
             var viewsDLLDirectory = Path.GetDirectoryName(thisAssembly.Location);
             var viewsDLLPath = Path.Combine(viewsDLLDirectory, viewsDLLName);
-            if(File.Exists(viewsDLLPath)){
+            if (File.Exists(viewsDLLPath))
+            {
                 var viewAssembly = Assembly.LoadFile(viewsDLLPath);
                 var viewAssemblyPart = new CompiledRazorAssemblyPart(viewAssembly);
                 mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
-            } else {
+            }
+            else
+            {
                 var viewAssemblyPart = new CompiledRazorAssemblyPart(thisAssembly);
                 mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
             }
 
             mvc.Services.Configure<Configuration.Config>(c =>
             {
-                c.Path = c.Path ?? path;
-                c.SiteTitle = c.SiteTitle ?? siteTitle;
+                c.Path ??= path;
+                c.SiteTitle ??= siteTitle;
             });
 
             mvc.Services.Configure<IncludeConfig>(c =>
             {
                 c.StaticRoot = staticRequestPath;
-                c.Files.Add(StaticFile.Style("mox/css/base.css"));
-                c.Files.Add(StaticFile.Style("mox/css/base_mobile.css", maxWidth: 960));
-                c.Files.Add(StaticFile.Script("mox/js/utils.js"));
-                c.Files.Add(StaticFile.Script("mox/js/MoxUI.js"));
+                c.Files.Add(StaticFile.Style("mox/static/css/base.css"));
+                c.Files.Add(StaticFile.Style("mox/static/css/base_mobile.css", maxWidth: 960));
+                c.Files.Add(StaticFile.Script("mox/static/js/utils.js"));
+                c.Files.Add(StaticFile.Script("mox/static/js/MoxUI.js"));
             });
 
             mvc.Services.Configure<RazorViewEngineOptions>(c =>
             {
-                //c.FileProviders.Add(new EmbeddedFilesInAssemblyFileProvider(typeof(MoxExtensions).GetTypeInfo().Assembly, hostingEnvironment)); // No need when precompiled
                 c.ViewLocationExpanders.Add(new AlwaysLookForSharedLocationExpander());
             });
 
@@ -230,7 +233,13 @@ namespace Mindbite.Mox.Extensions
             });
         }
 
-        public static void UseMoxStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "/static")
+        public static void UseMoxExceptionPage(this IApplicationBuilder app)
+        {
+            app.UseExceptionHandler("/Mox/Error/500");
+            app.UseStatusCodePagesWithReExecute("/Mox/Error/{0}");
+        }
+
+        public static void UseMoxStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "")
         {
             app.AddStaticFileFileProvider(typeof(MoxExtensions), webHostEnvironment, requestPath);
         }
@@ -281,60 +290,13 @@ namespace Mindbite.Mox.Extensions
                 return "/error";
 
             return menuItem.Url;
-
-            /*dynamic menuRouteValues = new ExpandoObject();
-
-            if(menuItem.Area != null)
-                menuRouteValues.Area = menuItem.Area;
-
-            object values = Utils.Dynamics.Merge(menu.RouteValues, Utils.Dynamics.Merge(routeValues, menuRouteValues));
-
-            return url.Action(menu.Action, menu.Controller, values);*/
         }
 
         public static string MenuAction(this IUrlHelper url, UI.Menu.MenuItem menuItem, IEnumerable<string> userRoles, object routeValues = null)
         {
             return menuItem.Url;
-            /*if (menuItem.Controller == null)
-            {
-                return url.MenuAction(menu.Items.FirstOrDefault(x => userRoles == null || userRoles.Intersect(x.Roles).Count() == x.Roles.Count()), routeValues);
-            }
-
-            return url.MenuAction(menu, routeValues);*/
         }
-
-        public static IQueryable<T> OrderBy<T>(this IQueryable<T> source, string ordering)
-        {
-            var type = typeof(T);
-            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
-            MethodCallExpression resultExp = Expression.Call(typeof(Queryable), "OrderBy", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
-            return source.Provider.CreateQuery<T>(resultExp);
-        }
-
-        public static IQueryable<T> OrderByDescending<T>(this IQueryable<T> source, string ordering)
-        {
-            var type = typeof(T);
-            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
-            MethodCallExpression resultExp = Expression.Call(typeof(Queryable), "OrderByDescending", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
-            return source.Provider.CreateQuery<T>(resultExp);
-        }
-
-        public static IQueryable<T> ThenBy<T>(this IQueryable<T> source, string ordering)
-        {
-            var type = typeof(T);
-            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
-            MethodCallExpression resultExp = Expression.Call(typeof(Queryable), "ThenBy", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
-            return source.Provider.CreateQuery<T>(resultExp);
-        }
-
-        public static IQueryable<T> ThenByDescending<T>(this IQueryable<T> source, string ordering)
-        {
-            var type = typeof(T);
-            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
-            MethodCallExpression resultExp = Expression.Call(typeof(Queryable), "ThenByDescending", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
-            return source.Provider.CreateQuery<T>(resultExp);
-        }
-
+        
         /// <summary>
         /// Returns an Ok(json) with dataTable page items result if request header "Content-Type" == "application/json"
         /// </summary>
@@ -351,6 +313,41 @@ namespace Mindbite.Mox.Extensions
             {
                 return controller.View(dataTable);
             }
+        }
+    }
+
+    public static class QueryableExtensions
+    {
+        public static IQueryable<T> OrderBy<T>(this IQueryable<T> source, string ordering)
+        {
+            var type = typeof(T);
+            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
+            var resultExp = Expression.Call(typeof(Queryable), "OrderBy", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
+            return source.Provider.CreateQuery<T>(resultExp);
+        }
+
+        public static IQueryable<T> OrderByDescending<T>(this IQueryable<T> source, string ordering)
+        {
+            var type = typeof(T);
+            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
+            var resultExp = Expression.Call(typeof(Queryable), "OrderByDescending", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
+            return source.Provider.CreateQuery<T>(resultExp);
+        }
+
+        public static IQueryable<T> ThenBy<T>(this IQueryable<T> source, string ordering)
+        {
+            var type = typeof(T);
+            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
+            var resultExp = Expression.Call(typeof(Queryable), "ThenBy", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
+            return source.Provider.CreateQuery<T>(resultExp);
+        }
+
+        public static IQueryable<T> ThenByDescending<T>(this IQueryable<T> source, string ordering)
+        {
+            var type = typeof(T);
+            var orderByExp = Utils.Dynamics.GetLambdaExpression(type, ordering.Split('.'));
+            var resultExp = Expression.Call(typeof(Queryable), "ThenByDescending", new Type[] { type, orderByExp.ReturnType }, source.Expression, Expression.Quote(orderByExp));
+            return source.Provider.CreateQuery<T>(resultExp);
         }
     }
 

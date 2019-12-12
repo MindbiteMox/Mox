@@ -1,17 +1,18 @@
 ﻿@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.Config> Config
 @inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Identity.MoxIdentityOptions> IdentityConfig
 @inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.StaticIncludes.StaticFileProviderOptions> StaticFileProviderOptions
+@{
+    var root = Config.Value.Apps.First(x => x.AppId == Mindbite.Mox.Identity.Constants.SettingsAppId).StaticIncludes.StaticRoot;
+}
 
 <!DOCTYPE html>
 
 <html>
 <head>
     <meta name="viewport" content="width=device-width">
-    <link href="~/static/identity/css/base.css" rel="stylesheet" />
-    <link href="~/static/identity/css/base_mobile.css" rel="stylesheet" media="screen and (max-width: 960px)" />
     @foreach (var file in IdentityConfig.Value.LoginStaticFiles)
     {
-        @(file.Render("static", StaticFileProviderOptions.Value.FileProviders, Mindbite.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash))
+        @(file.Render(root, StaticFileProviderOptions.Value.FileProviders, Mindbite.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash))
     }
 </head>
 <body>

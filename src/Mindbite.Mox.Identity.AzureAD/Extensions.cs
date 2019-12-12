@@ -11,6 +11,9 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
 
 namespace Mindbite.Mox.Identity.AzureAD
 {
@@ -41,7 +44,7 @@ namespace Mindbite.Mox.Identity.AzureAD
             return list;
         }
 
-        public static IServiceCollection AddMoxIdentityAzureADAuthentication(this IMvcBuilder mvc, IConfiguration configuration)
+        public static IMvcBuilder AddMoxIdentityAzureADAuthentication(this IMvcBuilder mvc, IConfiguration configuration)
         {
             var thisAssembly = typeof(Extensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);
@@ -63,9 +66,12 @@ namespace Mindbite.Mox.Identity.AzureAD
             var services = mvc.Services;
 
             services.AddAuthentication()
-                .AddAzureAD(options => configuration.Bind("AzureAd", options));
+                .AddAzureAD(options => 
+                {
+                    configuration.Bind("AzureAd", options);
+                });
 
-            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, (OpenIdConnectOptions options) =>
+            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
             {
                 options.Authority = options.Authority + "/v2.0/";
                 options.SignInScheme = "Identity.Application";
@@ -84,21 +90,38 @@ namespace Mindbite.Mox.Identity.AzureAD
                         return Task.CompletedTask;
                     }));
 
-                    var groups = (await (await client.Groups.Request().GetAsync()).ToCompleteListAsync(x => x.NextPageRequest?.GetAsync())).Cast<Group>();
-                    var result = (await (await client.Me.GetMemberGroups(false).Request().PostAsync()).ToCompleteListAsync(x => x.NextPageRequest?.PostAsync())).Cast<string>();
-
-                    var groupedGroups = result.Select(x => groups.First(y => y.Id == x));
+                    //var groups = (await (await client.Groups.Request().GetAsync()).ToCompleteListAsync(x => x.NextPageRequest?.GetAsync())).Cast<Group>();
+                    //var result = (await (await client.Me.GetMemberGroups(false).Request().PostAsync()).ToCompleteListAsync(x => x.NextPageRequest?.PostAsync())).Cast<string>();
+                    
+                    var adUser = await client.Me.Request().GetAsync();
+                    var samAccountName = adUser.OnPremisesSamAccountName;
+                    var extensions = (await adUser.Extensions?.ToCompleteListAsync(x => x.NextPageRequest?.GetAsync()) ?? Enumerable.Empty<Extension>()).Cast<Extension>();
+                    var fullName = adUser.DisplayName;
 
                     var userEmail = context.Principal.Claims.First(x => x.Type == "preferred_username").Value;
                     var userManager = context.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Identity.UserManager<Identity.Data.Models.MoxUser>>();
                     var signInManager = context.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Identity.SignInManager<Identity.Data.Models.MoxUser>>();
                     var user = await userManager.FindByEmailAsync(userEmail);
-                    context.Principal = await signInManager.ClaimsFactory.CreateAsync(user);
+                    if(user == null)
+                    {
+                        var result = await userManager.CreateAsync(new Data.Models.MoxUserBaseImpl { Email = userEmail, UserName = userEmail, Name = fullName });
+                        user = await userManager.FindByEmailAsync(userEmail);
 
+                        await userManager.AddToRoleAsync(user, Mox.Configuration.Constants.MoxRole);
+                    }
+                    context.Principal = await signInManager.ClaimsFactory.CreateAsync(user);
                 };
             });
 
-            return services;
+            return mvc;
+        }
+
+        public static void MapMoxIdentityAzureADRoutes(this IEndpointRouteBuilder endpoints)
+        {
+            endpoints.Map("azurelogin", async context =>
+            {
+                await context.ChallengeAsync(AzureADDefaults.OpenIdScheme, new AuthenticationProperties() { RedirectUri = "/" });
+            });
         }
     }
 }

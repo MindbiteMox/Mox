@@ -68,6 +68,7 @@ namespace Mindbite.Mox.Identity
         public Hooks HookTypes { get; set; } = new Hooks();
         public MagicLinkOptions MagicLink { get; set; } = new MagicLinkOptions();
         public GroupOptions Groups { get; set; } = new GroupOptions();
+        public List<string> AdditionalAllowedStaticFileLocations { get; set; } = new List<string>();
     }
 
     public class SettingsOptions

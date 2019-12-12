@@ -1,5 +1,6 @@
 ﻿@using System.Reflection;
 @using Mindbite.Mox.Attributes;
+@using System.ComponentModel.DataAnnotations
 @{
     var modelType = ((object)Model).GetType();
     var formFields = modelType.GetProperties();
@@ -22,7 +23,7 @@
     var currentFieldSet = default(string);
 }
 
-@foreach (var field in formFields.OrderBy(x => x.GetCustomAttribute<MoxFormFieldSetAttribute>(true)?.Name))
+@foreach (var field in formFields.OrderBy(x => x.GetCustomAttribute<MoxFormFieldSetAttribute>(true)?.Order).ThenBy(x => x.GetCustomAttribute<DisplayAttribute>(true)?.GetOrder() ?? 10000))
 {
     var fieldSetAttribute = field.GetCustomAttribute<MoxFormFieldSetAttribute>(true);
     if (currentFieldSet != fieldSetAttribute?.Name)

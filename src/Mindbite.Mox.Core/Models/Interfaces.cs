@@ -9,11 +9,11 @@ namespace Mindbite.Mox.Core.Models
     {
         bool IsDeleted { get; set; }
         DateTime CreatedOn { get; set; }
-        string CreatedById { get; set; }
+        string? CreatedById { get; set; }
         DateTime ModifiedOn { get; set; }
-        string ModifiedById { get; set; }
+        string? ModifiedById { get; set; }
         DateTime? DeletedOn { get; set; }
-        string DeletedById { get; set; }
+        string? DeletedById { get; set; }
 
     }
 

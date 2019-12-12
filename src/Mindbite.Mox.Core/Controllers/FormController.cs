@@ -27,6 +27,7 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual string ModelUpdatedMessage => "Ändringarna sparades!";
         public abstract string ModelTitleFieldName { get; }
         public virtual Func<ViewModel_T, object> RedirectToIndexRouteValues => _ => new object();
+        public virtual Func<Id_T, object> RedirectToSelfRouteValues => id => new { id };
         public virtual string EditHeaderPartial { get; }
         public virtual string CreateHeaderPartial { get; }
         public virtual string IndexHeaderPartial { get; }
@@ -43,7 +44,7 @@ namespace Mindbite.Mox.Core.Controllers
             switch (this.RedirectAfterSaveTarget)
             {
                 case FormControllerRedirectTarget.Self:
-                    return RedirectToAction("Edit", new { id });
+                    return RedirectToAction("Edit", this.RedirectToSelfRouteValues(id));
                 case FormControllerRedirectTarget.Index:
                     return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
             }
@@ -204,6 +205,10 @@ namespace Mindbite.Mox.Core.Controllers
                 viewMessage.DisplayMessage(this.ModelDeletedMessage);
                 return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
             }
+
+
+            ViewData["CanDelete"] = canDelete;
+            ViewData["CanDeleteErrorMessage"] = string.Empty;
 
             await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Delete), viewModel);
