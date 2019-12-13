@@ -15,6 +15,7 @@ namespace Mindbite.Mox.UI.Menu.Renderer
     public class MenuRenderer
     {
         private readonly MoxHtmlExtensionCollection _htmlExtensions;
+
         public MenuRenderer(MoxHtmlExtensionCollection htmlExtensions)
         {
             this._htmlExtensions = htmlExtensions;
@@ -111,6 +112,22 @@ namespace Mindbite.Mox.UI.Menu.Renderer
 
             menuItems.SelectCurrentMenu(this._htmlExtensions.HtmlHelper.ViewContext);
 
+            if (this._htmlExtensions.Config.Value.OnAppMenuRendered != null)
+            {
+                var args = new AppMenuRendererEventArgs
+                {
+                    MenuItems = menuItems,
+                    ViewContext = this._htmlExtensions.HtmlHelper.ViewContext,
+                    IncludeApp = includeApp,
+                    MaxDepth = maxDepth,
+                    OnlyCurrentApp = onlyCurrentApp,
+                    StartLevel = startLevel
+                };
+
+                this._htmlExtensions.Config.Value.OnAppMenuRendered(args);
+                menuItems = args.MenuItems;
+            }
+
             return RenderMenu(menuItems, startLevel, maxDepth);
         }
         
@@ -127,5 +144,20 @@ namespace Mindbite.Mox.UI.Menu.Renderer
             sb = RenderMenu(sb, root.Children, startLevel, maxDepth);
             return new HtmlString(sb.ToString());
         }
+
+    }
+    
+    public class AppMenuRendererEventArgs
+    {
+        public bool IncludeApp { get; set; }
+        public bool OnlyCurrentApp { get; set; }
+        public int StartLevel { get; set; }
+        public int MaxDepth { get; set; }
+        public ViewContext ViewContext { get; set; }
+
+        /// <summary>
+        /// Can be mutated or replaced
+        /// </summary>
+        public List<MenuItem> MenuItems { get; set; }
     }
 }
