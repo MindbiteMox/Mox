@@ -10,16 +10,16 @@ using System.Reflection;
 using System.Text;
 
 namespace Mindbite.Mox.Configuration
-{ 
+{
     public class Config
     {
-        public AppCollection Apps { get; set; }
+        public AppCollection Apps { get; set; } = new AppCollection();
         public string Path { get; internal set; }
         public string SiteTitle { get; set; }
 
-        public Config()
-        {
-            this.Apps = new AppCollection();
-        }
+        /// <summary>
+        /// Called right before rendering html
+        /// </summary>
+        public Action<UI.Menu.Renderer.AppMenuRendererEventArgs> OnAppMenuRendered { get; set; }
     }
 }
