@@ -7,10 +7,10 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <OutputTypeEx>library</OutputTypeEx>
     <IsPackable>true</IsPackable>
-    <Version>2.2.19</Version>
+    <Version>2.2.23</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <FileVersion>2.2.19.0</FileVersion>
-    <AssemblyVersion>2.2.19.0</AssemblyVersion>
+    <FileVersion>2.2.23.0</FileVersion>
+    <AssemblyVersion>2.2.23.0</AssemblyVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>

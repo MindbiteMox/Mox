@@ -10,6 +10,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Mindbite.Mox.UI.Menu;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Mindbite.Mox.Configuration.AppMenus
 {
@@ -89,7 +91,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
             return this;
         }
 
-        public IEnumerable<MenuItem> Build(IUrlHelper url, IEnumerable<string> roles = null, ViewContext viewContext = null, bool tryMatchingAction = false)
+        public IEnumerable<MenuItem> Build(IUrlHelper url, IEnumerable<string> roles = null, bool tryMatchingAction = false)
         {
             IEnumerable<MenuItem> build()
             {
@@ -148,13 +150,10 @@ namespace Mindbite.Mox.Configuration.AppMenus
             var built = build().ToList();
             built.FixParents();
 
-            if (viewContext != null)
+            var selectedItem = built.Flatten().LastOrDefault(x => x.MatchesView(url.ActionContext, tryMatchingAction));
+            if (selectedItem != null)
             {
-                var selectedItem = built.Flatten().LastOrDefault(x => x.MatchesView(viewContext, tryMatchingAction));
-                if (selectedItem != null)
-                {
-                    selectedItem.Selected = true;
-                }
+                selectedItem.Selected = true;
             }
 
             return built;
@@ -261,5 +260,12 @@ namespace Mindbite.Mox.Configuration.AppMenus
             this._menuItem.Roles = this._menuItem.Roles.Concat(roles).ToHashSet();
             return this;
         }
+    }
+
+    public class AppMenuEventArgs
+    {
+        public Apps.App App { get; set; }
+        public ViewContext ViewContext { get; set; }
+
     }
 }

@@ -20,7 +20,13 @@ namespace Mindbite.Mox.Configuration
         /// <summary>
         /// Called right before rendering html
         /// </summary>
+        [Obsolete("Use BeforeAppMenuBuild instead")]
         public Action<UI.Menu.Renderer.AppMenuRendererEventArgs> OnAppMenuRendered { get; set; }
+
+        /// <summary>
+        /// Called right before building the global menu
+        /// </summary>
+        public Action<AppMenus.AppMenuEventArgs> BeforeAppMenuBuild { get; set; }
     }
 }
     
