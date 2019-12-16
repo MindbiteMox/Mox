@@ -48,7 +48,7 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
 
             var dataTable = DataTableBuilder
                 .Create(dataSource)
-                .Sort(tableSort.DataTableSortColumn ?? "Title", tableSort.DataTableSortDirection ?? "Ascending")
+                .Sort(x => x.Title, SortDirection.Ascending, tableSort.DataTableSortColumn, tableSort.DataTableSortDirection)
                 .Page(tableSort.DataTablePage)
                 .RowLink(x => Url.Action("Display", new { id = x.Id }))
                 .Columns(columns =>

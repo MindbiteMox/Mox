@@ -45,7 +45,7 @@ namespace Mindbite.Mox.Identity.ViewModels
             {
                 Id = x.RoleName,
                 Name = x.DisplayName,
-                Checked = roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Any(z => z.StartsWith(y.RoleName)) ?? false),
+                Checked = x.IsLeaf ? preselectedRoles?.Contains(x.RoleName) ?? false : roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Contains(y.RoleName) ?? false),
                 Depth = x.Depth,
                 IsParent = !x.IsLeaf
             }).ToArray();
@@ -95,7 +95,7 @@ namespace Mindbite.Mox.Identity.ViewModels
             {
                 Id = x.RoleName,
                 Name = x.DisplayName,
-                Checked = roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Any(z => z.StartsWith(y.RoleName)) ?? false),
+                Checked = x.IsLeaf ? preselectedRoles?.Contains(x.RoleName) ?? false : roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Contains(y.RoleName) ?? false),
                 Depth = x.Depth,
                 IsParent = !x.IsLeaf,
                 Disabled = disableRoles

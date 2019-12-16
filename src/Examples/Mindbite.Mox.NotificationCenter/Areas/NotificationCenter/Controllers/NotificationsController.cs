@@ -36,7 +36,7 @@ namespace Mindbite.Mox.NotificationCenter.Areas.NotificationCenter.Controllers
 
             var dataTable = DataTableBuilder
                 .Create(dataSource)
-                .Sort(sortColumn ?? "SubjectId", sortDirection ?? "Ascending")
+                .Sort(x => x.SubjectId, SortDirection.Ascending, sortColumn, sortDirection)
                 .Page(page)
                 .RowLink(x => x.URL)
                 .Columns(columns =>
