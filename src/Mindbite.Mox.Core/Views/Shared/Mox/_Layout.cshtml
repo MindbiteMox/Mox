@@ -9,8 +9,11 @@
 @inject IStringLocalizer localizer
 
 @{
-    var currentApp = Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(ViewContext.RouteData.Values["Area"]));
-    var currentSelectedMenu = currentApp?.Menu?.Build(Url, await Html.Mox().GetRolesAsync(), ViewContext).Flatten().LastOrDefault(x => x.Selected);
+    var roles = await Html.Mox().GetRolesAsync();
+    var selectedAppMenu = Config.Value.Apps
+        .Select(x => (app: x, menuItem: x.ResolveActiveMenu(this.ViewContext).Build(Url, roles).Flatten().LastOrDefault(y => y.MatchesView(this.ViewContext))))
+        .FirstOrDefault(x => x.menuItem != null);
+    var currentSelectedMenu = selectedAppMenu.menuItem;
 }
 
 <!DOCTYPE html>

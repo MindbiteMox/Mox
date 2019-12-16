@@ -25,6 +25,7 @@ namespace Mindbite.Mox.Configuration.Apps
         public AppPartial HeaderPartial { get; set; }
 
         public StaticIncludes.IncludeConfig StaticIncludes { get; private set; }
+        public Func<Microsoft.AspNetCore.Mvc.ActionContext, AppMenus.AppMenuBuilder> ResolveActiveMenu { get; set; }
 
         public App(string name, string area = "", string appId = "")
         {
@@ -35,6 +36,7 @@ namespace Mindbite.Mox.Configuration.Apps
             this.StaticIncludes = new StaticIncludes.IncludeConfig();
 
             this.Menu = new AppMenus.AppMenuBuilder();
+            this.ResolveActiveMenu = _ => this.Menu;
         }
 
         public bool CanViewWithRoles(IEnumerable<string> roles)

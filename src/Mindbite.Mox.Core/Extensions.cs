@@ -273,7 +273,7 @@ namespace Mindbite.Mox.Extensions
 
         public static string AppAction(this IUrlHelper url, Configuration.Apps.App app, IEnumerable<string> userRoles, object routeValues = null)
         {
-            return url.MenuAction(app.Menu.Build(url, userRoles), userRoles, routeValues);
+            return url.MenuAction(app.ResolveActiveMenu(url.ActionContext).Build(url, userRoles), userRoles, routeValues);
         }
 
         public static string MenuAction(this IUrlHelper url, IEnumerable<UI.Menu.MenuItem> menu, IEnumerable<string> userRoles, object routeValues = null)

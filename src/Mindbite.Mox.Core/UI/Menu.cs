@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Mindbite.Mox.UI.Menu
 {
@@ -58,17 +59,17 @@ namespace Mindbite.Mox.UI.Menu
 
     public static class MenuQueryExtensions
     {
-        public static bool MatchesView(this MenuItem menuItem, ViewContext viewContext, bool tryMatchingAction = false)
+        public static bool MatchesView(this MenuItem menuItem, ActionContext actionContext, bool tryMatchingAction = false)
         {
-            var actionDescriptor = viewContext.ActionDescriptor as ControllerActionDescriptor;
+            var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
             if (actionDescriptor == null)
             {
                 throw new ArgumentException($"The view context's action descriptor must be of type {nameof(ControllerActionDescriptor)}");
             }
 
-            var area = viewContext.RouteData.Values["Area"]?.ToString() ?? string.Empty;
-            var controller = viewContext.RouteData.Values["Controller"]?.ToString() ?? string.Empty;
-            var action = viewContext.RouteData.Values["Action"]?.ToString() ?? string.Empty;
+            var area = actionContext.RouteData.Values["Area"]?.ToString() ?? string.Empty;
+            var controller = actionContext.RouteData.Values["Controller"]?.ToString() ?? string.Empty;
+            var action = actionContext.RouteData.Values["Action"]?.ToString() ?? string.Empty;
 
             if ((menuItem.Area == null || menuItem.Area.ToLower() == area.ToLower()) && menuItem.Controller != null && menuItem.Controller.ToLower() == controller.ToLower() && (!tryMatchingAction || menuItem.Action.ToLower() == action.ToLower()))
             {

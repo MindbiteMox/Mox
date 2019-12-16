@@ -94,20 +94,23 @@ namespace Mindbite.Mox.UI.Menu.Renderer
                 {
                     Id = x.AppId,
                     Title = x.Name,
-                    Children = x.Menu.Build(this._htmlExtensions.UrlHelper, roles).ToList(),
+                    Children = x.ResolveActiveMenu(this._htmlExtensions.UrlHelper.ActionContext).Build(this._htmlExtensions.UrlHelper, roles).ToList(),
                 }).ToList();
                 menuItems.FixParents();
             }
             else
             {
-                menuItems = this._htmlExtensions.Config.Value.Apps.SelectMany(x => x.Menu.Build(this._htmlExtensions.UrlHelper, roles)).ToList();
+                menuItems = this._htmlExtensions.Config.Value.Apps.SelectMany(x => x.ResolveActiveMenu(this._htmlExtensions.UrlHelper.ActionContext).Build(this._htmlExtensions.UrlHelper, roles)).ToList();
                 menuItems.FixParents();
             }
 
             if(onlyCurrentApp)
             {
-                var currentApp = this._htmlExtensions.Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains(this._htmlExtensions.HtmlHelper.ViewContext.RouteData.Values["Area"]));
-                menuItems = menuItems.Where(x => currentApp?.Areas.Contains(x.Area) ?? false).ToList();
+                var selectedAppMenu = this._htmlExtensions.Config.Value.Apps
+                    .Select(x => (app: x, menuItems: x.ResolveActiveMenu(this._htmlExtensions.UrlHelper.ActionContext).Build(this._htmlExtensions.UrlHelper, roles).ToList()))
+                    .FirstOrDefault(x => x.menuItems.Flatten().Any(y => y.MatchesView(this._htmlExtensions.UrlHelper.ActionContext)));
+                menuItems = selectedAppMenu.menuItems;
+                menuItems.FixParents();
             }
 
             menuItems.SelectCurrentMenu(this._htmlExtensions.HtmlHelper.ViewContext);

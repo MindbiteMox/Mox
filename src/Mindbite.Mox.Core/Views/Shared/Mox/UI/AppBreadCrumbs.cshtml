@@ -21,9 +21,12 @@
         additionalNodes = Model.AdditionalNodes;
     }
     catch { }
-    var currentApp = Config.Value.Apps.FirstOrDefault(x => x.Areas.Contains((string)this.ViewContext.RouteData.Values["Area"]));
     var roles = await Html.Mox().GetRolesAsync();
-    var selectedMenu = currentApp?.Menu.Build(Url, roles).Flatten().LastOrDefault(x => x.MatchesView(this.ViewContext));
+    var selectedAppMenu = Config.Value.Apps
+        .Select(x => (app: x, menuItem: x.ResolveActiveMenu(this.ViewContext).Build(Url, roles).Flatten().LastOrDefault(y => y.MatchesView(this.ViewContext))))
+        .FirstOrDefault(x => x.menuItem != null);
+    var currentApp = selectedAppMenu.app;
+    var selectedMenu = selectedAppMenu.menuItem;
     var parents = includeCurrentMenu ? selectedMenu.AllParents.Append(selectedMenu) : selectedMenu.AllParents;
     parents = parents.Concat(additionalNodes);
     var localizer = Html.Mox().Localizer;
