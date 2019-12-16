@@ -78,7 +78,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     x.Name,
                     Roles = string.Join(", ", roles.Where(role => userRoles.Where(ur => ur.UserId == x.Id).Select(ur => ur.RoleId).Contains(role.Id)).Select(role => role.ShortName))
                 }))
-                .Sort(sort.DataTableSortColumn ?? "Email", sort.DataTableSortDirection ?? "Ascending")
+                .Sort(x => x.Email, SortDirection.Ascending, sort.DataTableSortColumn, sort.DataTableSortDirection)
                 .Page(sort.DataTablePage)
                 .RowLink(x => Url.Action("Edit", new { id = x.Id }))
                 .Columns(columns =>

@@ -36,7 +36,7 @@ namespace Mindbite.Mox.Identity.Controllers
 
             var dataTable = DataTableBuilder
                 .Create(dataSource.AsQueryable())
-                .Sort(sort.DataTableSortColumn ?? "Name", sort.DataTableSortDirection ?? "Ascending")
+                .Sort(x => x.Name, SortDirection.Ascending, sort.DataTableSortColumn, sort.DataTableSortDirection)
                 .Page(sort.DataTablePage)
                 .GroupBy(x => x.Group)
                 .Columns(columns =>

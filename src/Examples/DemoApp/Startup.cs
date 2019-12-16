@@ -61,6 +61,11 @@ namespace Mindbite.Mox.DemoApp
             services.Configure<Verification.Services.VerificationOptions>(c =>
             {
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("SomeTestRole"));
+
+                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("Test/aaa/1"));
+                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("Test/aaa/10"));
+                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("Test/aaa/2"));
+                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator("Test/aaa/20"));
             });
 
             services.AddDbContext<AppDbContext>(options =>
@@ -77,16 +82,16 @@ namespace Mindbite.Mox.DemoApp
             services.Configure<MoxIdentityOptions>(config =>
             {
                 //config.LoginStaticFiles.Add(Mox.Configuration.StaticIncludes.StaticFile.Style("asdkajlsdjlsdj"));
-                config.Groups.DisableGroupSettingsCallback = (serviceProvider, user) =>
-                {
-                    return Task.FromResult(true);
-                };
+                //config.Groups.DisableGroupSettingsCallback = (serviceProvider, user) =>
+                //{
+                //    return Task.FromResult(true);
+                //};
 
-                config.Groups.GroupSettingsMovedToThisUrl = (serviceProvider, user, url) =>
-                {
-                    var settingsOptions = serviceProvider.GetRequiredService<IOptions<SettingsOptions>>().Value;
-                    return Task.FromResult(url.Action("EditOther", new { user.Id, View = settingsOptions.AdditionalEditUserViews.First().ViewName }));
-                };
+                //config.Groups.GroupSettingsMovedToThisUrl = (serviceProvider, user, url) =>
+                //{
+                //    var settingsOptions = serviceProvider.GetRequiredService<IOptions<SettingsOptions>>().Value;
+                //    return Task.FromResult(url.Action("EditOther", new { user.Id, View = settingsOptions.AdditionalEditUserViews.First().ViewName }));
+                //};
             });
         }
 

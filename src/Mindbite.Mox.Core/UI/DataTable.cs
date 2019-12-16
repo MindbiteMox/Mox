@@ -54,6 +54,11 @@ namespace Mindbite.Mox.UI
         Left, Right, Center
     }
 
+    public enum SortDirection
+    {
+        Ascending, Descending
+    }
+
     public class DataTableSort
     {
         public string DataTableSortColumn { get; set; }
@@ -333,10 +338,35 @@ namespace Mindbite.Mox.UI
                 return this;
             }
 
+            [Obsolete("Use the other sort function with typed default parameters")]
             public QueryableDataTable<T> Sort(string column, string direction)
             {
                 this._sortColumn = column;
                 this._sortDirection = direction;
+                return this;
+            }
+
+            public QueryableDataTable<T> Sort<TProperty>(Expression<Func<T, TProperty>> defaultColumn, SortDirection defaultDirection, string column = null, string direction = null)
+            {
+                this._sortColumn = column ?? Utils.Dynamics.GetFullPropertyName(defaultColumn);
+                this._sortDirection = direction ?? defaultDirection.ToString();
+
+                try
+                {
+                    Utils.Dynamics.GetLambdaExpression(typeof(T), this._sortColumn.Split('.'));
+                }
+                catch
+                {
+                    if (!string.IsNullOrWhiteSpace(column))
+                    {
+                        this._sortColumn = Utils.Dynamics.GetFullPropertyName(defaultColumn); // User error
+                    }
+                    else
+                    {
+                        throw; // Programmer error
+                    }
+                }
+
                 return this;
             }
 
