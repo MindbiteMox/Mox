@@ -18,17 +18,29 @@ namespace Mindbite.Mox.Utils
             if (item1 == null || item2 == null)
                 return item1 ?? item2 ?? new ExpandoObject();
 
+
             dynamic expando = new ExpandoObject();
             var result = expando as IDictionary<string, object>;
-            foreach (System.Reflection.PropertyInfo fi in item1.GetType().GetProperties())
+
+            void assignValues(object theObject)
             {
-                result[fi.Name] = fi.GetValue(item1, null);
+                switch(theObject)
+                {
+                    case IDictionary<string, object> dictionary:
+                        result.Concat(dictionary);
+                        break;
+                    default:
+                        foreach (var fi in theObject.GetType().GetProperties())
+                        {
+                            result[fi.Name] = fi.GetValue(theObject, null);
+                        }
+                        break;
+                }
             }
 
-            foreach (System.Reflection.PropertyInfo fi in item2.GetType().GetProperties())
-            {
-                result[fi.Name] = fi.GetValue(item2, null);
-            }
+            assignValues(item1);
+            assignValues(item2);
+
             return result;
         }
 

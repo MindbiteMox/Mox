@@ -65,13 +65,15 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
             }
         }
 
-        public HtmlString Render(string staticRoot, IEnumerable<IFileProvider> fileProviders, FileVersionHash withHash = FileVersionHash.None)
+        public HtmlString Render(string staticRoot, IEnumerable<IFileProvider> fileProviders, FileVersionHash? overrideDefaultHash = null)
         {
             string hash = "";
 
-            this.UpdateHash(withHash, fileProviders);
+            var chosenHash = overrideDefaultHash ?? this.HashType;
 
-            if (withHash != FileVersionHash.None)
+            this.UpdateHash(chosenHash, fileProviders);
+
+            if (chosenHash != FileVersionHash.None)
             {
                 hash = $"?hash={this.FileHash}";
             }
@@ -88,7 +90,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
             }
         }
 
-        public static StaticFile Style(string webRootRelativePath, int minWidth = int.MinValue, int maxWidth = int.MaxValue)
+        public static StaticFile Style(string webRootRelativePath, int minWidth = int.MinValue, int maxWidth = int.MaxValue, FileVersionHash defaultHash = FileVersionHash.FileHash)
         {
             string getMediaQuery()
             {
@@ -117,11 +119,12 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
                 {
                     { "rel", "stylesheet" },
                     { "media", getMediaQuery() }
-                }
+                },
+                HashType = defaultHash
             };
         }
 
-        public static StaticFile Script(string webRootRelativePath)
+        public static StaticFile Script(string webRootRelativePath, FileVersionHash defaultHash = FileVersionHash.FileHash)
         {
             return new StaticFile
             {
@@ -130,6 +133,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
                 OpenTag = true,
                 TagName = "script",
                 UrlAttributeName = "src",
+                HashType = defaultHash
             };
         }
     }

@@ -76,7 +76,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     x.Id,
                     x.Email,
                     x.Name,
-                    Roles = userRoles.Where(ur => ur.UserId == x.Id).Select(x => x.RoleId).ToList()// string.Join(", ", userRoles.Where(ur => ur.UserId == x.Id).Select(x => roles.First(y => y.Id == x.RoleId).ShortName))
+                    Roles = userRoles.Where(ur => ur.UserId == x.Id).Select(y => y.RoleId).ToList()// string.Join(", ", userRoles.Where(ur => ur.UserId == x.Id).Select(x => roles.First(y => y.Id == x.RoleId).ShortName))
                 }))
                 .Sort(x => x.Email, SortDirection.Ascending, sort.DataTableSortColumn, sort.DataTableSortDirection)
                 .Page(sort.DataTablePage)

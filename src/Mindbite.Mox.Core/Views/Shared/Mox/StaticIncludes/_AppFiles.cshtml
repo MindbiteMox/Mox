@@ -19,6 +19,6 @@
 {
     @foreach (var style in include.Files.Where(x => x.RenderInHead == renderInHead))
     {
-        @(style.Render(include.StaticRoot, StaticFileProviderOptions.Value.FileProviders, Mindbite.Mox.Configuration.StaticIncludes.FileVersionHash.FileHash))
+        @(style.Render(include.StaticRoot, StaticFileProviderOptions.Value.FileProviders))
     }
 }

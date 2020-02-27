@@ -216,7 +216,7 @@ namespace Mindbite.Mox.Extensions
                     goto Success;
                 }
 
-                var staticFileProviders = app.ApplicationServices.GetService<IOptions<Configuration.StaticIncludes.StaticFileProviderOptions>>().Value.FileProviders;
+                var staticFileProviders = context.RequestServices.GetService<IOptions<Configuration.StaticIncludes.StaticFileProviderOptions>>().Value.FileProviders;
                 staticFileProviders.Add(context.RequestServices.GetRequiredService<IOptions<StaticFileOptions>>().Value.FileProvider ?? webHostEnvironment.WebRootFileProvider);
 
                 var fileInfo = staticFileProviders.Select(x => x.GetFileInfo(context.Request.Path)).FirstOrDefault(x => x.Exists);

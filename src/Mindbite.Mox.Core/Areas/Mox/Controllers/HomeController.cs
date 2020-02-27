@@ -42,8 +42,8 @@ namespace Mindbite.Mox.Controllers
             this.ViewData["ErrorCode"] = errorCode;
             this.ViewData["IsAuthenticated"] = User?.Identity?.IsAuthenticated ?? false;
 
-            var route = ControllerContext.RouteData.Routers.FirstOrDefault(x => x is Microsoft.AspNetCore.Routing.Route) as Microsoft.AspNetCore.Routing.Route;
-            if (route?.RouteTemplate.ToLower().TrimStart('/').StartsWith(this._moxConfig.Path.ToLower()) ?? false)
+            var startsWithMoxPath = this.HttpContext.Request.Path.StartsWithSegments(new Microsoft.AspNetCore.Http.PathString($"/{this._moxConfig.Path.Trim('/')}"), StringComparison.OrdinalIgnoreCase);
+            if (startsWithMoxPath)
             {
                 return View(viewName: "Error");
             }
