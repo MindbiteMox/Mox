@@ -21,22 +21,22 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
         public string WebRootRelativePath { get; set; }
         public bool RenderInHead { get; private set; }
 
-        protected FileVersionHash HashType { get; set; }
-        protected string FileHash { get; set; }
+        public FileVersionHash HashType { get; set; }
+        public string FileHash { get; set; }
 
-        protected string TagName { get; set; }
-        protected bool OpenTag { get; set; }
-        protected string UrlAttributeName { get; set; }
-        protected Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
+        public string TagName { get; set; }
+        public bool OpenTag { get; set; }
+        public string UrlAttributeName { get; set; }
+        public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
 
-        protected StaticFile()
+        public StaticFile()
         {
 
         }
 
-        protected void UpdateHash(FileVersionHash withHash, IEnumerable<IFileProvider> fileProviders)
+        public void UpdateHash(FileVersionHash withHash, IEnumerable<IFileProvider> fileProviders)
         {
-            if(this.HashType != withHash)
+            if(this.HashType != withHash || this.FileHash == null)
             {
                 this.HashType = withHash;
                 switch(this.HashType)
@@ -90,7 +90,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
             }
         }
 
-        public static StaticFile Style(string webRootRelativePath, int minWidth = int.MinValue, int maxWidth = int.MaxValue, FileVersionHash defaultHash = FileVersionHash.FileHash)
+        public static StaticFile Style(string webRootRelativePath, int minWidth = int.MinValue, int maxWidth = int.MaxValue, string mediaQuery = null, FileVersionHash defaultHash = FileVersionHash.FileHash)
         {
             string getMediaQuery()
             {
@@ -118,7 +118,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
                 Attributes = new Dictionary<string, string>
                 {
                     { "rel", "stylesheet" },
-                    { "media", getMediaQuery() }
+                    { "media", mediaQuery ?? getMediaQuery() }
                 },
                 HashType = defaultHash
             };

@@ -11,8 +11,6 @@
         renderInHead = Model.RenderInHead;
     }
     catch { }
-
-
 }
 
 @foreach (var include in Config.Value.Apps.Where(x => x.Areas.Contains(area)).Select(x => x.StaticIncludes))

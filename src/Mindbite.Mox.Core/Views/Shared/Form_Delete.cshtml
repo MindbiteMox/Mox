@@ -1,5 +1,7 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Microsoft.Extensions.Localization;
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IStringLocalizer localizer
 
 @{
     Layout = (string)ViewData["Layout"];
@@ -8,7 +10,7 @@
 @if ((bool)ViewData["RenderDefaultDeleteHeader"])
 {
     @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
-    <h1>Ta bort @ViewData["ModelDisplayName"]?.ToString().ToLower()</h1>
+    <h1>@localizer["Ta bort {0}", ViewData["ModelDisplayName"]?.ToString().ToLower()]</h1>
     @await Html.PartialAsync("Mox/UI/Message")
 }
 
@@ -20,7 +22,7 @@
 @if ((bool)ViewData["CanDelete"])
 {
     <p class="text-danger">@ViewData["ErrorMessage"]</p>
-    <p>Är du säker på att du vill ta bort @Html.Value(ViewData["ModelTitleFieldName"]?.ToString())?</p>
+    <p>@localizer["Är du säker på att du vill ta bort {0}", Html.Value(ViewData["ModelTitleFieldName"]?.ToString())]?</p>
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
@@ -32,7 +34,7 @@
 
         <fieldset>
             <p>
-                <input type="submit" value="Ta bort" />
+                <input type="submit" value="@localizer["Ta bort"]" />
                 @Html.ActionLink("Avbryt", "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "cancel" })
             </p>
         </fieldset>
@@ -41,7 +43,7 @@
 else
 {
     <p>
-        <strong>@Html.Value(ViewData["ModelTitleFieldName"]?.ToString()) kan inte tas bort!</strong><br />
+        <strong>@localizer["{0} kan inte tas bort!", Html.Value(ViewData["ModelTitleFieldName"]?.ToString())]</strong><br />
         @ViewData["CanDeleteErrorMessage"]
     </p>
     <fieldset>

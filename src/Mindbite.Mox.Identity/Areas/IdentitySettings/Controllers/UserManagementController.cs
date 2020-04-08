@@ -89,8 +89,8 @@ namespace Mindbite.Mox.Identity.Controllers
                 })
                 .Buttons(buttons =>
                 {
-                    buttons.Add(x => Url.Action("edit", new { x.Id })).CssClass("edit");
-                    buttons.Add(x => Url.Action("delete", new { x.Id })).CssClass("delete");
+                    buttons.Add(x => Url.Action("edit", new { x.Id })).CssClass("edit").Title("Redigera");
+                    buttons.Add(x => Url.Action("delete", new { x.Id })).CssClass("delete").Title("Radera");
                 });
 
             return PartialView("Mox/UI/DataTable", dataTable);

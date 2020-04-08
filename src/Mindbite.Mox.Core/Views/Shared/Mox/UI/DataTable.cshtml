@@ -14,7 +14,7 @@
                 {
                     @if (Model.Sortable)
                     {
-                        <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="sortable @(column.FieldName == Model.SortColumn ? Model.SortDirection.ToLower() : "") @column.CssClass">
+                        <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="sortable @(column.FieldName == Model.SortColumn ? Model.SortDirection.ToLower() : "")">
                             <a href="@Url.Action(null, new { DataTableSortColumn = column.FieldName, DataTableSortDirection = column.GetNextSortDirection(Model) })">
                                 @column.Title&nbsp;<span style="font-size: 0.7em;">@Html.Raw(column.FieldName == Model.SortColumn ? (Model.SortDirection.ToLower().StartsWith("asc") ? "&#9650;" : "&#9660;") : "")</span>
                             </a>
@@ -22,7 +22,7 @@
                     }
                     else
                     {
-                        <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="notsortable @column.CssClass">
+                        <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="notsortable">
                             @if (string.IsNullOrWhiteSpace(column.Title))
                             {
                                 <span>@Html.Raw("&nbsp;")</span>
@@ -55,18 +55,19 @@
                     </tr>
                 }
                 string rowId = Model.GetRowId(row);
-                <tr @(rowId != null ? Html.Raw($"data-id={rowId}") : null)>
+                <tr @(rowId != null ? Html.Raw($"data-id={rowId}") : null) class="@Model.GetRowCssClass(row)">
                     @{
                         var rowLink = Model.GetRowLink(row);
                         foreach (var column in Model.Columns)
                         {
+                            var value = column.GetValue(row);
                             if (rowLink != null)
                             {
-                                <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@column.GetValue(row)</a></td>
+                                <td class="@column.GetCssClass(row, value)" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@value</a></td>
                             }
                             else
                             {
-                                <td class="@column.CssClass" style="text-align: @column.Align.ToString().ToLower();"><span>@column.GetValue(row)</span></td>
+                                <td class="@column.GetCssClass(row, value)" style="text-align: @column.Align.ToString().ToLower();"><span>@value</span></td>
                             }
                         }
                     }
@@ -76,7 +77,7 @@
                             <ul class="buttons-list">
                                 @foreach (var button in Model.Buttons)
                                 {
-                                    <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass">@(button.Title ?? Html.Raw("&nbsp;").ToString())</a></li>
+                                    <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass" @(button.OpenInNewTab ? "target=\"_blank\"" : "")>@(button.Title ?? Html.Raw("&nbsp;").ToString())</a></li>
                                 }
                             </ul>
                         </td>

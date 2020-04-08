@@ -208,7 +208,8 @@ namespace Mindbite.Mox.Extensions
                 var allowed = new[]
                 {
                     $"{(staticFilesOptions.RequestPath.ToString().Trim('/') == string.Empty ? "/" : $"/{staticFilesOptions.RequestPath.ToString().Trim('/')}/")}public", // TODO: cleanup
-                    $"{(staticFilesOptions.RequestPath.ToString().Trim('/') == string.Empty ? "/" : $"/{staticFilesOptions.RequestPath.ToString().Trim('/')}/")}mox/static/identity/login" // TODO: cleanup
+                    $"{(staticFilesOptions.RequestPath.ToString().Trim('/') == string.Empty ? "/" : $"/{staticFilesOptions.RequestPath.ToString().Trim('/')}/")}mox/static/identity/login", // TODO: cleanup
+                    $"{(staticFilesOptions.RequestPath.ToString().Trim('/') == string.Empty ? "/" : $"/{staticFilesOptions.RequestPath.ToString().Trim('/')}/")}.well-known" // TODO: cleanup
                 }.Concat(config.AdditionalAllowedStaticFileLocations);
 
                 if (allowed.Any(x => context.Request.Path.StartsWithSegments(x)))
@@ -217,7 +218,7 @@ namespace Mindbite.Mox.Extensions
                 }
 
                 var staticFileProviders = context.RequestServices.GetService<IOptions<Configuration.StaticIncludes.StaticFileProviderOptions>>().Value.FileProviders;
-                staticFileProviders.Add(context.RequestServices.GetRequiredService<IOptions<StaticFileOptions>>().Value.FileProvider ?? webHostEnvironment.WebRootFileProvider);
+                staticFileProviders = staticFileProviders.Append(context.RequestServices.GetRequiredService<IOptions<StaticFileOptions>>().Value.FileProvider ?? webHostEnvironment.WebRootFileProvider).ToList();
 
                 var fileInfo = staticFileProviders.Select(x => x.GetFileInfo(context.Request.Path)).FirstOrDefault(x => x.Exists);
                 if (fileInfo?.Exists ?? false)

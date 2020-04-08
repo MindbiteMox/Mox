@@ -18,6 +18,7 @@ namespace Mindbite.Mox.UI
         string SortDirection { get; }
         bool Sortable { get; }
         string CssClass { get; }
+        string GetRowCssClass(object row);
         HtmlString EmptyMessage { get; }
 
         IEnumerable<IDataTableColumn> Columns { get; }
@@ -36,7 +37,7 @@ namespace Mindbite.Mox.UI
         int Width { get; }
         string FieldName { get; }
         object GetValue(object o);
-        string CssClass { get; }
+        string GetCssClass(object row, object property);
         ColumnAlign Align { get; }
         Func<object, object, HtmlString> Renderer { get; }
         string GetNextSortDirection(IDataTable table);
@@ -47,6 +48,8 @@ namespace Mindbite.Mox.UI
         string Title { get; }
         string CssClass { get; }
         string GetAction(object rowData);
+        bool OpenInNewTab { get; }
+        string Text { get; }
     }
 
     public enum ColumnAlign
@@ -82,13 +85,27 @@ namespace Mindbite.Mox.UI
             return newField;
         }
 
+        public DataTableButton DeleteButton(Func<T, string> action)
+        {
+            return this.Add(action).CssClass("delete").Title("Radera");
+        }
+
+        public DataTableButton EditButton(Func<T, string> action)
+        {
+            return this.Add(action).CssClass("edit").Title("Redigera");
+        }
+
         public class DataTableButton : IDataTableButton
         {
             private string _title;
             private string _cssClass;
+            private bool _openInNewTab;
+            private string _text;
             private Func<T, string> _actionFunc;
             string IDataTableButton.Title => this._title;
             string IDataTableButton.CssClass => this._cssClass;
+            bool IDataTableButton.OpenInNewTab => this._openInNewTab;
+            string IDataTableButton.Text => this._text;
 
             public DataTableButton(Func<T, string> action)
             {
@@ -104,6 +121,18 @@ namespace Mindbite.Mox.UI
             public DataTableButton CssClass(string cssClass)
             {
                 this._cssClass = cssClass;
+                return this;
+            }
+
+            public DataTableButton OpenInNewTab(bool newTab)
+            {
+                this._openInNewTab = newTab;
+                return this;
+            }
+
+            public DataTableButton Text(string text)
+            {
+                this._text = text;
                 return this;
             }
 
@@ -130,14 +159,13 @@ namespace Mindbite.Mox.UI
             private string _title;
             private int _width;
             private string _fieldName;
-            private string _cssClass;
+            private Func<TProperty, T, string> _cssClass;
             private Func<object, object, HtmlString> _renderer;
             private ColumnAlign _align = ColumnAlign.Left;
 
             string IDataTableColumn.Title => this._title;
             int IDataTableColumn.Width => this._width;
             public string FieldName => this._fieldName;
-            string IDataTableColumn.CssClass => this._cssClass;
             Func<object, object, HtmlString> IDataTableColumn.Renderer => this._renderer;
             ColumnAlign IDataTableColumn.Align => this._align;
 
@@ -168,6 +196,18 @@ namespace Mindbite.Mox.UI
             }
 
             public DataTableColumn<TProperty> CssClass(string cssClass)
+            {
+                this.CssClass(_ => cssClass);
+                return this;
+            }
+
+            public DataTableColumn<TProperty> CssClass(Func<TProperty, string> cssClass)
+            {
+                this.CssClass((x, _) => cssClass(x));
+                return this;
+            }
+
+            public DataTableColumn<TProperty> CssClass(Func<TProperty, T, string> cssClass)
             {
                 this._cssClass = cssClass;
                 return this;
@@ -200,6 +240,11 @@ namespace Mindbite.Mox.UI
                 }
                 return "ascending";
             }
+
+            public string GetCssClass(object row, object property)
+            {
+                return this._cssClass != null ? this._cssClass((TProperty)property, (T)row) : null;
+            }
         }
 
         public DataTableColumn<TProperty> Add<TProperty>(Expression<Func<T, TProperty>> field)
@@ -226,6 +271,7 @@ namespace Mindbite.Mox.UI
             private List<IDataTableButton> _buttons;
             private bool _sortable;
             private string _cssClass;
+            private Func<T, string> _rowCssClass;
             private string _groupMember;
             private Func<T, object> _groupMemberFunc;
             private Func<object, HtmlString> _groupMemberRender;
@@ -239,7 +285,6 @@ namespace Mindbite.Mox.UI
             bool IDataTable.Sortable => this._sortable;
             string IDataTable.CssClass => this._cssClass;
             HtmlString IDataTable.EmptyMessage => this._emptyMessage;
-
 
             IEnumerable<IDataTableColumn> IDataTable.Columns => this._columns;
             IEnumerable<IDataTableButton> IDataTable.Buttons => this._buttons;
@@ -422,6 +467,12 @@ namespace Mindbite.Mox.UI
                 return this;
             }
 
+            public QueryableDataTable<T> RowCssClass(Func<T, string> cssClass)
+            {
+                this._rowCssClass = cssClass;
+                return this;
+            }
+
             public QueryableDataTable<T> EmptyMessage(HtmlString emptyMessage)
             {
                 this._emptyMessage = emptyMessage;
@@ -440,6 +491,11 @@ namespace Mindbite.Mox.UI
             {
                 this._groupMemberRender = (object o) => render((TProperty)o);
                 return this.GroupBy(groupFunc);
+            }
+            
+            string IDataTable.GetRowCssClass(object row)
+            {
+                return this._rowCssClass != null ? this._rowCssClass((T)row) : null;
             }
         }
         
