@@ -31,12 +31,19 @@ namespace Mindbite.Mox.UI
         string GetGroupValue(object o);
     }
 
+    public struct RowValue
+    {
+        public object Rendered;
+        public object Raw;
+    }
+
     public interface IDataTableColumn
     {
         string Title { get; }
         int Width { get; }
         string FieldName { get; }
         object GetValue(object o);
+        RowValue GetValue2(object o);
         string GetCssClass(object row, object property);
         ColumnAlign Align { get; }
         Func<object, object, HtmlString> Renderer { get; }
@@ -174,6 +181,14 @@ namespace Mindbite.Mox.UI
                 if (this._renderer != null)
                     return this._renderer(this._compiledField((T)o), o);
                 return this._compiledField((T)o);
+            }
+
+            RowValue IDataTableColumn.GetValue2(object o)
+            {
+                var value = this._compiledField((T)o);
+                if (this._renderer != null)
+                    return new RowValue { Rendered = this._renderer(value, o), Raw = value };
+                return new RowValue { Rendered = value, Raw = value };
             }
 
             public DataTableColumn(Expression<Func<T, TProperty>> field)

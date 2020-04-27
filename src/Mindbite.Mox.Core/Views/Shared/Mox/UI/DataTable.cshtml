@@ -1,5 +1,7 @@
 ﻿@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization;
 @model Mindbite.Mox.UI.IDataTable
+@inject IStringLocalizer localizer
 @{ 
     var pageItems = await Model.GetRowDataAsync();
     string currentGroup = null;
@@ -60,14 +62,14 @@
                         var rowLink = Model.GetRowLink(row);
                         foreach (var column in Model.Columns)
                         {
-                            var value = column.GetValue(row);
+                            var rowValue = column.GetValue2(row);
                             if (rowLink != null)
                             {
-                                <td class="@column.GetCssClass(row, value)" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@value</a></td>
+                                <td class="@column.GetCssClass(row, rowValue.Raw)" style="text-align: @column.Align.ToString().ToLower();"><a href="@rowLink">@rowValue.Rendered</a></td>
                             }
                             else
                             {
-                                <td class="@column.GetCssClass(row, value)" style="text-align: @column.Align.ToString().ToLower();"><span>@value</span></td>
+                                <td class="@column.GetCssClass(row, rowValue.Raw)" style="text-align: @column.Align.ToString().ToLower();"><span>@rowValue.Rendered</span></td>
                             }
                         }
                     }
@@ -106,5 +108,5 @@
 }
 else
 {
-    <p class="mox-datatable-empty">Listan är tom</p>
+    <p class="mox-datatable-empty">@(Model.EmptyMessage?.ToString() ?? localizer["Listan är tom"].ToString())</p>
 }

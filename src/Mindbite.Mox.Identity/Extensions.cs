@@ -200,6 +200,8 @@ namespace Mindbite.Mox.Extensions
 
             app.Use(async (context, next) =>
             {
+                var filePath = System.Web.HttpUtility.UrlDecode(context.Request.Path);
+
                 if (context.User.Identity.IsAuthenticated)
                 {
                     goto Success;
@@ -220,7 +222,7 @@ namespace Mindbite.Mox.Extensions
                 var staticFileProviders = context.RequestServices.GetService<IOptions<Configuration.StaticIncludes.StaticFileProviderOptions>>().Value.FileProviders;
                 staticFileProviders = staticFileProviders.Append(context.RequestServices.GetRequiredService<IOptions<StaticFileOptions>>().Value.FileProvider ?? webHostEnvironment.WebRootFileProvider).ToList();
 
-                var fileInfo = staticFileProviders.Select(x => x.GetFileInfo(context.Request.Path)).FirstOrDefault(x => x.Exists);
+                var fileInfo = staticFileProviders.Select(x => x.GetFileInfo(filePath)).FirstOrDefault(x => x.Exists);
                 if (fileInfo?.Exists ?? false)
                 {
                     context.Response.StatusCode = 403;
