@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Mindbite.Mox.Reporting;
 
 namespace Mindbite.Mox.DemoApp
 {
@@ -58,6 +59,7 @@ namespace Mindbite.Mox.DemoApp
                 .AddDesignDemoMoxApp(this._webHostEnvironment, this.Configuration)
                 .AddMoxNotificationCenter(this._webHostEnvironment, this.Configuration)
                 .AddMoxIdentityAzureADAuthentication(this.Configuration)
+                .AddMoxReportingApp(this.Configuration)
                 .AddMoxIdentity<AppDbContext>(this._webHostEnvironment, this.Configuration);
 
             services.Configure<Verification.Services.VerificationOptions>(c =>
@@ -140,6 +142,7 @@ namespace Mindbite.Mox.DemoApp
                 endpoints.MapMoxIdentityRoutes();
                 endpoints.MapMoxNotificationCenterRoutes();
                 endpoints.MapMoxIdentityAzureADRoutes();
+                endpoints.MapMoxReportingAppRoutes();
                 endpoints.MapRedirectToMoxRoutes();
             });
 

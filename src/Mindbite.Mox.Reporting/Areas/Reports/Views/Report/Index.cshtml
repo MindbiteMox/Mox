@@ -1,0 +1,37 @@
+﻿@using Microsoft.Extensions.Localization
+
+@inject Mindbite.Mox.Reporting.Services.ReportingService reportingService
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Reporting.MoxReportingOptions> options
+@inject IStringLocalizer localizer
+@{
+    Layout = "Mox/_Layout";
+
+    var selectedReport = ViewContext.HttpContext.Request.Query["reportUID"].ToString();
+
+    var reports = await reportingService.AllReportsAsync();
+}
+
+<style>
+    .mox-content { padding: 0 }
+</style>
+
+@if(!string.IsNullOrWhiteSpace(selectedReport))
+{
+    <iframe style="width: 100%; height: calc(100vh - 80px); border: 0;" id="reportframe" src="@options.Value.ServerUrl.GetLeftPart(UriPartial.Authority)/ReportViewer.aspx?source=@options.Value.ReportDirectory&uid=@selectedReport"></iframe>
+}
+else
+{
+    <p style="padding: 20px;">Välj en rapport till vänster</p>
+}
+
+@section sidemenu {
+    <div class="mox-side-menu">
+        <span class="app-title">Rapporter</span>
+        <ul class="mox-menu">
+            @foreach(var report in reports.Where(options.Value.Filter).OrderBy(x => x.Name))
+            {
+                <li><a class="@(report.UID.Equals(selectedReport, StringComparison.OrdinalIgnoreCase) ? "selected" : "")" href="?reportUID=@report.UID">@report.Name</a></li>
+            }
+        </ul>
+    </div>
+}

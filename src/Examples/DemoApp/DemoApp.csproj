@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Mindbite.Mox.Identity.AzureAD\Mindbite.Mox.Identity.AzureAD.csproj" />
+    <ProjectReference Include="..\..\Mindbite.Mox.Reporting\Mindbite.Mox.Reporting.csproj" />
     <ProjectReference Include="..\Mindbite.Mox.DesignDemoApp\Mindbite.Mox.DesignDemoApp.csproj" />
     <ProjectReference Include="..\..\Mindbite.Mox.Identity\Mindbite.Mox.Identity.csproj" />
     <ProjectReference Include="..\Mindbite.Mox.NotificationCenter.Data\Mindbite.Mox.NotificationCenter.Data.csproj" />
