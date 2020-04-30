@@ -28,7 +28,7 @@ else
     <div class="mox-side-menu">
         <span class="app-title">Rapporter</span>
         <ul class="mox-menu">
-            @foreach(var report in reports.Where(options.Value.Filter).OrderBy(x => x.Name))
+            @foreach(var report in reports.Where(x => options.Value.FilterReportingAppList(x, ViewContext.HttpContext)).OrderBy(x => x.Name))
             {
                 <li><a class="@(report.UID.Equals(selectedReport, StringComparison.OrdinalIgnoreCase) ? "selected" : "")" href="?reportUID=@report.UID">@report.Name</a></li>
             }

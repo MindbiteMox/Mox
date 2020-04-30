@@ -8,13 +8,14 @@
     <OutputTypeEx>library</OutputTypeEx>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
-    <Version>3.1.0</Version>
-    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <Version>3.1.1</Version>
+    <AssemblyVersion>3.1.1.0</AssemblyVersion>
     <Nullable>enable</Nullable>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <LangVersion>latest</LangVersion>
+    <FileVersion>3.1.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,10 @@
 
   <ItemGroup>
     <Folder Include="Areas\Reports\Controllers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
 </Project>

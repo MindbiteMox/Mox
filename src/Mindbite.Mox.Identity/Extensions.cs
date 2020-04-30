@@ -67,6 +67,7 @@ namespace Mindbite.Mox.Extensions
                      .RequireRole(Configuration.Constants.MoxRole)
                      .Build();
                 options.Filters.Add(new MoxAuthorizeFilter(policy, moxPath));
+                options.Filters.Add<Identity.Services.RefreshLoginMiddleware.RefreshLoginActionFilter>();
             });
 
             mvc.Services.Configure<LocalizationSources>(options =>
@@ -147,6 +148,7 @@ namespace Mindbite.Mox.Extensions
 
             mvc.Services.Configure<MoxIdentityOptions>(x =>
             {
+                x.HookTypes.Add<Identity.Services.RefreshLoginMiddleware.RefreshLoginUserChanges>();
                 x.LoginStaticFiles.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/login/css/base.css"));
                 x.LoginStaticFiles.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/login/css/base_mobile.css", maxWidth: 960));
             });
@@ -160,6 +162,8 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.AddScoped<IUserRolesFetcher, UserRolesFetcher>();
             mvc.Services.AddScoped<IPasswordResetManager, PasswordResetManager>();
             mvc.Services.AddScoped<IMagicLinkManager, MagicLinkManager>();
+            mvc.Services.AddScoped<Identity.Services.RefreshLoginMiddleware.RefreshLoginUserChanges>();
+            mvc.Services.AddScoped<Identity.Services.RefreshLoginMiddleware.RefreshLoginService>();
 
             mvc.Services.AddTransient<IBackDoor, BackDoor>();
 

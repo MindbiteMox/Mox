@@ -13,7 +13,7 @@ namespace Mindbite.Mox.Reporting
     {
         public string ReportDirectory { get; set; }
         public Uri ServerUrl { get; set; }
-        public Func<Services.ReportingService.Report, bool> Filter { get; set; } = _ => true;
+        public Func<Services.ReportingService.Report, Microsoft.AspNetCore.Http.HttpContext, bool> FilterReportingAppList { get; set; } = (x, y) => true;
     }
 
     public static class Configuration
