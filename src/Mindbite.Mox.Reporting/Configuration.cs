@@ -14,6 +14,9 @@ namespace Mindbite.Mox.Reporting
         public string ReportDirectory { get; set; }
         public Uri ServerUrl { get; set; }
         public Func<Services.ReportingService.Report, Microsoft.AspNetCore.Http.HttpContext, bool> FilterReportingAppList { get; set; } = (x, y) => true;
+        public bool EnableAuthorization { get; set; }
+        public int AuthorizationTimeoutInMinutes { get; set; } = 5;
+        public Func<Microsoft.AspNetCore.Http.HttpContext, bool> AuthorizeUser { get; set; } = (x) => true;
     }
 
     public static class Configuration

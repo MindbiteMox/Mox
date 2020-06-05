@@ -19,7 +19,7 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
     public class StaticFile
     {
         public string WebRootRelativePath { get; set; }
-        public bool RenderInHead { get; private set; }
+        public bool RenderInHead { get; set; }
 
         public FileVersionHash HashType { get; set; }
         public string FileHash { get; set; }

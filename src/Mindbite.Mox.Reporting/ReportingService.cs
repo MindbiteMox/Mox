@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,10 +25,12 @@ namespace Mindbite.Mox.Reporting.Services
 
         private readonly MoxReportingOptions _options;
         private readonly HttpClient _client;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ReportingService(IOptions<MoxReportingOptions> options)
+        public ReportingService(IOptions<MoxReportingOptions> options, IHttpContextAccessor httpContextAccessor)
         {
             this._options = options.Value;
+            this._httpContextAccessor = httpContextAccessor;
 
             this._client = new HttpClient
             {
@@ -59,11 +63,12 @@ namespace Mindbite.Mox.Reporting.Services
             }
 
             var data = new StringContent(JsonConvert.SerializeObject(dataDict), Encoding.UTF8, "application/json");
-            var response = await this._client.PostAsync("/webapi/v1/reports/export/pdf", data);
+            var response = await this._client.PostAsync($"/webapi/v1/reports/export/pdf", data);
             if (!response.IsSuccessStatusCode)
             {
                 return null;
             }
+
             return await response.Content.ReadAsByteArrayAsync();
         }
     }

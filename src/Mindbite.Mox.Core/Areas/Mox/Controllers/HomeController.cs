@@ -25,12 +25,13 @@ namespace Mindbite.Mox.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var firstApp = this._moxConfig.Apps.FirstOrDefault();
-            if (firstApp != null)
+            var userId = HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var roles = await this._rolesFetcher.GetRolesAsync(userId);
+
+            var firstAppUrl = this._moxConfig.Apps.Select(x => x.ResolveActiveMenu(ControllerContext).Build(this.Url, roles.AsEnumerable()).FirstOrDefault()?.Url).FirstOrDefault(x => x != null);
+            if(!string.IsNullOrWhiteSpace(firstAppUrl))
             {
-                var userId = HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var roles = await this._rolesFetcher.GetRolesAsync(userId);
-                return Redirect(firstApp.ResolveActiveMenu(ControllerContext).Build(this.Url, roles.AsEnumerable()).First().Url);
+                return Redirect(firstAppUrl);
             }
 
             return View(this._moxConfig);

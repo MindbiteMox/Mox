@@ -200,7 +200,7 @@
                     continue;
                 }
 
-                params.push(key + '=' + value);
+                params.push(key + '=' + encodeURIComponent(value));
             }
 
             return params.join("&");

@@ -79,7 +79,7 @@
                             <ul class="buttons-list">
                                 @foreach (var button in Model.Buttons)
                                 {
-                                    <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass" @(button.OpenInNewTab ? "target=\"_blank\"" : "")>@(button.Title ?? Html.Raw("&nbsp;").ToString())</a></li>
+                                    <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass" @(button.OpenInNewTab ? "target=\"_blank\"" : "") title="@button.Title">@(button.Text ?? Html.Raw("&nbsp;").ToString())</a></li>
                                 }
                             </ul>
                         </td>

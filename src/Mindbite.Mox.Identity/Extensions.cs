@@ -92,6 +92,7 @@ namespace Mindbite.Mox.Extensions
                 options.Cookie.Name = "MoxAuthCookie";
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.Cookie.HttpOnly = true;
+                options.Cookie.SameSite = SameSiteMode.Lax;
                 options.SlidingExpiration = true;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.LoginPath = $"{moxPath}/LogIn".TrimStart('/').Insert(0, "/");
