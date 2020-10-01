@@ -170,6 +170,7 @@ namespace Mindbite.Mox.Extensions
                 c.StaticRoot = staticRequestPath;
                 c.Files.Add(StaticFile.Style("mox/static/css/base.css"));
                 c.Files.Add(StaticFile.Style("mox/static/css/base_mobile.css", maxWidth: 960));
+                c.Files.Add(StaticFile.Style("mox/static/fonts/inter/inter.css"));
                 c.Files.Add(StaticFile.Script("mox/static/js/utils.js"));
                 c.Files.Add(StaticFile.Script("mox/static/js/MoxUI.js"));
             });

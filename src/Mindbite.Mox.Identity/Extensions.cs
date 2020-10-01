@@ -150,6 +150,10 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.Configure<MoxIdentityOptions>(x =>
             {
                 x.HookTypes.Add<Identity.Services.RefreshLoginMiddleware.RefreshLoginUserChanges>();
+
+                x.AdditionalAllowedStaticFileLocations.Add("/Mox/Static/Fonts/Inter");
+
+                x.LoginStaticFiles.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/fonts/inter/inter.css"));
                 x.LoginStaticFiles.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/login/css/base.css"));
                 x.LoginStaticFiles.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/identity/login/css/base_mobile.css", maxWidth: 960));
             });

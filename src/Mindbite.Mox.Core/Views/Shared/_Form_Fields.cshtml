@@ -43,12 +43,12 @@
     {
         @Html.Hidden(field.Name)
     }
-    else if (field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any() && (field.PropertyType.IsEnum || typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType) || field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any(x => !string.IsNullOrWhiteSpace(x.DataSourcePropertyName))))
+    else if (field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any() && (field.PropertyType.IsEnum || (Nullable.GetUnderlyingType(field.PropertyType)?.IsEnum ?? false) || typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType) || field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any(x => !string.IsNullOrWhiteSpace(x.DataSourcePropertyName))))
     {
         var attribute = field.GetCustomAttribute<MoxFormFieldTypeAttribute>();
         var items = default(SelectListItem[]);
 
-        if (field.PropertyType.IsEnum)
+        if (field.PropertyType.IsEnum || (Nullable.GetUnderlyingType(field.PropertyType)?.IsEnum ?? false))
         {
             items = Html.GetEnumSelectList(field.PropertyType).ToArray();
         }
