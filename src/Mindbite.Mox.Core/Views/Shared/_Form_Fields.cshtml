@@ -59,6 +59,10 @@
             {
                 items = ((IEnumerable<SelectListItem>)field.GetValue((object)Model)).ToArray();
             }
+            else if(dataSourceProperty.PropertyType.IsEnum || (Nullable.GetUnderlyingType(dataSourceProperty.PropertyType)?.IsEnum ?? false))
+            {
+                items = Html.GetEnumSelectList(field.PropertyType).ToArray();
+            }
             else
             {
                 items = ((IEnumerable<SelectListItem>)dataSourceProperty.GetValue((object)Model)).ToArray();

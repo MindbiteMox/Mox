@@ -1,8 +1,9 @@
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -363,6 +364,8 @@ var Mox;
             function DataTable(options) {
                 this.options = options || {};
                 this.options.filters = this.options.filters || [];
+                this.options.rememberFilters = this.options.rememberFilters === undefined ? true : !!this.options.rememberFilters;
+                this.options.skipRenderOnCreate = this.options.skipRenderOnCreate || !!this.options.skipRenderOnCreate;
             }
             Object.defineProperty(DataTable.prototype, "tableId", {
                 get: function () {
@@ -473,10 +476,12 @@ var Mox;
                                 renderUrl = localStorage.getItem(table.tableId) || table.options.url;
                                 addedQuery = table.options.addQuery ? table.options.addQuery(table) : '';
                                 url = Mox.Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random()]);
+                                if (!!table.options.skipRenderOnCreate) return [3 /*break*/, 2];
                                 return [4 /*yield*/, table.render(url)];
                             case 1:
                                 _a.sent();
-                                return [2 /*return*/, table];
+                                _a.label = 2;
+                            case 2: return [2 /*return*/, table];
                         }
                     });
                 });
@@ -503,17 +508,21 @@ var Mox;
                                         .then(Mox.Utils.Fetch.parseText)];
                             case 1:
                                 _a.innerHTML = _b.sent();
-                                localStorage.setItem(this.tableId + '_fullurl', url);
-                                localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
+                                if (this.options.rememberFilters) {
+                                    localStorage.setItem(this.tableId + '_fullurl', url);
+                                    localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
+                                }
                                 sortLinks = Mox.Utils.DOM.nodeListOfToArray(this.options.container.querySelectorAll('th.sortable a, .mox-pager a'));
                                 sortLinks.forEach(function (x) { return x.addEventListener('click', function (e) {
                                     e.preventDefault();
                                     var addedQuery = _this.options.addQuery ? _this.options.addQuery(_this) : '';
                                     var fullUrl = Mox.Utils.URL.addWindowQueryTo(x.href, [addedQuery, _this.filterQueryString, 'r=' + Math.random()]);
                                     _this.render(fullUrl);
-                                    localStorage.setItem(_this.tableId, x.href);
-                                    localStorage.setItem(_this.tableId + '_fullurl', fullUrl);
-                                    localStorage.setItem(_this.tableId + '_filtersquery', _this.filterQueryString);
+                                    if (_this.options.rememberFilters) {
+                                        localStorage.setItem(_this.tableId, x.href);
+                                        localStorage.setItem(_this.tableId + '_fullurl', fullUrl);
+                                        localStorage.setItem(_this.tableId + '_filtersquery', _this.filterQueryString);
+                                    }
                                 }); });
                                 this.options.container.classList.remove('mox-datatable-loader');
                                 if (!this.options.onRenderComplete) return [3 /*break*/, 3];

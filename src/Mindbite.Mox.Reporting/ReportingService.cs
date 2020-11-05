@@ -21,6 +21,7 @@ namespace Mindbite.Mox.Reporting.Services
             public string UID { get; set; }
             public string Name { get; set; }
             public string ReportPath { get; set; }
+            public bool ShowInList { get; set; }
         }
 
         private readonly MoxReportingOptions _options;
@@ -45,7 +46,9 @@ namespace Mindbite.Mox.Reporting.Services
 
         public async Task<IEnumerable<Report>> AllReportsAsync()
         {
-            var response = await this._client.GetAsync($"/webapi/v1/reports/{this._options.ReportDirectory}/all");
+            var response = await this._client.GetAsync($"/webapi/v1/reports/{this._options.ReportDirectory}/all?sharedSecret={this._options.SharedSecret}");
+            response.EnsureSuccessStatusCode();
+             
             return JsonConvert.DeserializeObject<IEnumerable<Report>>(await response.Content.ReadAsStringAsync()) ?? Enumerable.Empty<Report>();
         }
 
@@ -63,11 +66,8 @@ namespace Mindbite.Mox.Reporting.Services
             }
 
             var data = new StringContent(JsonConvert.SerializeObject(dataDict), Encoding.UTF8, "application/json");
-            var response = await this._client.PostAsync($"/webapi/v1/reports/export/pdf", data);
-            if (!response.IsSuccessStatusCode)
-            {
-                return null;
-            }
+            var response = await this._client.PostAsync($"/webapi/v1/reports/export/pdf?sharedSecret={this._options.SharedSecret}", data);
+            response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsByteArrayAsync();
         }

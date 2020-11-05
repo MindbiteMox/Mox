@@ -50,14 +50,15 @@ declare namespace Mox.UI {
         onRenderComplete?: (dataTable: DataTable) => Promise<void>;
         addQuery?: (dataTable: DataTable) => string;
         filters: (HTMLInputElement | HTMLSelectElement | string)[];
-        rememberFilters: boolean;
+        rememberFilters?: boolean;
+        skipRenderOnCreate?: boolean;
     }
     class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
-        readonly tableId: string;
-        readonly containerElement: HTMLElement;
-        readonly filterQueryString: string;
+        get tableId(): string;
+        get containerElement(): HTMLElement;
+        get filterQueryString(): string;
         static create(options: DataTableOptions): Promise<DataTable>;
         private constructor();
         private render;

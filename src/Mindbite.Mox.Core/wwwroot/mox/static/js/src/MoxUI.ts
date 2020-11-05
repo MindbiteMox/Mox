@@ -353,7 +353,8 @@
         onRenderComplete?: (dataTable: DataTable) => Promise<void>;
         addQuery?: (dataTable: DataTable) => string;
         filters: (HTMLInputElement | HTMLSelectElement | string)[];
-        rememberFilters: boolean;
+        rememberFilters?: boolean;
+        skipRenderOnCreate?: boolean;
     }
 
     export class DataTable {
@@ -396,7 +397,6 @@
 
         static async create(options: DataTableOptions): Promise<DataTable> {
             const table = new DataTable(options);
-
 
             table.filters = table.options.filters.map(x => typeof (x) === 'string' ? document.getElementById(x) as (HTMLInputElement | HTMLSelectElement) : x);
             table.filters.forEach(x => {
@@ -465,15 +465,19 @@
             const renderUrl = localStorage.getItem(table.tableId) || table.options.url;
             const addedQuery = table.options.addQuery ? table.options.addQuery(table) : '';
             const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random()]);
-            await table.render(url);
+
+            if (!table.options.skipRenderOnCreate) {
+                await table.render(url);
+            }
 
             return table;
         }
 
-
         private constructor(options: DataTableOptions) {
             this.options = options || {} as DataTableOptions;
             this.options.filters = this.options.filters || [];
+            this.options.rememberFilters = this.options.rememberFilters === undefined ? true : !!this.options.rememberFilters;
+            this.options.skipRenderOnCreate = this.options.skipRenderOnCreate || !!this.options.skipRenderOnCreate;
         }
 
         private async render(url: string) {
@@ -492,8 +496,10 @@
                 .then(Mox.Utils.Fetch.checkErrorCode)
                 .then(Mox.Utils.Fetch.parseText);
 
-            localStorage.setItem(this.tableId + '_fullurl', url);
-            localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
+            if (this.options.rememberFilters) {
+                localStorage.setItem(this.tableId + '_fullurl', url);
+                localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
+            }
 
             const sortLinks = Mox.Utils.DOM.nodeListOfToArray(this.options.container.querySelectorAll('th.sortable a, .mox-pager a')) as HTMLAnchorElement[];
             sortLinks.forEach(x => x.addEventListener('click', e => {
@@ -501,9 +507,12 @@
                 const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
                 const fullUrl = Utils.URL.addWindowQueryTo(x.href, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
                 this.render(fullUrl);
-                localStorage.setItem(this.tableId, x.href);
-                localStorage.setItem(this.tableId + '_fullurl', fullUrl);
-                localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
+
+                if (this.options.rememberFilters) {
+                    localStorage.setItem(this.tableId, x.href);
+                    localStorage.setItem(this.tableId + '_fullurl', fullUrl);
+                    localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
+                }
             }));
 
             this.options.container.classList.remove('mox-datatable-loader');
