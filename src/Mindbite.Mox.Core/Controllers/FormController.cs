@@ -36,6 +36,7 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual bool RenderDefaultCreateHeader => true;
         public virtual bool RenderDefaultIndexHeader => true;
         public virtual bool RenderDefaultDeleteHeader => true;
+        public virtual bool CanCreate => true;
         public abstract string IndexPageHeading { get; }
         public virtual string EditPageHeading(ViewModel_T viewModel) => typeof(ViewModel_T).GetProperty(this.ModelTitleFieldName).GetValue(viewModel)?.ToString() ?? $"Redigera {this.ModelDisplayName}";
         public virtual FormControllerRedirectTarget RedirectAfterSaveTarget => FormControllerRedirectTarget.Index;
@@ -68,6 +69,7 @@ namespace Mindbite.Mox.Core.Controllers
             ViewData[nameof(RenderDefaultEditHeader)] = this.RenderDefaultEditHeader;
             ViewData[nameof(RenderDefaultIndexHeader)] = this.RenderDefaultIndexHeader;
             ViewData[nameof(RenderDefaultDeleteHeader)] = this.RenderDefaultDeleteHeader;
+            ViewData[nameof(CanCreate)] = this.CanCreate;
             ViewData[nameof(CreateHeaderPartial)] = this.CreateHeaderPartial;
             ViewData[nameof(EditHeaderPartial)] = this.EditHeaderPartial;
             ViewData[nameof(IndexHeaderPartial)] = this.IndexHeaderPartial;

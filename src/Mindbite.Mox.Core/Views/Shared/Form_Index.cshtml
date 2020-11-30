@@ -1,6 +1,11 @@
 ﻿@using Mindbite.Mox.Extensions
 @{
     Layout = (string)ViewData["Layout"];
+
+    var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
+    var filters = Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetFilters(actionDescriptor.ControllerTypeInfo.AsType());
+
+    var canCreate = (bool)ViewData["CanCreate"];
 }
 
 @model Mindbite.Mox.UI.IDataTable
@@ -11,11 +16,18 @@
     <h1>@ViewData["IndexPageHeading"]</h1>
     @await Html.PartialAsync("Mox/UI/Message")
 
-    <ul class="mox-filters">
-        <li>
-            @Html.ActionLink($"Skapa {ViewData["ModelDisplayName"]?.ToString().ToLower()}", "Create", null, ViewContext.RouteData.Values, new { @class = "mox-button" })
-        </li>
-    </ul>
+    @if(canCreate || filters.Any())
+    {
+        <ul class="mox-filters">
+            <li class="break">
+                @if (canCreate)
+                {
+                    @Html.ActionLink($"Skapa {ViewData["ModelDisplayName"]?.ToString().ToLower()}", "Create", null, ViewContext.RouteData.Values, new { @class = "mox-button" })
+                }
+            </li>
+            @await Html.PartialAsync("_Form_Filters")
+        </ul>
+    }
 }
 
 @if (!string.IsNullOrWhiteSpace((string)ViewData["IndexHeaderPartial"]))
@@ -30,6 +42,7 @@
         Mox.UI.DataTable.create({
             container: document.getElementById('js-table'),
             url: '@Url.Action("Table", ViewContext.RouteData.Values)'
+            filters: [@Html.Raw(string.Join(",", filters.Select(x => $"'{Html.Id(x.Name)}'")))],
         })
     });
 </script>

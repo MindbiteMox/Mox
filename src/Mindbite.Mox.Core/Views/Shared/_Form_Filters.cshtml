@@ -1,0 +1,25 @@
+﻿@{
+    var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
+    var filters = Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetFilters(actionDescriptor.ControllerTypeInfo.AsType());
+}
+
+@foreach (var filter in filters.OrderBy(x => x.Order))
+{
+    <li class="@(filter.SpacingAfter ? "spacing" : "")">
+        <div class="material-input tight">
+            @{
+                var selectList = await filter.GetSelectListAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+               
+                switch (filter.Type)
+                {
+                    case Mindbite.Mox.Attributes.MoxFormFilterType.Text:
+                        @Html.TextBox(filter.Name, null, new { placeholder = filter.Placeholder })
+                        break;
+                    case Mindbite.Mox.Attributes.MoxFormFilterType.Dropdown:
+                        @Html.DropDownList(filter.Name, selectList, filter.Placeholder)
+                        break;
+                }
+            }
+        </div>
+    </li>
+}

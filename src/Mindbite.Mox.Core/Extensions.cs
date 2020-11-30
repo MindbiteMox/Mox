@@ -197,6 +197,11 @@ namespace Mindbite.Mox.Extensions
                 c.FileProviders.Add(new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webHostEnvironment.WebRootPath));
             });
 
+            mvc.Services.Configure<MvcOptions>(c =>
+            {
+                c.ModelBinderProviders.Insert(0, new Utils.ModelBinders.DoubleBinderProvider());
+            });
+
             return mvc;
         }
 

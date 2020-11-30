@@ -13,7 +13,6 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Options;
 
 namespace Mindbite.Mox.Identity.AzureAD
 {
@@ -94,9 +93,9 @@ namespace Mindbite.Mox.Identity.AzureAD
                     //var result = (await (await client.Me.GetMemberGroups(false).Request().PostAsync()).ToCompleteListAsync(x => x.NextPageRequest?.PostAsync())).Cast<string>();
                     
                     var adUser = await client.Me.Request().GetAsync();
-                    var samAccountName = adUser.OnPremisesSamAccountName;
-                    var extensions = (await adUser.Extensions?.ToCompleteListAsync(x => x.NextPageRequest?.GetAsync()) ?? Enumerable.Empty<Extension>()).Cast<Extension>();
-                    var fullName = adUser.DisplayName;
+                    //var samAccountName = adUser.OnPremisesSamAccountName;
+                    //var extensions = (await adUser.Extensions?.ToCompleteListAsync(x => x.NextPageRequest?.GetAsync()) ?? Enumerable.Empty<Extension>()).Cast<Extension>();
+                    //var fullName = adUser.DisplayName;
 
                     var userEmail = context.Principal.Claims.First(x => x.Type == "preferred_username").Value;
                     var userManager = context.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Identity.UserManager<Identity.Data.Models.MoxUser>>();
@@ -104,7 +103,7 @@ namespace Mindbite.Mox.Identity.AzureAD
                     var user = await userManager.FindByEmailAsync(userEmail);
                     if(user == null)
                     {
-                        var result = await userManager.CreateAsync(new Data.Models.MoxUserBaseImpl { Email = userEmail, UserName = userEmail, Name = fullName });
+                        var result = await userManager.CreateAsync(new Data.Models.MoxUserBaseImpl { Email = userEmail, UserName = userEmail, Name = adUser.DisplayName });
                         user = await userManager.FindByEmailAsync(userEmail);
 
                         await userManager.AddToRoleAsync(user, Mox.Configuration.Constants.MoxRole);
@@ -120,7 +119,7 @@ namespace Mindbite.Mox.Identity.AzureAD
         {
             endpoints.Map("azurelogin", async context =>
             {
-                await context.ChallengeAsync(AzureADDefaults.OpenIdScheme, new AuthenticationProperties() { RedirectUri = "/" });
+                await context.ChallengeAsync(AzureADDefaults.OpenIdScheme, new AuthenticationProperties() { RedirectUri = "http://localhost:3000/home" });
             });
         }
     }

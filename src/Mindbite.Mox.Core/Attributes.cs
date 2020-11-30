@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Mindbite.Mox.Attributes
 {
@@ -345,6 +347,89 @@ namespace Mindbite.Mox.Attributes
         {
             this.Name = name;
             this.Order = order;
+        }
+    }
+
+#nullable enable
+
+    public enum MoxFormFilterType
+    {
+        Text,
+        Dropdown
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    public class MoxFormFilterAttribute : Attribute
+    {
+        public MoxFormFilterType Type { get; set; }
+        public string Name { get; set; }
+        public string? Placeholder { get; set; }
+        public int Order { get; set; } = 0;
+        public bool SpacingAfter { get; set; } = false;
+
+        /// <summary>
+        /// A static function on this class with the following signature: Task<IEnumerable<SelectListItem>> YourAsyncMethod(HttpContext context)
+        /// </summary>
+        public string? GetSelectListFunction { get; set; }
+
+        public MoxFormFilterAttribute(MoxFormFilterType type, string name)
+        {
+            this.Type = type;
+            this.Name = name;
+        }
+
+        public static Type GetViewModelType(Type controllerType)
+        {
+            static Type? getFormClass(Type? t)
+            {
+                if (t == null || t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Core.Controllers.FormController<>) || t.GetGenericTypeDefinition() == typeof(Core.Controllers.FormController<,,>)))
+                {
+                    return t;
+                }
+
+                return getFormClass(t.BaseType);
+            }
+
+            var formClass = getFormClass(controllerType);
+
+            return formClass!.GenericTypeArguments.First();
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetSelectListAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Type controllerType)
+        {
+            if (!string.IsNullOrWhiteSpace(this.GetSelectListFunction))
+            {
+                var viewModelType = GetViewModelType(controllerType);
+                var method = viewModelType.GetMethod(this.GetSelectListFunction, BindingFlags.Static | BindingFlags.Public);
+                if(method == null)
+                {
+                    throw new Exception($"public static {nameof(this.GetSelectListFunction)}(HttpContext) could not be found!");
+                }
+
+                if(method.GetParameters().FirstOrDefault()?.ParameterType != typeof(Microsoft.AspNetCore.Http.HttpContext))
+                {
+                    throw new Exception($"{nameof(this.GetSelectListFunction)} must be defined with exactly 1 parameter of type 'HttpContext'");
+                }
+
+                if(method.ReturnType != typeof(Task<IEnumerable<SelectListItem>>))
+                {
+                    throw new Exception($"{nameof(this.GetSelectListFunction)} must be defined with return type 'Task<IEnumerable<SelectListItem>>'");
+                }
+
+                var result = (Task<IEnumerable<SelectListItem>>)method.Invoke(null, new[] { httpContext })!;
+                return await result;
+            }
+            else if (this.Type == MoxFormFilterType.Dropdown)
+            {
+                throw new Exception($"{nameof(this.GetSelectListFunction)} must be defined when the filter type is '{MoxFormFilterType.Dropdown}'");
+            }
+
+            return Enumerable.Empty<SelectListItem>();
+        }
+
+        public static IEnumerable<MoxFormFilterAttribute> GetFilters(Type controllerType)
+        {
+            return GetViewModelType(controllerType).GetCustomAttributes<MoxFormFilterAttribute>().ToList();
         }
     }
 }
