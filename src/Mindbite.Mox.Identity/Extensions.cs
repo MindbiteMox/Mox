@@ -64,7 +64,7 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.Configure<MvcOptions>(options => {
                 var policy = new AuthorizationPolicyBuilder()
                      .RequireAuthenticatedUser()
-                     .RequireRole(Configuration.Constants.MoxRole)
+                     //.RequireRole(Configuration.Constants.MoxRole)
                      .Build();
                 options.Filters.Add(new MoxAuthorizeFilter(policy, moxPath));
                 options.Filters.Add<Identity.Services.RefreshLoginMiddleware.RefreshLoginActionFilter>();
@@ -121,7 +121,7 @@ namespace Mindbite.Mox.Extensions
                         {
                             identityItems.Add()
                                 .Title("Mitt konto")
-                                .Role(Constants.EditMyOwnAccountRole)
+                                //.Role(Constants.EditMyOwnAccountRole)
                                 .AreaAction(Constants.SettingsArea, "MyAccount", "Edit");
                             identityItems.Add()
                                 .Title("Inloggningskonton")
@@ -169,16 +169,16 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.AddScoped<IMagicLinkManager, MagicLinkManager>();
             mvc.Services.AddScoped<Identity.Services.RefreshLoginMiddleware.RefreshLoginUserChanges>();
             mvc.Services.AddScoped<Identity.Services.RefreshLoginMiddleware.RefreshLoginService>();
+            mvc.Services.AddScoped<Identity.Services.RoleGroupManager>();
 
             mvc.Services.AddTransient<IBackDoor, BackDoor>();
 
             mvc.Services.Configure<Verification.Services.VerificationOptions>(c =>
             {
+                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.AdminRole));
+                c.Verificators.Add(new Identity.Verification.AdminRoleGroupCreatedVerificator());
                 c.Verificators.Add(new Identity.Verification.BackDoorVerificator());
                 c.Verificators.Add(new Identity.Verification.EmailConfigSetVerificator());
-                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Configuration.Constants.MoxRole));
-                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.AdminRole));
-                c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.EditMyOwnAccountRole));
             });
 
             return mvc;

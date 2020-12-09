@@ -16,6 +16,7 @@ using Microsoft.Extensions.Localization;
 using Mindbite.Mox.Extensions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
+using System.Security.Claims;
 
 namespace Mindbite.Mox.Identity.Controllers
 {
@@ -27,28 +28,26 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly Data.MoxIdentityDbContext _context;
         private readonly IUserValidator<MoxUser> _userValidator;
         private readonly UserManager<MoxUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly Services.UserRolesFetcher _rolesFetcher;
         private readonly SignInManager<MoxUser> _signinManager;
         private readonly IStringLocalizer _localizer;
         private readonly SettingsOptions _settingsExtension;
         private readonly MoxIdentityOptions _identityOptions;
         private readonly ViewMessaging _viewMessaging;
         private readonly IServiceProvider _serviceProvider;
+        private readonly Services.RoleGroupManager _roleGroupManager;
 
-        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions, ViewMessaging viewMessaging, IServiceProvider serviceProvider)
+        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions, ViewMessaging viewMessaging, IServiceProvider serviceProvider, Services.RoleGroupManager roleGroupManager)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userValidator = userValidator;
             this._userManager = userManager;
-            this._roleManager = roleManager;
-            this._rolesFetcher = rolesFetcher as Services.UserRolesFetcher;
             this._signinManager = signInManager;
             this._localizer = localizer;
             this._settingsExtension = settingsExtension.Value;
             this._identityOptions = identityOptions.Value;
             this._viewMessaging = viewMessaging;
             this._serviceProvider = serviceProvider;
+            this._roleGroupManager = roleGroupManager;
         }
 
         [HttpGet]
@@ -60,9 +59,7 @@ namespace Mindbite.Mox.Identity.Controllers
         [HttpGet]
         public async Task<IActionResult> Table(DataTableSort sort, string filter)
         {
-            var dataSource = this._context.Users.Where(x => x.Email != "backdoor@mindbite.se"); // TODO: Make a better way to hide users from this list!
-            var userRoles = this._context.UserRoles;
-            var roles = (await this._context.Roles.ToListAsync()).Select(x => new { x.Id, ShortName = x.SplitIntoLocalizedGroups(this._localizer).name });
+            var dataSource = this._context.Users.Where(x => !x.IsHidden);
 
             if (!string.IsNullOrWhiteSpace(filter))
             {
@@ -76,7 +73,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     x.Id,
                     x.Email,
                     x.Name,
-                    Roles = userRoles.Where(ur => ur.UserId == x.Id).Select(y => y.RoleId).ToList()// string.Join(", ", userRoles.Where(ur => ur.UserId == x.Id).Select(x => roles.First(y => y.Id == x.RoleId).ShortName))
+                    x.RoleGroup.GroupName
                 }))
                 .Sort(x => x.Email, SortDirection.Ascending, sort.DataTableSortColumn, sort.DataTableSortDirection)
                 .Page(sort.DataTablePage)
@@ -85,7 +82,7 @@ namespace Mindbite.Mox.Identity.Controllers
                 {
                     columns.Add(x => x.Email).Title(this._localizer["E-post"]).Width(250);
                     columns.Add(x => x.Name).Title(this._localizer["Namn"]);
-                    //columns.Add(x => x.Roles).Title(this._localizer["Behörigheter"]);
+                    columns.Add(x => x.GroupName).Title(this._localizer["Behörighetsgrupp"]);
                 })
                 .Buttons(buttons =>
                 {
@@ -99,11 +96,7 @@ namespace Mindbite.Mox.Identity.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var roles = await this._roleManager.Roles.ToListAsync();
-            var tree = roles.BuildLocalizedTree(this._localizer);
-            var flatTree = tree.Flatten();
-
-            return View(new CreateUserViewModel(flatTree, preselectedRoles: new string[] { Configuration.Constants.MoxRole }));
+            return View(new CreateUserViewModel());
         }
 
         [HttpPost]
@@ -129,22 +122,12 @@ namespace Mindbite.Mox.Identity.Controllers
                     userToCreate.UserName = newUser.Email;
                     userToCreate.Email = newUser.Email;
                     userToCreate.Name = newUser.Name;
+                    userToCreate.RoleGroupId = newUser.RoleGroupId.Value;
 
                     var createUserResult = await this._userManager.CreateAsync(userToCreate);
-                    if(!createUserResult.Succeeded)
+                    if (!createUserResult.Succeeded)
                     {
                         foreach (var error in createUserResult.Errors)
-                        {
-                            ModelState.AddModelError(string.Empty, error.Description);
-                        }
-                        return View(newUser);
-                    }
-
-                    var addRoleResult = await this._userManager.AddToRolesAsync(userToCreate, newUser.Roles.Where(x => x.Checked && !x.IsParent).Select(x => x.Id));
-
-                    if (!addRoleResult.Succeeded)
-                    {
-                        foreach (var error in addRoleResult.Errors)
                         {
                             ModelState.AddModelError(string.Empty, error.Description);
                         }
@@ -179,45 +162,24 @@ namespace Mindbite.Mox.Identity.Controllers
                 return NotFound();
             }
 
-            var roles = await this._roleManager.Roles.ToListAsync();
-            var tree = roles.BuildLocalizedTree(this._localizer);
-            var flatTree = tree.Flatten();
-
-            var userRoles = await this._userManager.GetRolesAsync(user);
             var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-            var disableRoles = false;
-            if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
-            {
-                disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
-            }
-
-            var rolesDisabledLink = default(string);
-            if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
-            {
-                rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
-            }
-
-            return View(new EditUserViewModel(flatTree, userRoles, user, hasPassword, disableRoles, rolesDisabledLink));
+            return View(new EditUserViewModel(user, hasPassword));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, EditUserViewModel editUser)
         {
-            if (id != editUser.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == editUser.Id);
+                var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == id);
                 var userRoles = await this._context.UserRoles.ToListAsync();
 
                 user.UserName = editUser.Email;
                 user.Email = editUser.Email;
                 user.Name = editUser.Name;
+                user.RoleGroupId = editUser.RoleGroupId.Value;
 
                 if (editUser.WantsPassword && !string.IsNullOrWhiteSpace(editUser.Password))
                 {
@@ -237,7 +199,7 @@ namespace Mindbite.Mox.Identity.Controllers
                     }
                     await this._userManager.AddPasswordAsync(user, editUser.Password);
                 }
-                else if(!editUser.WantsPassword)
+                else if (!editUser.WantsPassword)
                 {
                     if (await this._userManager.HasPasswordAsync(user))
                     {
@@ -255,31 +217,15 @@ namespace Mindbite.Mox.Identity.Controllers
                     return View(editUser);
                 }
 
-                var removeRolesResult = await this._userManager.RemoveFromRolesAsync(user, await this._userManager.GetRolesAsync(user));
-                var addRolesResult = await this._userManager.AddToRolesAsync(user, editUser.Roles.Where(x => x.Checked && !x.IsParent).Select(x => x.Id));
-
-                if (removeRolesResult.Succeeded && addRolesResult.Succeeded)
+                var signedOnUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if(signedOnUserId == user.Id)
                 {
-                    if (this._rolesFetcher != null)
-                    {
-                        this._rolesFetcher.ClearCache(user.Id);
-                    }
-
-                    string signedOnUserId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                     var signedOnUser = await this._userManager.FindByIdAsync(signedOnUserId);
                     await this._signinManager.RefreshSignInAsync(signedOnUser);
+                }
 
-                    _viewMessaging.DisplayMessage("Ändringarna sparades!");
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    var errors = removeRolesResult.Errors.Concat(addRolesResult.Errors);
-                    foreach (var error in errors.Select(x => x.Description).Distinct())
-                    {
-                        ModelState.AddModelError(string.Empty, error);
-                    }
-                }
+                _viewMessaging.DisplayMessage("Ändringarna sparades!");
+                return RedirectToAction("Index");
             }
 
             return View(editUser);

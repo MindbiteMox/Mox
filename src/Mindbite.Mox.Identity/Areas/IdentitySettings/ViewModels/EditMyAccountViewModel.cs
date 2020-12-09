@@ -9,13 +9,10 @@ namespace Mindbite.Mox.Identity.ViewModels
 {
     public class EditMyAccountViewModel : EditUserViewModel
     {
-        public bool IsAdmin { get; set; }
-
         public EditMyAccountViewModel() : base() { }
 
-        public EditMyAccountViewModel(IEnumerable<IdentityExtensions.RoleTreeNode> roles, IEnumerable<string> preselectedRoles, Data.Models.MoxUser user, bool hasPassword, bool disableRoles, string rolesDisabledLink) : base(roles, preselectedRoles, user, hasPassword, disableRoles, rolesDisabledLink)
+        public EditMyAccountViewModel(Data.Models.MoxUser user, bool hasPassword) : base(user, hasPassword)
         {
-            this.IsAdmin = preselectedRoles.Contains(Constants.AdminRole);
         }
     }
 }

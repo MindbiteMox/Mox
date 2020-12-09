@@ -13,27 +13,22 @@ namespace Mindbite.Mox.Verification
     {
         public static async Task VerifyAsync(IServiceProvider _serviceProvider)
         {
-            async Task<IEnumerable<T>> AwaitAllSequentially<T>(IEnumerable<Task<T>> tasks)
-            {
-                var result = new List<T>();
-
-                foreach(var task in tasks)
-                {
-                    result.Add(await task);
-                }
-
-                return result;
-            }
-
             var scopeFactory = _serviceProvider.GetRequiredService<IServiceScopeFactory>();
             using (var scope = scopeFactory.CreateScope())
             {
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Services.IVerificator>>();
                 var options = scope.ServiceProvider.GetRequiredService<IOptions<Services.VerificationOptions>>().Value;
-                var results = await AwaitAllSequentially(options.Verificators.Select(x => x.VerifyAsync(scope.ServiceProvider)));
+
+                var results = new List<Services.VerificationResult>(); 
+                foreach(var verificator in options.Verificators)
+                {
+                    results.Add(await verificator.VerifyAsync(scope.ServiceProvider));
+                }
 
                 if (results.All(x => x.Success))
+                {
                     return;
+                }
 
                 using (logger.BeginScope("Validation failed!"))
                 {

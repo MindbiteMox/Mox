@@ -56,18 +56,11 @@ namespace Mindbite.Mox.Identity
             public int ValidForMinutes { get; set; } = 5;
         }
 
-        public class GroupOptions
-        {
-            public Func<IServiceProvider, MoxUser, Task<bool>> DisableGroupSettingsCallback { get; set; }
-            public Func<IServiceProvider, MoxUser, IUrlHelper, Task<string>> GroupSettingsMovedToThisUrl { get; set; }
-        }
-
         public BackdoorOptions Backdoor { get; set; }
         public Type DefaultUserType { get; set; }
         public List<Configuration.StaticIncludes.StaticFile> LoginStaticFiles { get; set; } = new List<Configuration.StaticIncludes.StaticFile>();
         public Hooks HookTypes { get; set; } = new Hooks();
         public MagicLinkOptions MagicLink { get; set; } = new MagicLinkOptions();
-        public GroupOptions Groups { get; set; } = new GroupOptions();
         public List<string> AdditionalAllowedStaticFileLocations { get; set; } = new List<string>();
     }
 

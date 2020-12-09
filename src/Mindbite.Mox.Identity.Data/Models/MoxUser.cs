@@ -20,10 +20,15 @@ namespace Mindbite.Mox.Identity.Data.Models
         [Display(Name = "Namn")]
         public string Name { get; set; }
 
+        public int RoleGroupId { get; set; }
+
         public bool IsDeleted { get; set; }
+        public bool IsHidden { get; set; }
 
         [NotMapped]
         public string Initials => string.Join("", this.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.FirstOrDefault() + "").Take(3));
+
+        public RoleGroup RoleGroup { get; set; }
     }
 
     public class MoxUserBaseImpl : MoxUser

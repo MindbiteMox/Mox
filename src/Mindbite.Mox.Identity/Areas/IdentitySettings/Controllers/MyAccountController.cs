@@ -19,111 +19,67 @@ using System.Threading.Tasks;
 namespace Mindbite.Mox.Identity.Controllers
 {
     [Area(Constants.SettingsArea)]
-    [Authorize(Roles = Constants.EditMyOwnAccountRole)]
     public class MyAccountController : Controller
     {
         private readonly Data.MoxIdentityDbContext _context;
         private readonly UserManager<MoxUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly Services.UserRolesFetcher _rolesFetcher;
         private readonly SignInManager<MoxUser> _signinManager;
         private readonly SettingsOptions _settingsExtension;
         private readonly ViewMessaging _viewMessaging;
         private readonly IStringLocalizer _localizer;
         private readonly MoxIdentityOptions _identityOptions;
         private readonly IServiceProvider _serviceProvider;
+        private readonly Services.RoleGroupManager _roleGroupManager;
 
-        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension, ViewMessaging viewMessaging, IStringLocalizer localizer, IOptions<MoxIdentityOptions> identityOptions, IServiceProvider serviceProvider)
+        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension, ViewMessaging viewMessaging, IStringLocalizer localizer, IOptions<MoxIdentityOptions> identityOptions, IServiceProvider serviceProvider, Services.RoleGroupManager roleGroupManager)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userManager = userManager;
-            this._roleManager = roleManager;
-            this._rolesFetcher = rolesFetcher as Services.UserRolesFetcher;
             this._signinManager = signInManager;
             this._settingsExtension = settingsExtension.Value;
             this._viewMessaging = viewMessaging;
             this._localizer = localizer;
             this._identityOptions = identityOptions.Value;
             this._serviceProvider = serviceProvider;
+            this._roleGroupManager = roleGroupManager;
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit()
         {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return NotFound();
             }
 
             var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == userId);
-
             if (user == null)
             {
                 return NotFound();
             }
 
-            var roles = await this._roleManager.Roles.ToListAsync();
-            var tree = roles.BuildLocalizedTree(this._localizer);
-            var flatTree = tree.Flatten();
-
-            var userRoles = await this._userManager.GetRolesAsync(user);
             var hasPassword = await this._userManager.HasPasswordAsync(user);
 
-            var disableRoles = false;
-            if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
-            {
-                disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
-            }
-
-            var rolesDisabledLink = default(string);
-            if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
-            {
-                rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
-            }
-
-            return View(new EditMyAccountViewModel(flatTree, userRoles, user, hasPassword, disableRoles, rolesDisabledLink) { Id = user.Id });
+            return View(new EditMyAccountViewModel(user, hasPassword));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditMyAccountViewModel editUser)
         {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == userId);
 
             if (ModelState.IsValid)
             {
-                var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == editUser.Id);
-
-                var roles = await this._roleManager.Roles.ToListAsync();
-                var tree = roles.BuildLocalizedTree(this._localizer);
-                var flatTree = tree.Flatten();
-
-                var myUserRoles = await this._userManager.GetRolesAsync(user);
-
                 user.UserName = editUser.Email;
                 user.Email = editUser.Email;
                 user.Name = editUser.Name;
 
-                if (!myUserRoles.Contains(Constants.AdminRole))
+                if (await this._userManager.IsInRoleAsync(user, Constants.AdminRole))
                 {
-                    var hasPassword = await this._userManager.HasPasswordAsync(user);
-
-                    var disableRoles = false;
-                    if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
-                    {
-                        disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
-                    }
-
-                    var rolesDisabledLink = default(string);
-                    if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
-                    {
-                        rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
-                    }
-
-                    var _dummy = new EditMyAccountViewModel(flatTree, myUserRoles, user, hasPassword, disableRoles, rolesDisabledLink);
-                    editUser.Roles = _dummy.Roles;
+                    user.RoleGroupId = editUser.RoleGroupId.Value;
                 }
 
                 // Validate and set password
@@ -163,58 +119,10 @@ namespace Mindbite.Mox.Identity.Controllers
                     return View(editUser);
                 }
 
-                var removeRolesResult = await this._userManager.RemoveFromRolesAsync(user, await this._userManager.GetRolesAsync(user));
-                var addRolesResult = await this._userManager.AddToRolesAsync(user, editUser.Roles.Where(x => x.Checked && !x.IsParent).Select(x => x.Id));
+                await this._signinManager.RefreshSignInAsync(user);
 
-                if (removeRolesResult.Succeeded && addRolesResult.Succeeded)
-                {
-                    if (this._rolesFetcher != null)
-                    {
-                        this._rolesFetcher.ClearCache(user.Id);
-                    }
-
-                    await this._signinManager.RefreshSignInAsync(user);
-
-                    _viewMessaging.DisplayMessage("Ändringarna sparades!");
-                    return RedirectToAction("Edit");
-                }
-                else
-                {
-                    foreach (var error in removeRolesResult.Errors.Concat(addRolesResult.Errors).Select(x => x.Description).Distinct())
-                    {
-                        ModelState.AddModelError(string.Empty, error);
-                    }
-                }
-            }
-            else
-            {
-                var user = await this._context.Users.SingleOrDefaultAsync(x => x.Id == editUser.Id);
-
-                var roles = await this._roleManager.Roles.ToListAsync();
-                var tree = roles.BuildLocalizedTree(this._localizer);
-                var flatTree = tree.Flatten();
-
-                var userRoles = await this._context.UserRoles.ToListAsync();
-                var myUserRoles = await this._userManager.GetRolesAsync(user);
-                var hasPassword = await this._userManager.HasPasswordAsync(user);
-
-
-                var disableRoles = false;
-                if (this._identityOptions.Groups.DisableGroupSettingsCallback != null)
-                {
-                    disableRoles = await this._identityOptions.Groups.DisableGroupSettingsCallback(this._serviceProvider, user);
-                }
-
-                var rolesDisabledLink = default(string);
-                if (disableRoles && this._identityOptions.Groups.GroupSettingsMovedToThisUrl != null)
-                {
-                    rolesDisabledLink = await this._identityOptions.Groups.GroupSettingsMovedToThisUrl(this._serviceProvider, user, Url);
-                }
-
-                var _dummy = new EditMyAccountViewModel(flatTree, myUserRoles, user, hasPassword, disableRoles, rolesDisabledLink);
-
-                //editUser.Roles = _dummy.Roles;
-                editUser.IsAdmin = myUserRoles.Contains(Constants.AdminRole);
+                _viewMessaging.DisplayMessage("Ändringarna sparades!");
+                return RedirectToAction("Edit");
             }
 
             return View(editUser);

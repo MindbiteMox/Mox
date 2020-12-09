@@ -58,7 +58,7 @@ namespace Mindbite.Mox.DemoApp
                 .AddMox<AppDbContext>(this._webHostEnvironment)
                 .AddDesignDemoMoxApp(this._webHostEnvironment, this.Configuration)
                 .AddMoxNotificationCenter(this._webHostEnvironment, this.Configuration)
-                .AddMoxIdentityAzureADAuthentication(this.Configuration)
+                //.AddMoxIdentityAzureADAuthentication(this.Configuration)
                 .AddMoxReportingApp(this.Configuration)
                 .AddMoxIdentity<AppDbContext>(this._webHostEnvironment, this.Configuration);
 

@@ -35,28 +35,13 @@ namespace Mindbite.Mox.Identity.ViewModels
         [Display(Name = "E-post")]
         public string Email { get; set; }
 
-        public RoleViewModel[] Roles { get; set; }
-
-        public CreateUserViewModel() { }
-
-        public CreateUserViewModel(IEnumerable<IdentityExtensions.RoleTreeNode> roles, string[] preselectedRoles = null)
-        {
-            this.Roles = roles.Select(x => new RoleViewModel
-            {
-                Id = x.RoleName,
-                Name = x.DisplayName,
-                Checked = x.IsLeaf ? preselectedRoles?.Contains(x.RoleName) ?? false : roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Contains(y.RoleName) ?? false),
-                Depth = x.Depth,
-                IsParent = !x.IsLeaf
-            }).ToArray();
-        }
+        [MoxRequired]
+        [Display(Name = "Behörighetsgrupp")]
+        public int? RoleGroupId { get; set; }
     }
 
     public class EditUserViewModel
     {
-        [MoxRequired]
-        public string Id { get; set; }
-
         [MoxRequired]
         [MaxLength(255)]
         [Display(Name = "Namn")]
@@ -83,31 +68,19 @@ namespace Mindbite.Mox.Identity.ViewModels
         [MoxRequiredIf("WantsPassword", AndNot = "HasPassword")]
         public string RepeatPassword { get; set; }
 
-        public bool RolesDisabled { get; set; }
-        public string RolesDisabledLink { get; set; }
-        public RoleViewModel[] Roles { get; set; }
+        [MoxRequired]
+        [Display(Name = "Behörighetsgrupp")]
+        public int? RoleGroupId { get; set; }
 
         public EditUserViewModel() { }
 
-        public EditUserViewModel(IEnumerable<IdentityExtensions.RoleTreeNode> roles, IEnumerable<string> preselectedRoles, Data.Models.MoxUser user, bool hasPassword, bool disableRoles, string rolesDisabledLink)
+        public EditUserViewModel(Data.Models.MoxUser user, bool hasPassword)
         {
-            this.Roles = roles.Select(x => new RoleViewModel
-            {
-                Id = x.RoleName,
-                Name = x.DisplayName,
-                Checked = x.IsLeaf ? preselectedRoles?.Contains(x.RoleName) ?? false : roles.Where(y => y.RoleName.StartsWith(x.RoleName) && y.IsLeaf).All(y => preselectedRoles?.Contains(y.RoleName) ?? false),
-                Depth = x.Depth,
-                IsParent = !x.IsLeaf,
-                Disabled = disableRoles
-            }).ToArray();
-
-            this.Id = user.Id;
             this.Name = user.Name;
             this.Email = user.Email;
+            this.RoleGroupId = user.RoleGroupId;
             this.HasPassword = hasPassword;
             this.WantsPassword = hasPassword;
-            this.RolesDisabled = disableRoles;
-            this.RolesDisabledLink = rolesDisabledLink;
         }
     }
 }

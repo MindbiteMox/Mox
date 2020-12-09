@@ -7,6 +7,6 @@ namespace Mindbite.Mox.Configuration
 {
     public static class Constants
     {
-        public const string MoxRole = "MoxCommon/Mox";
+        //public const string MoxRole = "MoxCommon/Mox";
     }
 }

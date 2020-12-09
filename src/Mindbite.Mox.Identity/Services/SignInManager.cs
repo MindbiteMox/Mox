@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Mindbite.Mox.Identity.Data.Models;
@@ -114,10 +115,19 @@ namespace Mindbite.Mox.Identity.Services
         {
             foreach (var hook in this.Hooks) { await hook.OnCreateAsync(user); }
 
+            var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
+            var roleGroup = await roleGroupManager.RoleGroups.FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
+            if(roleGroup == null)
+            {
+                return IdentityResult.Failed(new IdentityError { Code = "Missing Role Group", Description = $"Rolegroup {user.RoleGroupId} does not exist!" });
+            }
+
             var result = await base.CreateAsync(user, cancellationToken);
 
             if (result.Succeeded)
             {
+                await roleGroupManager.AssignToGroupAsync(user, roleGroup);
+
                 foreach (var hook in this.Hooks) { await hook.OnCreatedAsync(user); }
             }
             return result;
@@ -127,10 +137,19 @@ namespace Mindbite.Mox.Identity.Services
         {
             foreach (var hook in this.Hooks) { await hook.OnUpdateAsync(user); }
 
+            var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
+            var roleGroup = await roleGroupManager.RoleGroups.FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
+            if (roleGroup == null)
+            {
+                return IdentityResult.Failed(new IdentityError { Code = "Missing Role Group", Description = $"Rolegroup {user.RoleGroupId} does not exist!" });
+            }
+
             var result = await base.UpdateAsync(user, cancellationToken);
 
             if (result.Succeeded)
             {
+                await roleGroupManager.AssignToGroupAsync(user, roleGroup);
+
                 foreach (var hook in this.Hooks) { await hook.OnUpdatedAsync(user); }
             }
             return result;

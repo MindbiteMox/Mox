@@ -1,20 +1,25 @@
 ﻿@using Mindbite.Mox.Extensions
-@using Microsoft.Extensions.Localization;
+@using Microsoft.Extensions.Localization
+@using Microsoft.EntityFrameworkCore
+
+@inject Mindbite.Mox.Identity.Services.RoleGroupManager roleGroupManager
+@inject IStringLocalizer localizer
 
 @model Mindbite.Mox.Identity.ViewModels.EditUserViewModel
-@inject IStringLocalizer localizer
 @{
     Layout = "Mox/_Layout";
+
+    var roleGroups = await roleGroupManager.RoleGroups.OrderBy(x => x.GroupName).ToListAsync();
+    var roleGroupSelectList = roleGroups.Select(x => new SelectListItem(x.GroupName, x.Id.ToString()));
 }
 
 @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
 
-@await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = Model.Id }.ToExpando())
+@await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = ViewContext.RouteData.Values["Id"] }.ToExpando())
 
 @using (Html.BeginForm())
 {
     @Html.ValidationSummary(true)
-    @Html.HiddenFor(model => model.Id)
 
     <fieldset>
         <p>
@@ -28,8 +33,14 @@
             @Html.ValidationMessageFor(model => model.Email)
             @Html.TextBoxFor(model => model.Email)
         </p>
-
+        
+        <p>
+            @Html.LabelFor(model => model.RoleGroupId)
+            @Html.ValidationMessageFor(model => model.RoleGroupId)
+            @Html.DropDownListFor(model => model.RoleGroupId, roleGroupSelectList, localizer["- Välj behörighetsgrupp -"])
+        </p>
     </fieldset>
+
     <fieldset>
         <legend>@localizer["Lösenord"]</legend>
 
@@ -97,42 +108,6 @@
         }
     </fieldset>
 
-    <fieldset>
-        <legend>@localizer["Behörigheter"]</legend>
-
-        @if (Model.RolesDisabled)
-        {
-            <p>
-                @localizer["RolesDisabledDescription"]
-                @if (!string.IsNullOrWhiteSpace(Model.RolesDisabledLink))
-                {
-                <a href="@Model.RolesDisabledLink">@localizer["RolesDisabledLinkTitle"]</a>
-                }
-            </p>
-        }
-
-        <ul class="checkbox" id="js-groups">
-            @for (var i = 0; i < Model.Roles.Length; i++)
-            {
-                <li class="mox-group-depth-@Model.Roles[i].Depth @(Model.Roles[i].IsParent ? "mox-group-parent" : "")">
-                    @Html.HiddenFor(model => model.Roles[i].Id)
-                    @Html.HiddenFor(model => model.Roles[i].Name)
-                    @Html.HiddenFor(model => model.Roles[i].Depth)
-                    @Html.HiddenFor(model => model.Roles[i].IsParent)
-                    @if (Model.Roles[i].Disabled)
-                    {
-                        @Html.HiddenFor(x => x.Roles[i].Checked)
-                        @Html.CheckBoxFor(model => model.Roles[i].Checked, new { disabled = "disabled" })
-                    }
-                    else
-                    {
-                        @Html.CheckBoxFor(model => model.Roles[i].Checked, new { onclick = $"Mox.UI.CheckboxTree.onClick(document.getElementById('js-groups'), this, '{Model.Roles[i].Id}');", data_id = Model.Roles[i].Id })
-                    }
-                    @Html.LabelFor(model => model.Roles[i].Checked, Model.Roles[i].Name)
-                </li>
-            }
-        </ul>
-    </fieldset>
     <fieldset class="buttons">
         <p>
             <input type="submit" value="@localizer["Spara ändringar"]" />

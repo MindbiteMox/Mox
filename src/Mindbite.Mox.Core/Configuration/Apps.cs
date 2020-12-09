@@ -32,7 +32,7 @@ namespace Mindbite.Mox.Configuration.Apps
             this.Name = name;
             this.AppId = appId;
             this.Areas = new List<string>();
-            this.Roles = new HashSet<string>() { Constants.MoxRole };
+            this.Roles = new HashSet<string>();
             this.StaticIncludes = new StaticIncludes.IncludeConfig();
 
             this.Menu = new AppMenus.AppMenuBuilder();

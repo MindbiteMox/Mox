@@ -12,49 +12,40 @@ namespace Mindbite.Mox.Identity.Services
     public interface IBackDoor
     {
         Task Build(string email, string password = null);
-
-        Task<IdentityResult> CreateRole(string role);
     }
 
     public class BackDoor : IBackDoor
     {
         private readonly Identity.Data.MoxIdentityDbContext _context;
         private readonly UserManager<MoxUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleGroupManager _roleGroupManager;
 
-        public BackDoor(Mox.Services.IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager)
+        public BackDoor(Mox.Services.IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleGroupManager roleGroupManager)
         {
             this._context = dbContextFetcher.FetchDbContext<Identity.Data.MoxIdentityDbContext>();
             this._userManager = userManager;
-            this._roleManager = roleManager;
+            this._roleGroupManager = roleGroupManager;
         }
 
         public async Task Build(string email, string password = null)
         {
-            var adminID = await EnsureUser(email, password);
-            await this.EnsureRole(adminID, Configuration.Constants.MoxRole);
-            await this.EnsureRole(adminID, Constants.AdminRole);
-            await this.EnsureRole(adminID, Constants.EditMyOwnAccountRole);
+            var administratorGroup = await this._roleGroupManager.FindByNameAsync(RoleGroupManager.DefaultAdministratorGroupName);
+            if (administratorGroup == null)
+            {
+                throw new Exception($"Role group \"{RoleGroupManager.DefaultAdministratorGroupName}\" could not be found!");
+            }
+
+            await EnsureUser(email, password, administratorGroup);
 
             await this._context.SaveChangesAsync();
         }
 
-        public async Task<IdentityResult> CreateRole(string role)
-        {
-            if (!await this._roleManager.RoleExistsAsync(role))
-            {
-                return await this._roleManager.CreateAsync(new IdentityRole(role));
-            }
-
-            return IdentityResult.Success;
-        }
-
-        private async Task<string> EnsureUser(string email, string password)
+        private async Task<MoxUser> EnsureUser(string email, string password, RoleGroup group)
         {
             var user = await this._userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                user = new MoxUserBaseImpl { UserName = email, Email = email, Name = "Back Door" };
+                user = new MoxUserBaseImpl { UserName = email, Email = email, Name = "Back Door", IsHidden = true, RoleGroupId = group.Id };
 
                 if(!string.IsNullOrWhiteSpace(password))
                 {
@@ -77,18 +68,7 @@ namespace Mindbite.Mox.Identity.Services
                 }
             }
 
-            return user.Id;
-        }
-
-        private async Task<IdentityResult> EnsureRole(string uid, string role)
-        {
-            var createRoleResult = await this.CreateRole(role);
-
-            if (!createRoleResult.Succeeded)
-                return createRoleResult;
-
-            var user = await this._userManager.FindByIdAsync(uid);
-            return await this._userManager.AddToRoleAsync(user, role);
+            return user;
         }
     }
 }

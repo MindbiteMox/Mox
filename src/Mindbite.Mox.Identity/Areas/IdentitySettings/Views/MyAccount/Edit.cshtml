@@ -1,25 +1,35 @@
 ﻿@using Mindbite.Mox.Extensions
 @using Mindbite.Mox.Identity
-@using Microsoft.Extensions.Localization;
-@using Microsoft.Extensions.Options;
+@using System.Security.Claims 
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
+@using Microsoft.EntityFrameworkCore
+
+@inject IStringLocalizer localizer
+@inject Microsoft.AspNetCore.Identity.UserManager<Mindbite.Mox.Identity.Data.Models.MoxUser> userManager
+@inject Mindbite.Mox.Identity.Services.RoleGroupManager roleGroupManager
 
 @model Mindbite.Mox.Identity.ViewModels.EditMyAccountViewModel
-@inject IStringLocalizer localizer
 @{
     Layout = "Mox/_Layout";
+
+    var roleGroups = await roleGroupManager.RoleGroups.OrderBy(x => x.GroupName).ToListAsync();
+    var roleGroupSelectList = roleGroups.Select(x => new SelectListItem(x.GroupName, x.Id.ToString()));
+
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var user = await userManager.FindByIdAsync(userId);
+    var isAdmin = await userManager.IsInRoleAsync(user, Mindbite.Mox.Identity.Constants.AdminRole);
 }
 
 @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
 
-@await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = Model.Id }.ToExpando())
+@await Html.PartialAsync("Mox/Identity/_UserSettingsHeader", new { UserId = userId }.ToExpando())
 
 @await Html.PartialAsync("Mox/UI/Message")
 
 @using (Html.BeginForm())
 {
     @Html.ValidationSummary(true)
-    @Html.HiddenFor(model => model.IsAdmin)
-    @Html.HiddenFor(model => model.Id)
 
     <fieldset>
         <p>
@@ -33,6 +43,18 @@
             @Html.ValidationMessageFor(model => model.Email)
             @Html.TextBoxFor(model => model.Email)
         </p>
+        @if (isAdmin)
+        {
+            <p>
+                @Html.LabelFor(model => model.RoleGroupId)
+                @Html.ValidationMessageFor(model => model.RoleGroupId)
+                @Html.DropDownListFor(model => model.RoleGroupId, roleGroupSelectList, localizer["- Välj behörighetsgrupp -"])
+            </p>
+        }
+        else
+        {
+            @Html.HiddenFor(x => x.RoleGroupId)
+        }
     </fieldset>
     <fieldset>
         <legend>@localizer["Lösenord"]</legend>
@@ -98,47 +120,6 @@
                     <label for="@Html.IdFor(x => x.WantsPassword)" class="mox-button">@localizer["Skapa lösenord"]</label>
                 </p>
             </div>
-        }
-    </fieldset>
-
-    <fieldset>
-        @if (Model.IsAdmin)
-        {
-            <legend>@localizer["Behörigheter"]</legend>
-
-            @if (Model.RolesDisabled)
-            {
-                <p>
-                    @localizer["RolesDisabledDescription"]
-                    @if (!string.IsNullOrWhiteSpace(Model.RolesDisabledLink))
-                    {
-                        <a href="@Model.RolesDisabledLink">@localizer["RolesDisabledLinkTitle"]</a>
-                    }
-                </p>
-            }
-
-            <ul class="checkbox" id="js-groups">
-                @for (var i = 0; i < Model.Roles.Length; i++)
-                {
-                    <li class="mox-group-depth-@Model.Roles[i].Depth @(Model.Roles[i].IsParent ? "mox-group-parent" : "")">
-                        @Html.HiddenFor(model => model.Roles[i].Id)
-                        @Html.HiddenFor(model => model.Roles[i].Name)
-                        @Html.HiddenFor(model => model.Roles[i].Depth)
-                        @Html.HiddenFor(model => model.Roles[i].IsParent)
-                        @Html.HiddenFor(model => model.Roles[i].Disabled)
-                        @if (Model.Roles[i].Disabled)
-                        {
-                            @Html.HiddenFor(x => x.Roles[i].Checked)
-                            @Html.CheckBoxFor(model => model.Roles[i].Checked, new { disabled = "disabled" })
-                        }
-                        else
-                        {
-                            @Html.CheckBoxFor(model => model.Roles[i].Checked, new { onclick = $"Mox.UI.CheckboxTree.onClick(document.getElementById('js-groups'), this, '{Model.Roles[i].Id}');", data_id = Model.Roles[i].Id })
-                        }
-                        @Html.LabelFor(model => model.Roles[i].Checked, Model.Roles[i].Name)
-                    </li>
-                }
-            </ul>
         }
     </fieldset>
 

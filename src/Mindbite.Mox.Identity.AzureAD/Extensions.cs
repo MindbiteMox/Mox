@@ -13,6 +13,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mindbite.Mox.Identity.AzureAD
 {
@@ -100,13 +101,16 @@ namespace Mindbite.Mox.Identity.AzureAD
                     var userEmail = context.Principal.Claims.First(x => x.Type == "preferred_username").Value;
                     var userManager = context.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Identity.UserManager<Identity.Data.Models.MoxUser>>();
                     var signInManager = context.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Identity.SignInManager<Identity.Data.Models.MoxUser>>();
+                    var roleGroupManager = context.HttpContext.RequestServices.GetService<Services.RoleGroupManager>();
                     var user = await userManager.FindByEmailAsync(userEmail);
                     if(user == null)
                     {
-                        var result = await userManager.CreateAsync(new Data.Models.MoxUserBaseImpl { Email = userEmail, UserName = userEmail, Name = adUser.DisplayName });
+                        var firstRoleGroup = await roleGroupManager.RoleGroups.FirstAsync();
+
+                        var result = await userManager.CreateAsync(new Data.Models.MoxUserBaseImpl { Email = userEmail, UserName = userEmail, Name = adUser.DisplayName, RoleGroupId = firstRoleGroup.Id });
                         user = await userManager.FindByEmailAsync(userEmail);
 
-                        await userManager.AddToRoleAsync(user, Mox.Configuration.Constants.MoxRole);
+                        //await userManager.AddToRoleAsync(user, Mox.Configuration.Constants.MoxRole);
                     }
                     context.Principal = await signInManager.ClaimsFactory.CreateAsync(user);
                 };

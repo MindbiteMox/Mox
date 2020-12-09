@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Mindbite.Mox.Identity.Verification
 {
@@ -19,7 +21,7 @@ namespace Mindbite.Mox.Identity.Verification
 
             try
             {
-                var backdoor = serviceProvider.GetRequiredService<Identity.Services.IBackDoor>();
+                var backdoor = serviceProvider.GetRequiredService<Services.IBackDoor>();
                 var identityOptions = serviceProvider.GetRequiredService<IOptions<MoxIdentityOptions>>();
 
                 if(identityOptions?.Value?.Backdoor == null)
@@ -72,6 +74,43 @@ namespace Mindbite.Mox.Identity.Verification
         }
     }
 
+    public class AdminRoleGroupCreatedVerificator : IVerificator
+    {
+        public string Name => "Mox.Identity.AdminRoleGroup";
+
+        private readonly string _adminRoleGroupName;
+
+        public AdminRoleGroupCreatedVerificator(string adminRoleGroupName = Services.RoleGroupManager.DefaultAdministratorGroupName)
+        {
+            this._adminRoleGroupName = adminRoleGroupName;
+        }
+
+        public async Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider)
+        {
+            var roleGroupManager = serviceProvider.GetRequiredService<Services.RoleGroupManager>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            var adminRoleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync();
+            var allRoles = await roleManager.Roles.ToListAsync();
+
+            if (adminRoleGroup == null)
+            {
+                await roleGroupManager.CreateAsync(new Data.Models.RoleGroup { GroupName = _adminRoleGroupName }, allRoles.Select(x => x.Name));
+            }
+            else if(adminRoleGroup.Roles.Select(x => x.Role).Intersect(allRoles.Select(x => x.Name)).Count() != allRoles.Count())
+            {
+                await roleGroupManager.UpdateAsync(adminRoleGroup, allRoles.Select(x => x.Name));
+            }
+
+            return new VerificationResult()
+            {
+                Success = true,
+                Verificator = this,
+                Errors = Array.Empty<VerificationError>()
+            };
+        }
+    }
+
     public class RolesCreatedVerificator : IVerificator
     {
         public string Name => "Mox.Identity.Role";
@@ -85,28 +124,32 @@ namespace Mindbite.Mox.Identity.Verification
 
         public async Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider)
         {
-            var backdoor = serviceProvider.GetRequiredService<Identity.Services.IBackDoor>();
-            var result = await backdoor.CreateRole(this._role);
-
-            if (!result.Succeeded)
+            var backdoor = serviceProvider.GetRequiredService<Services.IBackDoor>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            if(await roleManager.FindByNameAsync(this._role) == null)
             {
-                return new VerificationResult
+                var result = await roleManager.CreateAsync(new IdentityRole { Name = this._role });
+
+                if (!result.Succeeded)
                 {
-                    Success = false,
-                    Verificator = this,
-                    Errors = result.Errors.Select(x => new VerificationError()
+                    return new VerificationResult
                     {
-                        Code = x.Code,
-                        Description = x.Description
-                    })
-                };
+                        Success = false,
+                        Verificator = this,
+                        Errors = result.Errors.Select(x => new VerificationError()
+                        {
+                            Code = x.Code,
+                            Description = x.Description
+                        })
+                    };
+                }
             }
 
             return new VerificationResult()
             {
                 Success = true,
                 Verificator = this,
-                Errors = new VerificationError[0]
+                Errors = Array.Empty<VerificationError>()
             };
         }
     }
