@@ -14,5 +14,6 @@ namespace Mindbite.Mox.Identity.Services
         public virtual Task OnCreatedAsync(MoxUser user) { return Task.CompletedTask; }
         public virtual Task OnUpdatedAsync(MoxUser user) { return Task.CompletedTask; }
         public virtual Task OnDeletedAsync(MoxUser user) { return Task.CompletedTask; }
+        public virtual Task OnLoginRefreshedAsync(MoxUser user) { return Task.CompletedTask; }
     }
 }

@@ -41,7 +41,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         Mox.UI.DataTable.create({
             container: document.getElementById('js-table'),
-            url: '@Url.Action("Table", ViewContext.RouteData.Values)'
+            url: '@Url.Action("Table", ViewContext.RouteData.Values)',
             filters: [@Html.Raw(string.Join(",", filters.Select(x => $"'{Html.Id(x.Name)}'")))],
         })
     });

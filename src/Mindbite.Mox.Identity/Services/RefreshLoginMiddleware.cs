@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Options;
 
 namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
 {
@@ -31,13 +32,17 @@ namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
     {
         private readonly UserManager<MoxUser> _userManager;
         private readonly SignInManager<MoxUser> _signInManager;
-        
+        private readonly MoxIdentityOptions _options;
+        private readonly IServiceProvider _serviceProvider;
+
         private static readonly ConcurrentDictionary<string, object> _refreshedUsers = new ConcurrentDictionary<string, object>();
 
-        public RefreshLoginService(UserManager<MoxUser> userManager, SignInManager<MoxUser> signInManager)
+        public RefreshLoginService(UserManager<MoxUser> userManager, SignInManager<MoxUser> signInManager, IOptions<MoxIdentityOptions> options, IServiceProvider serviceProvider)
         {
             this._userManager = userManager;
             this._signInManager = signInManager;
+            this._options = options.Value;
+            this._serviceProvider = serviceProvider;
         }
 
         public async Task RefreshLoginAsync(string userId)
@@ -52,12 +57,35 @@ namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
 
                 await this._signInManager.RefreshSignInAsync(user);
                 _refreshedUsers.TryAdd(userId, string.Empty);
+
+                foreach(var hook in this.Hooks)
+                {
+                    await hook.OnLoginRefreshedAsync(user);
+                }
             }
         }
 
         public void UserChanged(string userId)
         {
             _refreshedUsers.TryRemove(userId, out var _);
+        }
+
+        private List<UserChanges> _hooks;
+        private List<UserChanges> Hooks
+        {
+            get
+            {
+                if (this._hooks == null)
+                {
+                    this._hooks = new List<UserChanges>();
+                    foreach (var x in this._options.HookTypes.HookTypes)
+                    {
+                        _hooks.Add((UserChanges)_serviceProvider.GetService(x));
+                    }
+                }
+
+                return _hooks;
+            }
         }
     }
 
