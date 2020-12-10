@@ -21,9 +21,7 @@ namespace Mindbite.Mox.Identity.Services
         private readonly RefreshLoginService _refreshLoginService;
         private readonly IUserStore<MoxUser> _userStore;
 
-        public const string DefaultAdministratorGroupName = "Administrator";
-
-        public IQueryable<RoleGroup> RoleGroups => this._context.RoleGroups;
+        public IQueryable<RoleGroup> RoleGroups => this._context.RoleGroups.Include(x => x.Roles);
 
         public RoleGroupManager(IDbContextFetcher dbContextFetcher, IUserStore<MoxUser> userStore, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, RefreshLoginService refreshLoginService)
         {
@@ -84,7 +82,7 @@ namespace Mindbite.Mox.Identity.Services
 
             foreach (var role in identityRoles.Select(x => x.Name).Concat(existingRoles))
             {
-                var existingRole = group.Roles.FirstOrDefault(x => x.Role == role);
+                var existingRole = existingRoles.FirstOrDefault(x => x == role);
                 var keepRole = identityRoles.Any(x => x.Name == role);
 
                 if (existingRole == null && keepRole)

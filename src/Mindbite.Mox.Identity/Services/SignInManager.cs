@@ -116,7 +116,7 @@ namespace Mindbite.Mox.Identity.Services
             foreach (var hook in this.Hooks) { await hook.OnCreateAsync(user); }
 
             var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
-            var roleGroup = await roleGroupManager.RoleGroups.FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
+            var roleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
             if(roleGroup == null)
             {
                 return IdentityResult.Failed(new IdentityError { Code = "Missing Role Group", Description = $"Rolegroup {user.RoleGroupId} does not exist!" });
@@ -138,7 +138,7 @@ namespace Mindbite.Mox.Identity.Services
             foreach (var hook in this.Hooks) { await hook.OnUpdateAsync(user); }
 
             var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
-            var roleGroup = await roleGroupManager.RoleGroups.FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
+            var roleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
             if (roleGroup == null)
             {
                 return IdentityResult.Failed(new IdentityError { Code = "Missing Role Group", Description = $"Rolegroup {user.RoleGroupId} does not exist!" });

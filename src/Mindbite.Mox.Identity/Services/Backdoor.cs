@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Mindbite.Mox.Identity.Data.Models;
 using System;
 using System.Collections.Generic;
@@ -19,20 +20,22 @@ namespace Mindbite.Mox.Identity.Services
         private readonly Identity.Data.MoxIdentityDbContext _context;
         private readonly UserManager<MoxUser> _userManager;
         private readonly RoleGroupManager _roleGroupManager;
+        private readonly MoxIdentityOptions _options;
 
-        public BackDoor(Mox.Services.IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleGroupManager roleGroupManager)
+        public BackDoor(Mox.Services.IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleGroupManager roleGroupManager, IOptions<MoxIdentityOptions> options)
         {
             this._context = dbContextFetcher.FetchDbContext<Identity.Data.MoxIdentityDbContext>();
             this._userManager = userManager;
             this._roleGroupManager = roleGroupManager;
+            this._options = options.Value;
         }
 
         public async Task Build(string email, string password = null)
         {
-            var administratorGroup = await this._roleGroupManager.FindByNameAsync(RoleGroupManager.DefaultAdministratorGroupName);
+            var administratorGroup = await this._roleGroupManager.FindByNameAsync(this._options.AdministratorGroupName);
             if (administratorGroup == null)
             {
-                throw new Exception($"Role group \"{RoleGroupManager.DefaultAdministratorGroupName}\" could not be found!");
+                throw new Exception($"Role group \"{this._options.AdministratorGroupName}\" could not be found!");
             }
 
             await EnsureUser(email, password, administratorGroup);

@@ -21,6 +21,7 @@ namespace Mindbite.Mox.Verification.Services
     {
         Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider);
         string Name { get; }
+        int Order => 0;
     }
 
     public class VerificationOptions

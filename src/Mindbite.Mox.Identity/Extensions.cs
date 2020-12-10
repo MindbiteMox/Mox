@@ -128,9 +128,9 @@ namespace Mindbite.Mox.Extensions
                                 .Role(Constants.AdminRole)
                                 .AreaAction(Constants.SettingsArea, "UserManagement");
                             identityItems.Add()
-                                .Title("Behörigheter")
+                                .Title("Behörighetsgrupper")
                                 .Role(Constants.AdminRole)
-                                .AreaAction(Constants.SettingsArea, "RoleManagement");
+                                .AreaAction(Constants.SettingsArea, "RoleGroups");
                         });
                 });
 
@@ -175,8 +175,10 @@ namespace Mindbite.Mox.Extensions
 
             mvc.Services.Configure<Verification.Services.VerificationOptions>(c =>
             {
+                var options = mvc.Services.BuildServiceProvider().GetRequiredService<IOptions<MoxIdentityOptions>>().Value;
+
                 c.Verificators.Add(new Identity.Verification.RolesCreatedVerificator(Constants.AdminRole));
-                c.Verificators.Add(new Identity.Verification.AdminRoleGroupCreatedVerificator());
+                c.Verificators.Add(new Identity.Verification.AdminRoleGroupCreatedVerificator(options.AdministratorGroupName));
                 c.Verificators.Add(new Identity.Verification.BackDoorVerificator());
                 c.Verificators.Add(new Identity.Verification.EmailConfigSetVerificator());
             });

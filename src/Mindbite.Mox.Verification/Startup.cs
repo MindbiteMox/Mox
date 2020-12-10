@@ -20,7 +20,7 @@ namespace Mindbite.Mox.Verification
                 var options = scope.ServiceProvider.GetRequiredService<IOptions<Services.VerificationOptions>>().Value;
 
                 var results = new List<Services.VerificationResult>(); 
-                foreach(var verificator in options.Verificators)
+                foreach(var verificator in options.Verificators.OrderBy(x => x.Order))
                 {
                     results.Add(await verificator.VerifyAsync(scope.ServiceProvider));
                 }

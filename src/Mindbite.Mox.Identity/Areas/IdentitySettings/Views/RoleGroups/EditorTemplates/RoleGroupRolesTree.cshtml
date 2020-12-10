@@ -1,0 +1,24 @@
+﻿@model Mindbite.Mox.Identity.ViewModels.RoleGroupRolesTree
+
+<ul class="checkbox" id="js-groups" style="width: 100%;">
+    @for (var i = 0; i < Model.Roles.Length; i++)
+    {
+        <li class="mox-group-depth-@Model.Roles[i].Depth @(Model.Roles[i].IsParent ? "mox-group-parent" : "")">
+            @Html.HiddenFor(model => model.Roles[i].Id)
+            @Html.HiddenFor(model => model.Roles[i].Name)
+            @Html.HiddenFor(model => model.Roles[i].Depth)
+            @Html.HiddenFor(model => model.Roles[i].IsParent)
+            @Html.HiddenFor(model => model.Roles[i].Disabled)
+            @if (Model.Roles[i].Disabled)
+            {
+                @Html.HiddenFor(x => x.Roles[i].Checked)
+                @Html.CheckBoxFor(model => model.Roles[i].Checked, new { disabled = "disabled" })
+            }
+            else
+            {
+                @Html.CheckBoxFor(model => model.Roles[i].Checked, new { onclick = $"Mox.UI.CheckboxTree.onClick(document.getElementById('js-groups'), this, '{Model.Roles[i].Id}');", data_id = Model.Roles[i].Id })
+            }
+            @Html.LabelFor(model => model.Roles[i].Checked, Model.Roles[i].Name)
+        </li>
+    }
+</ul>

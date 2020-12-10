@@ -14,6 +14,7 @@ namespace Mindbite.Mox.Identity.Verification
     internal class BackDoorVerificator : IVerificator
     {
         public string Name => "Mox.Identity.Backdoor";
+        int IVerificator.Order => 10;
 
         public async Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider)
         {
@@ -74,15 +75,48 @@ namespace Mindbite.Mox.Identity.Verification
         }
     }
 
+#nullable enable
     public class AdminRoleGroupCreatedVerificator : IVerificator
     {
         public string Name => "Mox.Identity.AdminRoleGroup";
+        int IVerificator.Order => 5;
 
         private readonly string _adminRoleGroupName;
 
-        public AdminRoleGroupCreatedVerificator(string adminRoleGroupName = Services.RoleGroupManager.DefaultAdministratorGroupName)
+        public AdminRoleGroupCreatedVerificator(string adminRoleGroupName)
         {
-            this._adminRoleGroupName = adminRoleGroupName;
+            this._adminRoleGroupName = adminRoleGroupName ?? throw new ArgumentNullException(nameof(adminRoleGroupName));
+        }
+
+        public async Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var allRoles = await roleManager.Roles.ToListAsync();
+
+            var roleGroupCreatedVerificator = new RoleGroupCreatedVerificator(this._adminRoleGroupName, allRoles.Select(x => x.Name).ToList(), true);
+            return await roleGroupCreatedVerificator.VerifyAsync(serviceProvider);
+        }
+    }
+
+    public class RoleGroupCreatedVerificator : IVerificator
+    {
+        public string Name => "Mox.Identity.RoleGroup";
+
+        private readonly string _roleGroupName;
+        private readonly IEnumerable<string> _defaultRoles;
+        private readonly bool _forceOnlyDefaultRoles;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="roleGroupName"></param>
+        /// <param name="defaultRoles"></param>
+        /// <param name="forceOnlyDefaultRoles">When true the role group will have only the roles defined in <paramref name="defaultRoles"/></param>
+        public RoleGroupCreatedVerificator(string roleGroupName, IEnumerable<string> defaultRoles, bool forceOnlyDefaultRoles = false)
+        {  
+            this._roleGroupName = roleGroupName ?? throw new ArgumentNullException(nameof(roleGroupName));
+            this._defaultRoles = defaultRoles ?? throw new ArgumentNullException(nameof(defaultRoles));
+            this._forceOnlyDefaultRoles = forceOnlyDefaultRoles;
         }
 
         public async Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider)
@@ -90,16 +124,20 @@ namespace Mindbite.Mox.Identity.Verification
             var roleGroupManager = serviceProvider.GetRequiredService<Services.RoleGroupManager>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            var adminRoleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync();
-            var allRoles = await roleManager.Roles.ToListAsync();
+            var existingRoleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync(x => x.GroupName == this._roleGroupName);
 
-            if (adminRoleGroup == null)
+            if (existingRoleGroup == null)
             {
-                await roleGroupManager.CreateAsync(new Data.Models.RoleGroup { GroupName = _adminRoleGroupName }, allRoles.Select(x => x.Name));
+                var allRoles = await roleManager.Roles.Where(x => this._defaultRoles.Contains(x.Name)).ToListAsync();
+                await roleGroupManager.CreateAsync(new Data.Models.RoleGroup { GroupName = _roleGroupName }, allRoles.Select(x => x.Name));
             }
-            else if(adminRoleGroup.Roles.Select(x => x.Role).Intersect(allRoles.Select(x => x.Name)).Count() != allRoles.Count())
+            else if (this._forceOnlyDefaultRoles)
             {
-                await roleGroupManager.UpdateAsync(adminRoleGroup, allRoles.Select(x => x.Name));
+                var allRoles = await roleManager.Roles.Where(x => this._defaultRoles.Contains(x.Name)).ToListAsync();
+                if (existingRoleGroup.Roles.Select(x => x.Role).Intersect(allRoles.Select(x => x.Name)).Count() != allRoles.Count())
+                {
+                    await roleGroupManager.UpdateAsync(existingRoleGroup, allRoles.Select(x => x.Name));
+                }
             }
 
             return new VerificationResult()
@@ -110,6 +148,7 @@ namespace Mindbite.Mox.Identity.Verification
             };
         }
     }
+#nullable disable
 
     public class RolesCreatedVerificator : IVerificator
     {
