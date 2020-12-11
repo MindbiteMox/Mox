@@ -81,8 +81,7 @@ namespace Mindbite.Mox.Identity
             public async Task<object> TryUpdateModel(Func<object, Type, Task<bool>> tryUpdateModel)
             {
                 var model = new T();
-                if (!await tryUpdateModel(model, typeof(T)))
-                    return null;
+                await tryUpdateModel(model, typeof(T));
                 return model;
             }
         }
