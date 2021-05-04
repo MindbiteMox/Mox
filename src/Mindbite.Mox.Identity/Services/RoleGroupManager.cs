@@ -36,7 +36,7 @@ namespace Mindbite.Mox.Identity.Services
         public async Task AssignToGroupAsync(MoxUser user, RoleGroup group)
         {
             var roles = await this._userManager.GetRolesAsync(user);
-            if (roles.Intersect(group.Roles.Select(x => x.Role)).Count() != group.Roles.Count)
+            if (!roles.OrderBy(x => x).SequenceEqual(group.Roles.Select(x => x.Role).OrderBy(x => x)))
             {
                 var roleStore = (IUserRoleStore<MoxUser>)this._userStore;
 
@@ -54,6 +54,8 @@ namespace Mindbite.Mox.Identity.Services
 
                 (this._rolesFetcher as UserRolesFetcher)?.ClearCache(user.Id);
                 this._refreshLoginService.UserChanged(user.Id);
+
+                await this._context.SaveChangesAsync();
             }
         }
 
@@ -78,11 +80,11 @@ namespace Mindbite.Mox.Identity.Services
         public async Task UpdateAsync(RoleGroup group, IEnumerable<string> roles)
         {
             var identityRoles = await this._roleManager.Roles.Where(x => roles.Contains(x.Name)).ToListAsync();
-            var existingRoles = await this._context.RoleGroupRoles.Where(x => x.RoleGroupId == group.Id).Select(x => x.Role).ToListAsync();
+            var existingRoles = await this._context.RoleGroupRoles.Where(x => x.RoleGroupId == group.Id).ToListAsync();
 
-            foreach (var role in identityRoles.Select(x => x.Name).Concat(existingRoles))
+            foreach (var role in identityRoles.Select(x => x.Name).Concat(existingRoles.Select(x => x.Role)))
             {
-                var existingRole = existingRoles.FirstOrDefault(x => x == role);
+                var existingRole = existingRoles.FirstOrDefault(x => x.Role == role);
                 var keepRole = identityRoles.Any(x => x.Name == role);
 
                 if (existingRole == null && keepRole)

@@ -111,6 +111,30 @@ namespace Mindbite.Mox.Utils
         {
             return exp.NodeType == ExpressionType.Convert || exp.NodeType == ExpressionType.ConvertChecked;
         }
+
+        public static void SetPropertyValue<T, TValue>(this T target, Expression<Func<T, TValue>> memberLamda, TValue value)
+        {
+            if (memberLamda.Body is MemberExpression memberSelectorExpression)
+            {
+                var property = memberSelectorExpression.Member as PropertyInfo;
+                if (property != null)
+                {
+                    property.SetValue(target, value, null);
+                }
+            }
+        }
+
+        public static Type GetDeclaringTypeFor<T, TValue>(Expression<Func<T, TValue>> expression)
+        {
+            var memberSelectorExpression = (MemberExpression)expression.Body;
+            if (memberSelectorExpression != null)
+            {
+                var property = (PropertyInfo)memberSelectorExpression.Member;
+                return property.DeclaringType!;
+            }
+
+            throw new Exception("Not reachable");
+        }
     }
 
     public static class Utils

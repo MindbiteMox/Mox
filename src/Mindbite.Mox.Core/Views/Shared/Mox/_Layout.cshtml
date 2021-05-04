@@ -20,6 +20,17 @@
 <html>
 <head>
     @await Html.PartialAsync("Mox/LayoutParts/_Head")
+    <script>
+        if (!ready) {
+            ready = function (callback) {
+                if (document.readyState === "complete") {
+                    callback();
+                } else {
+                    document.addEventListener("DOMContentLoaded", callback);
+                }
+            }
+        }
+    </script>
     <title>@(ViewData["Title"] ?? currentSelectedMenu?.Title ?? "Mox") - @(Config.Value.SiteTitle)</title>
     <meta name="viewport" content="width=device-width">
     @await Html.PartialAsync("Mox/StaticIncludes/_Files", new { RenderInHead = true }.ToExpando())

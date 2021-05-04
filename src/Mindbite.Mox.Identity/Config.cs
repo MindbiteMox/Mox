@@ -58,6 +58,7 @@ namespace Mindbite.Mox.Identity
 
         public BackdoorOptions Backdoor { get; set; }
         public Type DefaultUserType { get; set; }
+        public Func<ActionContext, UI.DataTableSort, string, Task<UI.IDataTable>> UsersTable { get; set; }
         public List<Configuration.StaticIncludes.StaticFile> LoginStaticFiles { get; set; } = new List<Configuration.StaticIncludes.StaticFile>();
         public Hooks HookTypes { get; set; } = new Hooks();
         public MagicLinkOptions MagicLink { get; set; } = new MagicLinkOptions();

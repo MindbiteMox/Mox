@@ -1,0 +1,22 @@
+﻿@model Mindbite.Mox.Images.ViewModels.EditorTemplates.SingleImage
+
+@Html.HiddenFor(x => x.Url)
+
+@if (!string.IsNullOrWhiteSpace(Model?.Url))
+{
+    @Html.CheckBoxFor(x => x.Delete, new { style = "display: none" })
+
+    <div class="single-image-image-container hidden-if-checked">
+        <img src="@Model.Url" width="400" />
+        <label for="@Html.IdFor(x => x.Delete)" class="mox-button">Ta bort bild</label>
+    </div>
+
+    <div class="hidden-if-not-checked" style="margin-bottom: 30px;">
+        <label for="@Html.IdFor(x => x.Delete)" class="mox-button">Ta inte bort bild</label>
+    </div>
+}
+
+<p class="material-input">
+    @Html.LabelFor(x => x.File)
+    @Html.EditorFor(x => x.File)
+</p>

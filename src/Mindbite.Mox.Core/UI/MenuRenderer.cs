@@ -109,7 +109,7 @@ namespace Mindbite.Mox.UI.Menu.Renderer
                 var selectedAppMenu = this._htmlExtensions.Config.Value.Apps
                     .Select(x => (app: x, menuItems: x.ResolveActiveMenu(this._htmlExtensions.UrlHelper.ActionContext).Build(this._htmlExtensions.UrlHelper, roles).ToList()))
                     .FirstOrDefault(x => x.menuItems.Flatten().Any(y => y.MatchesView(this._htmlExtensions.UrlHelper.ActionContext)));
-                menuItems = selectedAppMenu.menuItems;
+                menuItems = selectedAppMenu.menuItems ?? new List<MenuItem>();
                 menuItems.FixParents();
             }
 
