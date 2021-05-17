@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Mindbite.Mox.Images.Attributes;
 using Mindbite.Mox.Services;
 using System;
@@ -12,12 +14,12 @@ namespace Mindbite.Mox.Images.Services
 {
     public class ImageService
     {
-        private readonly IDbContext _context;
+        private readonly Data.IImagesDbContext _context;
         private readonly IWebHostEnvironment _environment;
 
         public ImageService(IDbContextFetcher dbContextFetcher, IWebHostEnvironment environment)
         {
-            this._context = dbContextFetcher.FetchDbContext<IDbContext>();
+            this._context = dbContextFetcher.FetchDbContext<Data.IImagesDbContext>();
             this._environment = environment;
         }
 
@@ -116,12 +118,54 @@ namespace Mindbite.Mox.Images.Services
             return null;
         }
 
-        public async Task<IEnumerable<T>> UploadImageAsync<T>(Microsoft.AspNetCore.Http.IFormFile file, Action<T>? setParams = null) where T : Data.Models.Image, new()
+        public async Task SaveFormImagesAsync<TImage>(ViewModels.EditorTemplates.MultiImage viewModel, IEnumerable<TImage> existingImages, Action<TImage>? setParams = null) where TImage : Data.Models.Image, new()
+        {
+            var imageUIDsToKeep = viewModel.Images.ToList();
+
+            var uploadSort = 1000;
+            foreach (var file in viewModel.Upload ?? Array.Empty<IFormFile>())
+            {
+                var uploadedImages = await this.UploadImageAsync(typeof(TImage), file, x =>
+                {
+                    x.Sort = uploadSort++;
+                    setParams?.Invoke((TImage)x);
+                });
+
+                foreach (var uploadedImage in uploadedImages)
+                {
+                    imageUIDsToKeep.Add(uploadedImage.UID);
+                }
+            }
+
+            var existingImageUIDs = existingImages.Select(x => x.UID);
+            var allImagesUIDs = imageUIDsToKeep.Concat(existingImageUIDs).Distinct().ToList();
+            var storedImages = await this._context.AllImages.Where(x => allImagesUIDs.Contains(x.UID)).ToListAsync();
+
+            foreach (var storedImage in storedImages)
+            {
+                if (imageUIDsToKeep.Contains(storedImage.UID) && storedImage is TImage storedTImage)
+                {
+                    var sort = imageUIDsToKeep.IndexOf(storedTImage.UID);
+
+                    storedTImage.Sort = sort;
+                    setParams?.Invoke(storedTImage);
+                    this._context.Update(storedTImage);
+                }
+                else
+                {
+                    this._context.Remove(storedImage);
+                }
+            }
+
+            await this._context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<T>> UploadImageAsync<T>(IFormFile file, Action<T>? setParams = null) where T : Data.Models.Image, new()
         {
             return (await UploadImageAsync(typeof(T), file, x => setParams?.Invoke((T)x))).Cast<T>();
         }
 
-        public async Task<IEnumerable<Data.Models.Image>> UploadImageAsync(Type t, Microsoft.AspNetCore.Http.IFormFile file, Action<Data.Models.Image>? setParams = null)
+        public async Task<IEnumerable<Data.Models.Image>> UploadImageAsync(Type t, IFormFile file, Action<Data.Models.Image>? setParams = null)
         {
             var pageCount = 1;
             var images = new List<Data.Models.Image>();

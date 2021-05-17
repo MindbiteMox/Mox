@@ -42,6 +42,7 @@ namespace Mindbite.Mox.Images.Data.Models
 
         public string ContentType { get; set; }
         public string FileName { get; set; }
+        public int Sort { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedOn { get; set; }
         public string? CreatedById { get; set; }

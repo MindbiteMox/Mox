@@ -35,3 +35,12 @@ declare namespace Mox.Utils {
         function queryStringFromObject(object: Object): string;
     }
 }
+declare function queryString(params: any): string;
+declare function addQueryToUrl(url: string, queryString: string): string;
+declare function get(url: string, queryParams?: any): Promise<string>;
+declare function getJSON(url: string, queryParams?: any): Promise<any>;
+declare function post(url: string, body: BodyInit, queryParams?: any, additionalHeaders?: any): Promise<{
+    type: 'html' | 'json';
+    data: string | Mox.Utils.Fetch.FormPostResponse | any;
+}>;
+declare function getFormData(form: HTMLFormElement, prefix: string): FormData;

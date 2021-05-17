@@ -156,7 +156,8 @@ var Mox;
             Fetch.submitForm = submitForm;
             function submitAjaxForm(form, event) {
                 return __awaiter(this, void 0, void 0, function () {
-                    var url, init, button, response, contentType, _a, _b;
+                    var url, init, button, response, contentType;
+                    var _a, _b;
                     return __generator(this, function (_c) {
                         switch (_c.label) {
                             case 0:
@@ -266,4 +267,113 @@ var Mox;
         })(URL = Utils.URL || (Utils.URL = {}));
     })(Utils = Mox.Utils || (Mox.Utils = {}));
 })(Mox || (Mox = {}));
+function queryString(params) {
+    return Object.keys(params).filter(function (key) { return !(params[key] == null); }).map(function (key) { return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]); }).join('&');
+}
+function addQueryToUrl(url, queryString) {
+    var separator = url.indexOf('?') > -1 ? '&' : '?';
+    return "" + url + separator + queryString;
+}
+function get(url, queryParams) {
+    return new Promise(function (resolve, reject) {
+        var request = new XMLHttpRequest();
+        var _url = url;
+        if (queryParams) {
+            _url = addQueryToUrl(url, queryString(queryParams));
+        }
+        request.open("GET", _url, true);
+        request.onreadystatechange = function (event) {
+            if (request.readyState === 4) {
+                if (request.status === 200) {
+                    resolve(request.responseText);
+                }
+                else {
+                    reject(request.status);
+                }
+            }
+        };
+        request.send();
+    });
+}
+function getJSON(url, queryParams) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _b = (_a = JSON).parse;
+                    return [4 /*yield*/, get(url, queryParams)];
+                case 1: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+            }
+        });
+    });
+}
+function post(url, body, queryParams, additionalHeaders) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _url, headers, name, response, contentType;
+        var _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _url = url;
+                    if (queryParams) {
+                        _url = addQueryToUrl(url, queryString(queryParams));
+                    }
+                    headers = {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    };
+                    for (name in additionalHeaders || {}) {
+                        headers[name] = additionalHeaders[name];
+                    }
+                    return [4 /*yield*/, fetch(_url, {
+                            method: 'POST',
+                            body: body,
+                            credentials: 'same-origin',
+                            headers: headers
+                        }).then(Mox.Utils.Fetch.checkErrorCode)];
+                case 1:
+                    response = _c.sent();
+                    contentType = response.headers.get('Content-Type');
+                    if (!!contentType) return [3 /*break*/, 2];
+                    return [2 /*return*/, { type: 'html', data: '' }];
+                case 2:
+                    if (!(contentType.indexOf('text/html') > -1 || contentType.indexOf("text/plain") > -1)) return [3 /*break*/, 4];
+                    _a = { type: 'html' };
+                    return [4 /*yield*/, Mox.Utils.Fetch.parseText(response)];
+                case 3: return [2 /*return*/, (_a.data = _c.sent(), _a)];
+                case 4:
+                    if (!(contentType.indexOf('application/json') > -1)) return [3 /*break*/, 6];
+                    _b = { type: 'json' };
+                    return [4 /*yield*/, Mox.Utils.Fetch.parseJson(response)];
+                case 5: return [2 /*return*/, (_b.data = _c.sent(), _b)];
+                case 6: throw new Error('Content-Type: "' + contentType + '" cannot be used when responing to a form post request.');
+            }
+        });
+    });
+}
+function getFormData(form, prefix) {
+    var fields = Mox.Utils.DOM.nodeListOfToArray(form.querySelectorAll('*[name^="' + prefix + '."]'));
+    var stripPrefix = function (name) {
+        return name.substr(prefix.length + 1);
+    };
+    var formData = new FormData();
+    for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
+        var field = fields_1[_i];
+        var name_1 = stripPrefix(field.name);
+        if (field.tagName === 'INPUT' && field.type === 'file') {
+            for (var i = 0; i < field.files.length; i++) {
+                formData.append(name_1, field.files.item(i));
+            }
+        }
+        else if (field.tagName === 'INPUT' && field.type === 'checkbox') {
+            if (field.checked) {
+                formData.append(name_1, field.value);
+            }
+        }
+        else {
+            formData.append(name_1, field.value);
+        }
+    }
+    return formData;
+}
 //# sourceMappingURL=utils.js.map

@@ -1,0 +1,72 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using Mindbite.Mox.Images
+@using Mindbite.Mox.Images.Attributes
+
+@inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
+
+@model Mindbite.Mox.Images.ViewModels.EditorTemplates.MultiImage
+@{
+    var context = contextFetcher.FetchDbContext<Mindbite.Mox.Images.Data.IImagesDbContext>();
+
+    var imageUIDs = (Model.Images ?? Array.Empty<Guid>()).ToList();
+    var images = (await context.AllImages.Where(x => imageUIDs.Contains(x.UID)).ToListAsync()).OrderBy(x => imageUIDs.IndexOf(x.UID)).ToList();
+
+    var prefix = ViewData.TemplateInfo.HtmlFieldPrefix;
+
+    var uploadUrl = ViewData["UploadUrl"] ?? Url.Action("UploadMulti", "Images", new { Area = Mindbite.Mox.Images.Configuration.MainArea });
+    var onUploadChange = $"uploadMultiImage('{uploadUrl}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
+
+    string moveUrl(Guid id, int dir) => Url.Action("Move", "Images", new { id, dir, Area = Mindbite.Mox.Images.Configuration.MainArea });
+    string onMoveClicked(Guid id, int dir) => $"updateMultiImage('{moveUrl(id, dir)}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
+
+    string removeUrl(Guid id) => Url.Action("Remove", "Images", new { id, Area = Mindbite.Mox.Images.Configuration.MainArea });
+    string onRemoveClicked(Guid id) => $"updateMultiImage('{removeUrl(id)}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
+
+    var type = context.GetImageType(Model);
+    var sizes = type.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
+    var maxSize = sizes.OrderByDescending(x => x.Width * x.Height).FirstOrDefault();
+}
+
+<div class="multi-image-container">
+    @Html.HiddenFor(x => x.ImageTypeFullName)
+    <ul class="multi-image-list">
+        @for (var i = 0; i < images.Count; i++)
+        {
+            <li class="multi-image-item">
+                <span class="multi-image-image-wrapper">
+                    @Html.HiddenFor(x => x.Images[i])
+                    <img src="@images[i].DefaultSizeFileUrl" class="multi-image-image" />
+                </span>
+                <span class="multi-image-buttons">
+                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i], -1))"><i class="far fa-arrow-left"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i],  1))"><i class="far fa-arrow-right"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onRemoveClicked(Model.Images[i]))"><i class="far fa-trash-alt"></i></button>
+                </span>
+            </li>
+        }
+        <li class="multi-image-item">
+            <label class="multi-image-label" for="@Html.IdFor(x => x.Upload)">
+                <span>
+                    Välj bild(er)
+                    @if(maxSize != null)
+                    {
+                        <br />
+                        if(maxSize.Width > 0 && maxSize.Height > 0)
+                        {
+                            <span class="multi-image-size-label">Minst @(maxSize.Width)x@(maxSize.Height)px</span>
+                        }
+                        else if(maxSize.Width > 0)
+                        {
+                            <span class="multi-image-size-label">Minst @(maxSize.Width)px bred</span>
+                        }
+                        else if(maxSize.Height > 0)
+                        {
+                            <span class="multi-image-size-label">Minst @(maxSize.Height)px hög</span>
+                        }
+                    }
+                </span>
+                <input type="file" class="multi-image-input" multiple name="@Html.NameFor(x => x.Upload)" id="@Html.IdFor(x => x.Upload)" onchange="@onUploadChange" />
+            </label>
+        </li>
+    </ul>
+</div>

@@ -113,7 +113,25 @@
         {
             @if (renderAttribute?.Render == Render.EditorOnly)
             {
-                @Html.Editor(field.Name)
+                <div>
+                    @Html.Editor(field.Name)
+                </div>
+            }
+            else if(renderAttribute?.Render == Render.DivContainer)
+            {
+                <div>
+                    @Html.Label(field.Name)
+                    @Html.ValidationMessage(field.Name)
+
+                    @if (!hasRenderedFirstField)
+                    {
+                        @Html.Editor(field.Name, new { htmlAttributes = new { autofocus = "autofocus" } })
+                    }
+                    else
+                    {
+                        @Html.Editor(field.Name)
+                    }
+                </div>
             }
             else
             {

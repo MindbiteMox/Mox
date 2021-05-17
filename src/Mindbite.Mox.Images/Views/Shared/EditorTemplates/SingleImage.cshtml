@@ -1,5 +1,36 @@
-﻿@model Mindbite.Mox.Images.ViewModels.EditorTemplates.SingleImage
+﻿@using Mindbite.Mox.Images
+@using Mindbite.Mox.Images.Attributes
 
+@inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
+
+@model Mindbite.Mox.Images.ViewModels.EditorTemplates.SingleImage
+@{
+    var context = contextFetcher.FetchDbContext<Mindbite.Mox.Images.Data.IImagesDbContext>();
+
+    var type = context.GetImageType(Model);
+    var sizes = type.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
+    var maxSize = sizes.OrderByDescending(x => x.Width * x.Height).FirstOrDefault();
+    var maxSizeText = "";
+    
+    if (maxSize != null)
+    {
+        if (maxSize.Width > 0 && maxSize.Height > 0)
+        {
+            maxSizeText = $"(Minst {maxSize.Width}x{maxSize.Height}px)";
+        }
+        else if (maxSize.Width > 0)
+        {
+            maxSizeText = $"(Minst {maxSize.Width}px bred)";
+        }
+        else if (maxSize.Height > 0)
+        {
+            maxSizeText = $"(Minst {maxSize.Height}px hög)";
+        }
+    }
+
+}
+
+@Html.HiddenFor(x => x.ImageTypeFullName)
 @Html.HiddenFor(x => x.Url)
 
 @if (!string.IsNullOrWhiteSpace(Model?.Url))
@@ -17,6 +48,6 @@
 }
 
 <p class="material-input">
-    @Html.LabelFor(x => x.File)
+    @Html.LabelFor(x => x.File, Html.DisplayNameFor(x => x.File) + " " + maxSizeText)
     @Html.EditorFor(x => x.File)
 </p>

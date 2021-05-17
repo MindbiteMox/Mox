@@ -207,3 +207,103 @@
         }
     }
 }
+
+function queryString(params: any): string {
+    return Object.keys(params).filter(key => !(params[key] == null)).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key])).join('&');
+}
+
+function addQueryToUrl(url: string, queryString: string): string {
+    const separator = url.indexOf('?') > -1 ? '&' : '?';
+    return `${url}${separator}${queryString}`;
+}
+
+function get(url: string, queryParams?: any): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        const request = new XMLHttpRequest();
+
+        let _url = url;
+        if (queryParams) {
+            _url = addQueryToUrl(url, queryString(queryParams));
+        }
+
+        request.open("GET", _url, true);
+        request.onreadystatechange = function (event) {
+            if (request.readyState === 4) {
+                if (request.status === 200) {
+                    resolve(request.responseText);
+                } else {
+                    reject(request.status);
+                }
+            }
+        };
+
+        request.send();
+    });
+}
+
+async function getJSON(url: string, queryParams?: any): Promise<any> {
+    return JSON.parse(await get(url, queryParams));
+}
+
+async function post(url: string, body: BodyInit, queryParams?: any, additionalHeaders?: any): Promise<{ type: 'html' | 'json', data: string | Mox.Utils.Fetch.FormPostResponse | any }> {
+
+    let _url = url;
+    if (queryParams) {
+        _url = addQueryToUrl(url, queryString(queryParams));
+    }
+
+    let headers = {
+        'X-Requested-With': 'XMLHttpRequest'
+    };
+
+    for (var name in additionalHeaders || {}) {
+        headers[name] = additionalHeaders[name];
+    }
+
+    var response = await fetch(_url, {
+        method: 'POST',
+        body: body,
+        credentials: 'same-origin',
+        headers: headers
+    }).then(Mox.Utils.Fetch.checkErrorCode);
+
+    const contentType = response.headers.get('Content-Type');
+
+    if (!contentType) {
+        return { type: 'html', data: '' };
+    } else if (contentType.indexOf('text/html') > -1 || contentType.indexOf("text/plain") > -1) {
+        return { type: 'html', data: await Mox.Utils.Fetch.parseText(response) };
+    } else if (contentType.indexOf('application/json') > -1) {
+        return { type: 'json', data: await Mox.Utils.Fetch.parseJson(response) };
+    } else {
+        throw new Error('Content-Type: "' + contentType + '" cannot be used when responing to a form post request.');
+    }
+}
+
+function getFormData(form: HTMLFormElement, prefix: string) {
+    const fields = Mox.Utils.DOM.nodeListOfToArray(form.querySelectorAll('*[name^="' + prefix + '."]')) as (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement)[];
+
+    const stripPrefix = (name: string) => {
+        return name.substr(prefix.length + 1);
+    };
+
+    const formData = new FormData();
+
+    for (let field of fields) {
+        const name = stripPrefix(field.name);
+
+        if (field.tagName === 'INPUT' && field.type === 'file') {
+            for (let i = 0; i < (field as HTMLInputElement).files.length; i++) {
+                formData.append(name, (field as HTMLInputElement).files.item(i));
+            }
+        } else if (field.tagName === 'INPUT' && field.type === 'checkbox') {
+            if ((field as HTMLInputElement).checked) {
+                formData.append(name, field.value);
+            }
+        } else {
+            formData.append(name, field.value);
+        }
+    }
+
+    return formData;
+}

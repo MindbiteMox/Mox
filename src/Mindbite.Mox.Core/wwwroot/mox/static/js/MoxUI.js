@@ -371,14 +371,14 @@ var Mox;
                 get: function () {
                     return Mox.Utils.URL.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(DataTable.prototype, "containerElement", {
                 get: function () {
                     return this.options.container;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(DataTable.prototype, "filterQueryString", {
@@ -405,7 +405,7 @@ var Mox;
                     });
                     return Mox.Utils.URL.queryStringFromObject(result);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             DataTable.create = function (options) {
