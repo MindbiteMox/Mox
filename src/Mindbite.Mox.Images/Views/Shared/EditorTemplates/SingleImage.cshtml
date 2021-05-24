@@ -7,7 +7,7 @@
 @{
     var context = contextFetcher.FetchDbContext<Mindbite.Mox.Images.Data.IImagesDbContext>();
 
-    var type = context.GetImageType(Model);
+    var type = context.GetEntityType(Model);
     var sizes = type.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
     var maxSize = sizes.OrderByDescending(x => x.Width * x.Height).FirstOrDefault();
     var maxSizeText = "";

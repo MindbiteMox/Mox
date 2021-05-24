@@ -1,5 +1,4 @@
-﻿using Mindbite.Mox.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Identity.Data.Models
 {
-    public class RoleGroup : ISoftDeleted
+    public class RoleGroup : Core.Data.Models.ISoftDeleted
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -29,7 +28,7 @@ namespace Mindbite.Mox.Identity.Data.Models
         public ICollection<MoxUser> Users { get; set; } = new List<MoxUser>();
     }
 
-    public class RoleGroupRole : ISoftDeleted
+    public class RoleGroupRole : Core.Data.Models.ISoftDeleted
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

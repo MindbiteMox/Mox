@@ -1,0 +1,53 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using Mindbite.Mox.Images
+@using Mindbite.Mox.Images.Attributes
+
+@inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
+
+@model Mindbite.Mox.Images.ViewModels.EditorTemplates.MultiFile
+@{
+    var context = contextFetcher.FetchDbContext<Mindbite.Mox.Images.Data.IImagesDbContext>();
+
+    var fileUIDs = (Model.Files ?? Array.Empty<Guid>()).ToList();
+    var files = (await context.AllFiles.Where(x => fileUIDs.Contains(x.UID)).ToListAsync()).OrderBy(x => fileUIDs.IndexOf(x.UID)).ToList();
+
+    var prefix = ViewData.TemplateInfo.HtmlFieldPrefix;
+
+    var uploadUrl = ViewData["UploadUrl"] ?? Url.Action("UploadMulti", "Files", new { Area = Mindbite.Mox.Images.Configuration.MainArea });
+    var onUploadChange = $"Mox.Images.uploadMulti('{uploadUrl}', this.form, Mox.Utils.DOM.closest(this, '.multi-file-container').parentElement, '{prefix}');";
+
+    string moveUrl(Guid id, int dir) => Url.Action("Move", "Files", new { id, dir, Area = Mindbite.Mox.Images.Configuration.MainArea });
+    string onMoveClicked(Guid id, int dir) => $"Mox.Images.updateMulti('{moveUrl(id, dir)}', this.form, Mox.Utils.DOM.closest(this, '.multi-file-container').parentElement, '{prefix}');";
+
+    string removeUrl(Guid id) => Url.Action("Remove", "Files", new { id, Area = Mindbite.Mox.Images.Configuration.MainArea });
+    string onRemoveClicked(Guid id) => $"Mox.Images.updateMulti('{removeUrl(id)}', this.form, Mox.Utils.DOM.closest(this, '.multi-file-container').parentElement, '{prefix}');";
+}
+
+<div class="multi-file-container">
+    @Html.HiddenFor(x => x.FileTypeFullName)
+    @if(files.Any())
+    {
+        <ul class="multi-file-list">
+            @for (var i = 0; i < files.Count; i++)
+            {
+                <li class="multi-file-item">
+                    <span class="multi-file-file-wrapper">
+                        @Html.HiddenFor(x => x.Files[i])
+                        <span class="multi-file-item-title">@files[i].FileName</span>
+                    </span>
+                    <span class="multi-file-buttons">
+                        <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Files[i], -1))"><i class="mox-icon arrow-up"></i></button>
+                        <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Files[i],  1))"><i class="mox-icon arrow-down"></i></button>
+                        <button type="button" class="mox-button" onclick="@(onRemoveClicked(Model.Files[i]))"><i class="mox-icon trash"></i></button>
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+    <label class="multi-file-label" for="@Html.IdFor(x => x.Upload)">
+        <span>
+            Välj fil(er)
+        </span>
+        <input type="file" class="multi-file-input" multiple name="@Html.NameFor(x => x.Upload)" id="@Html.IdFor(x => x.Upload)" onchange="@onUploadChange" />
+    </label>
+</div>

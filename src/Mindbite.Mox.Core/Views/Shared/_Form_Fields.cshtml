@@ -7,15 +7,15 @@
     var hiddenFields = new List<System.Reflection.PropertyInfo>();
     var excludedFields = new List<System.Reflection.PropertyInfo>();
 
-    if (typeof(Mindbite.Mox.Core.Models.ISoftDeleted).IsAssignableFrom(modelType))
+    if (typeof(Mindbite.Mox.Core.Data.Models.ISoftDeleted).IsAssignableFrom(modelType))
     {
-        var interfaceFields = typeof(Mindbite.Mox.Core.Models.ISoftDeleted).GetProperties().Select(x => x.Name);
+        var interfaceFields = typeof(Mindbite.Mox.Core.Data.Models.ISoftDeleted).GetProperties().Select(x => x.Name);
         excludedFields.AddRange(formFields.Where(x => interfaceFields.Contains(x.Name)));
     }
 
-    if (typeof(Mindbite.Mox.Core.Models.IUIDEntity).IsAssignableFrom(modelType))
+    if (typeof(Mindbite.Mox.Core.Data.Models.IUIDEntity).IsAssignableFrom(modelType))
     {
-        var interfaceFields = typeof(Mindbite.Mox.Core.Models.IUIDEntity).GetProperties().Select(x => x.Name);
+        var interfaceFields = typeof(Mindbite.Mox.Core.Data.Models.IUIDEntity).GetProperties().Select(x => x.Name);
         excludedFields.AddRange(formFields.Where(x => interfaceFields.Contains(x.Name)));
     }
 
@@ -43,18 +43,26 @@
     {
         @Html.Hidden(field.Name)
     }
-    else if (field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any() && (field.PropertyType.IsEnum || (Nullable.GetUnderlyingType(field.PropertyType)?.IsEnum ?? false) || typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType) || field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any(x => !string.IsNullOrWhiteSpace(x.DataSourcePropertyName))))
+    else if (field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any() && (field.PropertyType.IsEnum || (Nullable.GetUnderlyingType(field.PropertyType)?.IsEnum ?? false) || typeof(IEnumerable<SelectListItem>).IsAssignableFrom(field.PropertyType) || field.GetCustomAttributes<MoxFormFieldTypeAttribute>().Any(x => x.Render == Render.CheckBoxList || x.Render == Render.DropDown || x.Render == Render.Radio)))
     {
-        var attribute = field.GetCustomAttribute<MoxFormFieldTypeAttribute>();
-        var items = default(SelectListItem[]);
+        var fieldTypeAttribute = field.GetCustomAttribute<MoxFormFieldTypeAttribute>();
+        var items = Enumerable.Empty<SelectListItem>();
+        var emptyMessage = default(string?);
 
         if (field.PropertyType.IsEnum || (Nullable.GetUnderlyingType(field.PropertyType)?.IsEnum ?? false))
         {
             items = Html.GetEnumSelectList(field.PropertyType).ToArray();
         }
-        else
+        else if(field.GetCustomAttributes<MoxFormDataSourceAttribute>().Any())
         {
-            var dataSourceProperty = formFields.FirstOrDefault(x => x.Name == attribute.DataSourcePropertyName);
+            var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
+            var dataSourceAttribute = field.GetCustomAttribute<MoxFormDataSourceAttribute>();
+            items = await dataSourceAttribute.GetSelectListAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+            emptyMessage = await dataSourceAttribute.GetEmptyMessageAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+        }
+        else if(!string.IsNullOrWhiteSpace(fieldTypeAttribute.DataSourcePropertyName))
+        {
+            var dataSourceProperty = formFields.FirstOrDefault(x => x.Name == fieldTypeAttribute.DataSourcePropertyName);
             if (dataSourceProperty == null)
             {
                 items = ((IEnumerable<SelectListItem>)field.GetValue((object)Model)).ToArray();
@@ -69,25 +77,27 @@
             }
         }
 
-        switch (attribute.Render)
+        emptyMessage ??= fieldTypeAttribute.EmptyLabel;
+
+        switch (fieldTypeAttribute.Render)
         {
             case Render.DropDown:
                 <p>
                     @Html.Label(field.Name)
                     @Html.ValidationMessage(field.Name)
-                    @Html.DropDownList(field.Name, items, attribute.EmptyLabel)
+                    @Html.DropDownList(field.Name, items, emptyMessage)
                 </p>
                 break;
             case Render.CheckBoxList:
                 <ul class="checkbox">
                     <li><p>@Html.DisplayName(field.Name)</p></li>
-                    @for (int i = 0; i < items.Length; i++)
+                    @for (int i = 0; i < items.Count(); i++)
                     {
                         <li>
-                            @Html.Hidden($"{field.Name}[{i}].Value", items[i].Value)
-                            @Html.Hidden($"{field.Name}[{i}].Text", items[i].Text)
-                            @Html.CheckBox($"{field.Name}[{i}].Selected", items[i].Selected)
-                            @Html.Label($"{field.Name}[{i}].Selected", items[i].Text)
+                            @Html.Hidden($"{field.Name}[{i}].Value", items.ElementAt(i).Value)
+                            @Html.Hidden($"{field.Name}[{i}].Text", items.ElementAt(i).Text)
+                            @Html.CheckBox($"{field.Name}[{i}].Selected", items.ElementAt(i).Selected)
+                            @Html.Label($"{field.Name}[{i}].Selected", items.ElementAt(i).Text)
                         </li>
                     }
                 </ul>

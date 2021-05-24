@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Mindbite.Mox.DesignDemoApp.Data
 {
-    public interface IDesignDbContext : IDbContext
+    public interface IDesignDbContext : Core.Data.IDbContext
     {
         DbSet<Design> Designs { get; }
         DbSet<Image> Images { get; }

@@ -29,7 +29,7 @@ namespace Mindbite.Mox.Images.Areas.Controllers
 
             foreach (var file in viewModel.Upload ?? Array.Empty<IFormFile>())
             {
-                var type = this._context.GetImageType(viewModel);
+                var type = this._context.GetEntityType(viewModel);
 
                 var uploadedImages = await this._imageService.UploadImageAsync(type, file);
 

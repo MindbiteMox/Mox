@@ -353,6 +353,98 @@ namespace Mindbite.Mox.Attributes
 
 #nullable enable
 
+    [AttributeUsage(AttributeTargets.Property)]
+    public class MoxFormDataSourceAttribute : Attribute
+    {
+        public string? EmptyMessage { get; set; }
+
+        /// <summary>
+        /// A static function on this class with the following signature: Task<IEnumerable<SelectListItem>> YourAsyncMethod(HttpContext context)
+        /// </summary>
+        public string SelectListFunctionName { get; set; }
+        public string? EmptyMessageFunctionName { get; set; }
+
+        public MoxFormDataSourceAttribute(string selectListFunctionName, string emptyMessage)
+        {
+            this.SelectListFunctionName = selectListFunctionName;
+            this.EmptyMessage = emptyMessage;
+        }
+
+        public MoxFormDataSourceAttribute(string selectListFunctionName)
+        {
+            this.SelectListFunctionName = selectListFunctionName;
+        }
+
+        public static Type GetViewModelType(Type controllerType)
+        {
+            static Type? getFormClass(Type? t)
+            {
+                if (t == null || t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Mindbite.Mox.Core.Controllers.FormController<>) || t.GetGenericTypeDefinition() == typeof(Mindbite.Mox.Core.Controllers.FormController<,,>)))
+                {
+                    return t;
+                }
+
+                return getFormClass(t.BaseType);
+            }
+
+            var formClass = getFormClass(controllerType);
+
+            return formClass!.GenericTypeArguments.First();
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetSelectListAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Type controllerType)
+        {
+            var viewModelType = GetViewModelType(controllerType);
+            var method = viewModelType.GetMethod(this.SelectListFunctionName, BindingFlags.Static | BindingFlags.Public);
+            if (method == null)
+            {
+                throw new Exception($"public static Task<IEnumerable<SelectListItem>> {this.SelectListFunctionName}(HttpContext) could not be found!");
+            }
+
+            if (method.GetParameters().FirstOrDefault()?.ParameterType != typeof(Microsoft.AspNetCore.Http.HttpContext))
+            {
+                throw new Exception($"{this.SelectListFunctionName} must be defined with exactly 1 parameter of type 'HttpContext'");
+            }
+
+            if (method.ReturnType != typeof(Task<IEnumerable<SelectListItem>>))
+            {
+                throw new Exception($"{this.SelectListFunctionName} must be defined with return type 'Task<IEnumerable<SelectListItem>>'");
+            }
+
+            var result = (Task<IEnumerable<SelectListItem>>)method.Invoke(null, new[] { httpContext })!;
+            return await result;
+        }
+
+        public async Task<string?> GetEmptyMessageAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Type controllerType)
+        {
+            if (!string.IsNullOrWhiteSpace(this.EmptyMessageFunctionName))
+            {
+                var viewModelType = GetViewModelType(controllerType);
+                var method = viewModelType.GetMethod(this.EmptyMessageFunctionName, BindingFlags.Static | BindingFlags.Public);
+                if (method == null)
+                {
+                    throw new Exception($"public static Task<string?> {this.EmptyMessageFunctionName}(HttpContext) could not be found!");
+                }
+
+                if (method.GetParameters().FirstOrDefault()?.ParameterType != typeof(Microsoft.AspNetCore.Http.HttpContext))
+                {
+                    throw new Exception($"{this.EmptyMessageFunctionName} must be defined with exactly 1 parameter of type 'HttpContext'");
+                }
+
+                if (method.ReturnType != typeof(Task<string?>))
+                {
+                    throw new Exception($"{this.EmptyMessageFunctionName} must be defined with return type 'Task<string?>'");
+                }
+
+                var result = (Task<string?>)method.Invoke(null, new[] { httpContext })!;
+                return await result;
+            }
+
+            return this.EmptyMessage;
+        }
+    }
+
+
     public enum MoxFormFilterType
     {
         Text,

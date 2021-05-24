@@ -37,6 +37,7 @@ namespace Mindbite.Mox.Images
             }
 
             mvc.Services.AddScoped<Services.ImageService>();
+            mvc.Services.AddScoped<Services.FileService>();
 
             mvc.Services.Configure<Mox.Configuration.StaticIncludes.IncludeConfig>(c =>
             {

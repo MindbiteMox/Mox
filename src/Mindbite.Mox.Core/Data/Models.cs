@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Mindbite.Mox.Core.Models
+namespace Mindbite.Mox.Core.Data.Models
 {
     public interface ISoftDeleted
     {

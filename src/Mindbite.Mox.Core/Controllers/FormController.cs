@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Mindbite.Mox.Core.Models;
 using Mindbite.Mox.UI;
 using System;
 using System.Collections.Generic;
@@ -226,9 +225,9 @@ namespace Mindbite.Mox.Core.Controllers
     {
     }
 
-    public abstract class SingleEntityFormController<T, DbContext_T> : FormController<T, Guid, Guid?> where T : class, IUIDEntity, new() where DbContext_T : Services.IDbContext
+    public abstract class SingleEntityFormController<T, DbContext_T> : FormController<T, Guid, Guid?> where T : class, Data.Models.IUIDEntity, new() where DbContext_T : Data.IDbContext
     {
-        private readonly Services.IDbContext _context;
+        private readonly Data.IDbContext _context;
 
         public SingleEntityFormController(Mindbite.Mox.Services.IDbContextFetcher dbContextFetcher)
         {
@@ -268,18 +267,18 @@ namespace Mindbite.Mox.Core.Controllers
 
         public override void BeforeValidation()
         {
-            if (typeof(ISoftDeleted).IsAssignableFrom(typeof(T)))
+            if (typeof(Data.Models.ISoftDeleted).IsAssignableFrom(typeof(T)))
             {
-                var interfaceFields = typeof(ISoftDeleted).GetProperties().Select(x => x.Name);
+                var interfaceFields = typeof(Data.Models.ISoftDeleted).GetProperties().Select(x => x.Name);
                 foreach (var field in interfaceFields)
                 {
                     ModelState.Remove(field);
                 }
             }
 
-            if (typeof(IUIDEntity).IsAssignableFrom(typeof(T)))
+            if (typeof(Data.Models.IUIDEntity).IsAssignableFrom(typeof(T)))
             {
-                var interfaceFields = typeof(IUIDEntity).GetProperties().Select(x => x.Name);
+                var interfaceFields = typeof(Data.Models.IUIDEntity).GetProperties().Select(x => x.Name);
                 foreach (var field in interfaceFields)
                 {
                     ModelState.Remove(field);
@@ -296,10 +295,10 @@ namespace Mindbite.Mox.Core.Controllers
                 viewModel.Id = entity.Id;
                 viewModel.UID = entity.UID;
 
-                if (typeof(ISoftDeleted).IsAssignableFrom(typeof(T)))
+                if (typeof(Data.Models.ISoftDeleted).IsAssignableFrom(typeof(T)))
                 {
-                    var softDeletedEntity = (ISoftDeleted)entity;
-                    var softDeletedViewModel = (ISoftDeleted)viewModel;
+                    var softDeletedEntity = (Data.Models.ISoftDeleted)entity;
+                    var softDeletedViewModel = (Data.Models.ISoftDeleted)viewModel;
                     softDeletedViewModel.CreatedOn = softDeletedEntity.CreatedOn;
                     softDeletedViewModel.CreatedById = softDeletedEntity.CreatedById;
                     softDeletedViewModel.DeletedOn = softDeletedEntity.DeletedOn;

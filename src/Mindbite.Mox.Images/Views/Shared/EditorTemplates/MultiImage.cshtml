@@ -14,15 +14,15 @@
     var prefix = ViewData.TemplateInfo.HtmlFieldPrefix;
 
     var uploadUrl = ViewData["UploadUrl"] ?? Url.Action("UploadMulti", "Images", new { Area = Mindbite.Mox.Images.Configuration.MainArea });
-    var onUploadChange = $"uploadMultiImage('{uploadUrl}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
+    var onUploadChange = $"Mox.Images.uploadMulti('{uploadUrl}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
 
     string moveUrl(Guid id, int dir) => Url.Action("Move", "Images", new { id, dir, Area = Mindbite.Mox.Images.Configuration.MainArea });
-    string onMoveClicked(Guid id, int dir) => $"updateMultiImage('{moveUrl(id, dir)}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
+    string onMoveClicked(Guid id, int dir) => $"Mox.Images.updateMulti('{moveUrl(id, dir)}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
 
     string removeUrl(Guid id) => Url.Action("Remove", "Images", new { id, Area = Mindbite.Mox.Images.Configuration.MainArea });
-    string onRemoveClicked(Guid id) => $"updateMultiImage('{removeUrl(id)}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
+    string onRemoveClicked(Guid id) => $"Mox.Images.updateMulti('{removeUrl(id)}', this.form, Mox.Utils.DOM.closest(this, '.multi-image-container').parentElement, '{prefix}')";
 
-    var type = context.GetImageType(Model);
+    var type = context.GetEntityType(Model);
     var sizes = type.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
     var maxSize = sizes.OrderByDescending(x => x.Width * x.Height).FirstOrDefault();
 }
@@ -38,9 +38,9 @@
                     <img src="@images[i].DefaultSizeFileUrl" class="multi-image-image" />
                 </span>
                 <span class="multi-image-buttons">
-                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i], -1))"><i class="far fa-arrow-left"></i></button>
-                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i],  1))"><i class="far fa-arrow-right"></i></button>
-                    <button type="button" class="mox-button" onclick="@(onRemoveClicked(Model.Images[i]))"><i class="far fa-trash-alt"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i], -1))"><i class="mox-icon arrow-left"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i],  1))"><i class="mox-icon arrow-right"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onRemoveClicked(Model.Images[i]))"><i class="mox-icon trash"></i></button>
                 </span>
             </li>
         }

@@ -1,5 +1,3 @@
-//declare function getFormData(form: HTMLFormElement, prefix: string): FormData;
-//declare function post(url: string, body: BodyInit, queryParams?: any, additionalHeaders?: any): Promise<{ type: 'html' | 'json', data: string | Mox.Utils.Fetch.FormPostResponse | any }> ;
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,49 +34,57 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-function uploadMultiImage(url, form, container, prefix) {
-    return __awaiter(this, void 0, void 0, function () {
-        var formData, response;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    container.classList.add('loading');
-                    formData = getFormData(form, prefix);
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, , 3, 4]);
-                    return [4 /*yield*/, post(url, formData, { prefix: prefix })];
-                case 2:
-                    response = _a.sent();
-                    container.innerHTML = response.data;
-                    return [3 /*break*/, 4];
-                case 3:
-                    container.classList.remove('loading');
-                    return [7 /*endfinally*/];
-                case 4: return [2 /*return*/];
-            }
-        });
-    });
-}
-function updateMultiImage(url, form, container, prefix) {
-    return __awaiter(this, void 0, void 0, function () {
-        var formData, response;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    formData = getFormData(form, prefix);
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, , 3, 4]);
-                    return [4 /*yield*/, post(url, formData, { prefix: prefix })];
-                case 2:
-                    response = _a.sent();
-                    container.innerHTML = response.data;
-                    return [3 /*break*/, 4];
-                case 3: return [7 /*endfinally*/];
-                case 4: return [2 /*return*/];
-            }
-        });
-    });
-}
+var Mox;
+(function (Mox) {
+    var Images;
+    (function (Images) {
+        function uploadMulti(url, form, container, prefix) {
+            return __awaiter(this, void 0, void 0, function () {
+                var formData, response;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            container.classList.add('loading');
+                            formData = getFormData(form, prefix);
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, , 3, 4]);
+                            return [4 /*yield*/, post(url, formData, { prefix: prefix })];
+                        case 2:
+                            response = _a.sent();
+                            container.innerHTML = response.data;
+                            return [3 /*break*/, 4];
+                        case 3:
+                            container.classList.remove('loading');
+                            return [7 /*endfinally*/];
+                        case 4: return [2 /*return*/];
+                    }
+                });
+            });
+        }
+        Images.uploadMulti = uploadMulti;
+        function updateMulti(url, form, container, prefix) {
+            return __awaiter(this, void 0, void 0, function () {
+                var formData, response;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            formData = getFormData(form, prefix);
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, , 3, 4]);
+                            return [4 /*yield*/, post(url, formData, { prefix: prefix })];
+                        case 2:
+                            response = _a.sent();
+                            container.innerHTML = response.data;
+                            return [3 /*break*/, 4];
+                        case 3: return [7 /*endfinally*/];
+                        case 4: return [2 /*return*/];
+                    }
+                });
+            });
+        }
+        Images.updateMulti = updateMulti;
+    })(Images = Mox.Images || (Mox.Images = {}));
+})(Mox || (Mox = {}));
 //# sourceMappingURL=images.js.map

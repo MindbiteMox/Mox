@@ -205,7 +205,7 @@ namespace Mindbite.Mox.Extensions
             return mvc;
         }
 
-        public static IMvcBuilder AddMox<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, string path = "Mox") where AppDbContext_T : DbContext, IDbContext
+        public static IMvcBuilder AddMox<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, string path = "Mox") where AppDbContext_T : DbContext, Core.Data.IDbContext
         {
             mvc.AddMoxWithoutDb(webHostEnvironment, path);
             mvc.Services.AddScoped<IDbContextFetcher, DbContextFetcher<AppDbContext_T>>();

@@ -14,17 +14,16 @@
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.0.7</Version>
+    <Version>5.1.1</Version>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <IsPackable>true</IsPackable>
-    <AssemblyVersion>5.0.7.0</AssemblyVersion>
-    <FileVersion>5.0.7.0</FileVersion>
+    <AssemblyVersion>5.1.1.0</AssemblyVersion>
+    <FileVersion>5.1.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Remove="tsconfig.json" />
-    <Content Remove="wwwroot\mox\static\images\css\images.css" />
   </ItemGroup>
   
   <ItemGroup>

@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Mindbite.Mox.Identity.AzureAD\Mindbite.Mox.Identity.AzureAD.csproj" />
+    <ProjectReference Include="..\..\Mindbite.Mox.Images\Mindbite.Mox.Images.csproj" />
     <ProjectReference Include="..\..\Mindbite.Mox.Reporting\Mindbite.Mox.Reporting.csproj" />
     <ProjectReference Include="..\Mindbite.Mox.DesignDemoApp\Mindbite.Mox.DesignDemoApp.csproj" />
     <ProjectReference Include="..\..\Mindbite.Mox.Identity\Mindbite.Mox.Identity.csproj" />
@@ -19,10 +20,10 @@
     <Folder Include="wwwroot\media\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

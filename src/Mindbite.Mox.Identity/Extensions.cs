@@ -33,12 +33,12 @@ namespace Mindbite.Mox.Extensions
         {
         }
 
-        public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "") where AppDbContext_T : MoxIdentityDbContext, IDbContext
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "") where AppDbContext_T : MoxIdentityDbContext, Core.Data.IDbContext
         {
             return AddMoxIdentity<AppDbContext_T, MoxUserManager>(mvc, webHostEnvironment, appConfiguration, moxPath, staticRequestPath);
         }
 
-        public static IMvcBuilder AddMoxIdentity<AppDbContext_T, UserManager_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "") where AppDbContext_T : MoxIdentityDbContext, IDbContext where UserManager_T : MoxUserManager
+        public static IMvcBuilder AddMoxIdentity<AppDbContext_T, UserManager_T>(this IMvcBuilder mvc, IWebHostEnvironment webHostEnvironment, IConfigurationRoot appConfiguration, string moxPath = "Mox", string staticRequestPath = "") where AppDbContext_T : MoxIdentityDbContext, Core.Data.IDbContext where UserManager_T : MoxUserManager
         {
             var thisAssembly = typeof(IdentityExtensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);

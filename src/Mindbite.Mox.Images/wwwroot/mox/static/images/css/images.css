@@ -10,4 +10,15 @@
 .multi-image-buttons { display: flex; justify-content: center; }
 .multi-image-buttons .mox-button { margin: 5px 2px; }
 
+.multi-file-container { margin: 1em 0; }
+.multi-file-list { list-style: none; margin-bottom: 1em; padding: 0; }
+.multi-file-item { border: 1px solid #ccc; border-top: 0; display: flex; }
+.multi-file-item:first-of-type { border-top-left-radius: 5px; border-top-right-radius: 5px; border-top: 1px solid #ccc; }
+.multi-file-item:last-of-type { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-bottom: 5px; }
+.multi-file-item-title { padding: 5px 8px; display: block; }
+.multi-file-label > span { display: block; margin-bottom: 3px; }
+.multi-file-file-wrapper { flex: 1; display: flex; align-items: center; }
+.multi-file-buttons { display: flex; justify-content: flex-end; padding: 2px 6px; }
+.multi-file-buttons .mox-button { margin: 0px 2px; }
+
 .single-image-image-container { padding: 10px; margin: 10px 0; border: 1px solid #eee; border-radius: 5px; }

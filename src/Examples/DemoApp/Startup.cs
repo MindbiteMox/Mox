@@ -17,6 +17,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Mindbite.Mox.Reporting;
+using Mindbite.Mox.Images;
+using Mindbite.Mox.DemoApp.Areas.FormTest;
 
 namespace Mindbite.Mox.DemoApp
 {
@@ -59,6 +61,8 @@ namespace Mindbite.Mox.DemoApp
                 .AddDesignDemoMoxApp(this._webHostEnvironment, this.Configuration)
                 .AddMoxNotificationCenter(this._webHostEnvironment, this.Configuration)
                 //.AddMoxIdentityAzureADAuthentication(this.Configuration)
+                .AddMoxImages()
+                .AddTestFormApp()
                 .AddMoxReportingApp(this.Configuration)
                 .AddMoxIdentity<AppDbContext>(this._webHostEnvironment, this.Configuration);
 
@@ -116,6 +120,7 @@ namespace Mindbite.Mox.DemoApp
             app.UseDesignDemoStaticFiles(env, staticRoot);
             app.UseMoxIdentityStaticFiles(env, staticRoot);
             app.UseMoxNotificationCenterStaticFiles(env, staticRoot);
+            app.UseMoxImagesStaticFiles(env, staticRoot);
 
             app.UseRouting();
             app.UseCors();
@@ -140,9 +145,11 @@ namespace Mindbite.Mox.DemoApp
                 endpoints.MapMoxRoutes();
                 endpoints.MapDesignDemoRoutes();
                 endpoints.MapMoxIdentityRoutes();
+                endpoints.MapTestFormAppRoutes();
                 endpoints.MapMoxNotificationCenterRoutes();
                 endpoints.MapMoxIdentityAzureADRoutes();
                 endpoints.MapMoxReportingAppRoutes();
+                endpoints.MapMoxImagesRoutes();
                 endpoints.MapRedirectToMoxRoutes();
             });
 
