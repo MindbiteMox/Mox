@@ -7,10 +7,10 @@
     <TargetFramework>net5.0</TargetFramework>
     <OutputTypeEx>library</OutputTypeEx>
     <IsPackable>true</IsPackable>
-    <Version>5.1.1</Version>
+    <Version>5.1.16</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <FileVersion>5.1.1.0</FileVersion>
-    <AssemblyVersion>5.1.1.0</AssemblyVersion>
+    <FileVersion>5.1.16.0</FileVersion>
+    <AssemblyVersion>5.1.16.0</AssemblyVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>

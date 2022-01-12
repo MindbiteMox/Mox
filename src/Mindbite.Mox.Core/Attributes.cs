@@ -36,6 +36,7 @@ namespace Mindbite.Mox.Attributes
 
         public MoxRequiredAttribute(string errorMessage)
         {
+            this.ErrorMessage = errorMessage;
             this._errorMessage = ErrorMessage;
         }
 
@@ -62,7 +63,7 @@ namespace Mindbite.Mox.Attributes
         {
             var localizer = (IStringLocalizer)context.ActionContext.HttpContext.RequestServices.GetService(typeof(IStringLocalizer));
             var errorMessageField = typeof(MoxRequiredAttribute).GetField("_errorMessage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var errorMessage = (string)errorMessageField.GetValue(this);
+            var errorMessage = this.ErrorMessage ?? (string)errorMessageField.GetValue(this);
 
             AddAttribute(context.Attributes, "data-val", "true");
             var formattedErrorMessage = localizer[errorMessage, context.ModelMetadata.GetDisplayName()];
@@ -108,6 +109,7 @@ namespace Mindbite.Mox.Attributes
         {
             base.AddValidation(context);
             AddAttribute(context.Attributes, "data-val-requiredifequals-propertyname", this._propertyName);
+            AddAttribute(context.Attributes, "data-val-requiredifequals-value", this._value?.ToString() ?? "");
         }
 
         private object GetPropertyValue(Type type, object instance, string propertyName)
@@ -122,7 +124,7 @@ namespace Mindbite.Mox.Attributes
             var type = instance.GetType();
             var value = GetPropertyValue(type, instance, this._propertyName);
 
-            if (value != null && !value.Equals(this._value))
+            if (value == null || (value != null && this._value != null && !value.Equals(this._value)))
             {
                 return ValidationResult.Success;
             }
@@ -154,6 +156,8 @@ namespace Mindbite.Mox.Attributes
         {
             base.AddValidation(context);
             AddAttribute(context.Attributes, "data-val-requiredif-propertyname", this._propertyName);
+            AddAttribute(context.Attributes, "data-val-requiredif-and", this.And);
+            AddAttribute(context.Attributes, "data-val-requiredif-andnot", this.AndNot);
         }
 
         private bool EvaluateProperty(Type type, object instance, string propertyName)
@@ -379,7 +383,7 @@ namespace Mindbite.Mox.Attributes
         {
             static Type? getFormClass(Type? t)
             {
-                if (t == null || t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Mindbite.Mox.Core.Controllers.FormController<>) || t.GetGenericTypeDefinition() == typeof(Mindbite.Mox.Core.Controllers.FormController<,,>)))
+                if (t == null || t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Core.Controllers.FormController<>) || t.GetGenericTypeDefinition() == typeof(Core.Controllers.FormController<,,>)))
                 {
                     return t;
                 }
@@ -389,12 +393,18 @@ namespace Mindbite.Mox.Attributes
 
             var formClass = getFormClass(controllerType);
 
+            if (formClass == null)
+            {
+                throw new Exception($"No viewmodel could be found on controllertype {controllerType}");
+            }
+
             return formClass!.GenericTypeArguments.First();
         }
 
-        public async Task<IEnumerable<SelectListItem>> GetSelectListAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Type controllerType)
+        public async Task<IEnumerable<SelectListItem>> GetSelectListAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Type controllerType, Type? viewModelType = null)
         {
-            var viewModelType = GetViewModelType(controllerType);
+            viewModelType ??= GetViewModelType(controllerType);
+
             var method = viewModelType.GetMethod(this.SelectListFunctionName, BindingFlags.Static | BindingFlags.Public);
             if (method == null)
             {

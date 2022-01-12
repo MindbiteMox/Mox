@@ -160,7 +160,7 @@ var Mox;
                         var form = modal.contentContainer.querySelector('form');
                         if (form) {
                             form.addEventListener('submit', function (e) { return submitForm(form, e); });
-                            var firstInput = form.querySelector('input[type="text"], textarea, select');
+                            var firstInput = form.querySelector('input:not([type="hidden"]), textarea, select');
                             if (firstInput) {
                                 firstInput.focus();
                             }
@@ -391,6 +391,11 @@ var Mox;
                                     case 'checkbox':
                                         result[x.name] = x.checked;
                                         break;
+                                    case 'radio':
+                                        if (x.checked) {
+                                            result[x.name] = x.value;
+                                        }
+                                        break;
                                     default:
                                         result[x.name] = x.value;
                                         break;
@@ -459,6 +464,9 @@ var Mox;
                                                 switch (x.type) {
                                                     case 'checkbox':
                                                         x.checked = queryParams_1.get(x.name).toLowerCase() === 'true';
+                                                        break;
+                                                    case 'radio':
+                                                        x.checked = queryParams_1.get(x.name) === x.value;
                                                         break;
                                                     default:
                                                         x.value = queryParams_1.get(x.name);

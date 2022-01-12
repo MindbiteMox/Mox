@@ -296,7 +296,7 @@ function getFormData(form: HTMLFormElement, prefix: string) {
             for (let i = 0; i < (field as HTMLInputElement).files.length; i++) {
                 formData.append(name, (field as HTMLInputElement).files.item(i));
             }
-        } else if (field.tagName === 'INPUT' && field.type === 'checkbox') {
+        } else if (field.tagName === 'INPUT' && (field.type === 'checkbox' || field.type === 'radio')) {
             if ((field as HTMLInputElement).checked) {
                 formData.append(name, field.value);
             }

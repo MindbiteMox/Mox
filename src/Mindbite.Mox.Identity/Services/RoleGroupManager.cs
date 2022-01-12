@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Mindbite.Mox.Identity.Data.Models;
 using Mindbite.Mox.Identity.Services.RefreshLoginMiddleware;
 using Mindbite.Mox.Services;
@@ -20,10 +21,11 @@ namespace Mindbite.Mox.Identity.Services
         private readonly IUserRolesFetcher _rolesFetcher;
         private readonly RefreshLoginService _refreshLoginService;
         private readonly IUserStore<MoxUser> _userStore;
+        private readonly MoxIdentityOptions _options;
 
         public IQueryable<RoleGroup> RoleGroups => this._context.RoleGroups.Include(x => x.Roles);
 
-        public RoleGroupManager(IDbContextFetcher dbContextFetcher, IUserStore<MoxUser> userStore, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, RefreshLoginService refreshLoginService)
+        public RoleGroupManager(IDbContextFetcher dbContextFetcher, IUserStore<MoxUser> userStore, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, IUserRolesFetcher rolesFetcher, RefreshLoginService refreshLoginService, IOptions<MoxIdentityOptions> options)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userStore = userStore;
@@ -31,10 +33,16 @@ namespace Mindbite.Mox.Identity.Services
             this._roleManager = roleManager;
             this._rolesFetcher = rolesFetcher;
             this._refreshLoginService = refreshLoginService;
+            this._options = options.Value;
         }
 
         public async Task AssignToGroupAsync(MoxUser user, RoleGroup group)
         {
+            if (this._options.HandleUserRolesManually)
+            {
+                return;
+            }
+
             var roles = await this._userManager.GetRolesAsync(user);
             if (!roles.OrderBy(x => x).SequenceEqual(group.Roles.Select(x => x.Role).OrderBy(x => x)))
             {

@@ -77,9 +77,16 @@
                     {
                         <td class="buttons">
                             <ul class="buttons-list">
-                                @foreach (var button in Model.Buttons)
+                                @foreach (var button in Model.Buttons.Where(x => x.Show(row)))
                                 {
-                                    <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass" @(button.OpenInNewTab ? "target=\"_blank\"" : "") title="@button.Title">@(button.Text ?? Html.Raw("&nbsp;").ToString())</a></li>
+                                    @if (button.Renderer != null)
+                                    {
+                                        <li>@button.Renderer(row)</li>
+                                    }
+                                    else
+                                    {
+                                        <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass(row)" @(button.OpenInNewTab(row) ? "target=\"_blank\"" : "") title="@button.Title(row)">@(button.Text(row) ?? Html.Raw("&nbsp;"))</a></li>
+                                    }
                                 }
                             </ul>
                         </td>

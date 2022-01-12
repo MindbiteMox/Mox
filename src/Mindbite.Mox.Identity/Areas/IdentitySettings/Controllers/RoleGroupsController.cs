@@ -19,8 +19,8 @@ namespace Mindbite.Mox.Identity.Controllers
     public class RoleGroupsController : FormController<RoleGroup, int, int?>
     {
         public override string ModelTitleFieldName => nameof(ViewModels.RoleGroup.GroupName);
-        public override string IndexPageHeading => "Behörighetsgrupper";
-        public override string ModelDisplayName => "Grupp";
+        public override string IndexPageHeading => this._localizer["Behörighetsgrupper"];
+        public override string ModelDisplayName => this._localizer["Grupp"];
 
         private readonly Data.MoxIdentityDbContext _context;
         private readonly Services.RoleGroupManager _roleGroupManager;
@@ -50,7 +50,7 @@ namespace Mindbite.Mox.Identity.Controllers
                 .RowLink(x => Url.Action("Edit", new { x.Id }))
                 .Columns(columns =>
                 {
-                    columns.Add(x => x.GroupName).Title("Namn");
+                    columns.Add(x => x.GroupName).Title(this._localizer["Namn"]);
                 })
                 .Buttons(buttons =>
                 {

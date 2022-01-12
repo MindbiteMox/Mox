@@ -57,7 +57,7 @@
         {
             var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
             var dataSourceAttribute = field.GetCustomAttribute<MoxFormDataSourceAttribute>();
-            items = await dataSourceAttribute.GetSelectListAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+            items = await dataSourceAttribute.GetSelectListAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType(), ((object)Model).GetType());
             emptyMessage = await dataSourceAttribute.GetEmptyMessageAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
         }
         else if(!string.IsNullOrWhiteSpace(fieldTypeAttribute.DataSourcePropertyName))

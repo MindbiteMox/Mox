@@ -52,11 +52,13 @@ namespace Mindbite.Mox.UI
 
     public interface IDataTableButton
     {
-        string Title { get; }
-        string CssClass { get; }
+        string Title(object rowData);
+        string CssClass(object rowData);
         string GetAction(object rowData);
-        bool OpenInNewTab { get; }
-        string Text { get; }
+        bool OpenInNewTab(object rowData);
+        HtmlString? Text(object rowData);
+        bool Show(object rowData);
+        Func<object, HtmlString>? Renderer { get; }
     }
 
     public enum ColumnAlign
@@ -104,15 +106,20 @@ namespace Mindbite.Mox.UI
 
         public class DataTableButton : IDataTableButton
         {
-            private string _title;
-            private string _cssClass;
-            private bool _openInNewTab;
-            private string _text;
-            private Func<T, string> _actionFunc;
-            string IDataTableButton.Title => this._title;
-            string IDataTableButton.CssClass => this._cssClass;
-            bool IDataTableButton.OpenInNewTab => this._openInNewTab;
-            string IDataTableButton.Text => this._text;
+            private Func<T, string> _titleFunc = _ => "";
+            private Func<T, string> _cssClassFunc = _ => "";
+            private Func<T, bool> _openInNewTabFunc = _ => false;
+            private Func<T, HtmlString?> _textFunc = _ => null;
+            private Func<T, string> _actionFunc = _ => "";
+            private Func<T, bool> _showFunc = _ => true;
+            private Func<T, HtmlString>? _renderer;
+
+            string IDataTableButton.Title(object row) => this._titleFunc((T)row);
+            string IDataTableButton.CssClass(object row) => this._cssClassFunc((T)row);
+            bool IDataTableButton.OpenInNewTab(object row) => this._openInNewTabFunc((T)row);
+            HtmlString? IDataTableButton.Text(object row) => this._textFunc((T)row);
+            bool IDataTableButton.Show(object row) => this._showFunc((T)row);
+            Func<object, HtmlString>? IDataTableButton.Renderer => this._renderer == null ? null : o => this._renderer((T)o);
 
             public DataTableButton(Func<T, string> action)
             {
@@ -121,25 +128,73 @@ namespace Mindbite.Mox.UI
 
             public DataTableButton Title(string title)
             {
-                this._title = title;
+                this._titleFunc = _ => title;
+                return this;
+            }
+
+            public DataTableButton Title(Func<T, string> titleFunc)
+            {
+                this._titleFunc = titleFunc;
                 return this;
             }
 
             public DataTableButton CssClass(string cssClass)
             {
-                this._cssClass = cssClass;
+                this._cssClassFunc = _ => cssClass;
+                return this;
+            }
+
+            public DataTableButton CssClass(Func<T, string> cssClassFunc)
+            {
+                this._cssClassFunc = cssClassFunc;
                 return this;
             }
 
             public DataTableButton OpenInNewTab(bool newTab)
             {
-                this._openInNewTab = newTab;
+                this._openInNewTabFunc = _ => newTab;
+                return this;
+            }
+
+            public DataTableButton OpenInNewTab(Func<T, bool> newTabFunc)
+            {
+                this._openInNewTabFunc = newTabFunc;
                 return this;
             }
 
             public DataTableButton Text(string text)
             {
-                this._text = text;
+                this._textFunc = _ => new HtmlString(System.Web.HttpUtility.HtmlEncode(text));
+                return this;
+            }
+
+            public DataTableButton Text(HtmlString text)
+            {
+                this._textFunc = _ => text;
+                return this;
+            }
+
+            public DataTableButton Text(Func<T, HtmlString> textFunc)
+            {
+                this._textFunc = textFunc;
+                return this;
+            }
+
+            public DataTableButton Show(bool show)
+            {
+                this._showFunc = _ => show;
+                return this;
+            }
+
+            public DataTableButton Show(Func<T, bool> showFunc)
+            {
+                this._showFunc = showFunc;
+                return this;
+            }
+
+            public DataTableButton Render(Func<T, HtmlString> renderer)
+            {
+                this._renderer = renderer;
                 return this;
             }
 
@@ -311,9 +366,9 @@ namespace Mindbite.Mox.UI
                 object value = this._groupMemberFunc((T)o);
                 if(this._groupMemberRender != null)
                 {
-                    return this._groupMemberRender(value).Value;
+                    return this._groupMemberRender(value).Value ?? "";
                 }
-                return value.ToString();
+                return value?.ToString() ?? "";
             }
 
             internal QueryableDataTable()

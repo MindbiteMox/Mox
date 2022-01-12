@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Mindbite.Mox.Configuration;
@@ -43,7 +44,10 @@ namespace Mindbite.Mox.Controllers
             this.ViewData["ErrorCode"] = errorCode;
             this.ViewData["IsAuthenticated"] = User?.Identity?.IsAuthenticated ?? false;
 
-            var startsWithMoxPath = this.HttpContext.Request.Path.StartsWithSegments(new Microsoft.AspNetCore.Http.PathString($"/{this._moxConfig.Path.Trim('/')}"), StringComparison.OrdinalIgnoreCase);
+            var exception = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+            var statusCode = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+
+            var startsWithMoxPath = (exception?.Path ?? statusCode?.OriginalPath).StartsWith($"/{this._moxConfig.Path.Trim('/')}", StringComparison.OrdinalIgnoreCase);
             if (startsWithMoxPath)
             {
                 return View(viewName: "Error");

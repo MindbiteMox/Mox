@@ -152,12 +152,12 @@ namespace Mindbite.Mox.Core.Controllers
 
             if (ModelState.IsValid)
             {
-                await SaveViewModelAsync((NullableId_T)(object)_id, viewModel);
+                var newId = await SaveViewModelAsync((NullableId_T)(object)_id, viewModel);
 
                 var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
                 viewMessage.DisplayMessage(this.ModelUpdatedMessage);
 
-                return RedirectAfterSave(_id, viewModel);
+                return RedirectAfterSave(newId, viewModel);
             }
 
             await this.SetStaticViewModelData(viewModel);

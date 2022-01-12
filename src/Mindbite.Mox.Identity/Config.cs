@@ -64,6 +64,7 @@ namespace Mindbite.Mox.Identity
         public MagicLinkOptions MagicLink { get; set; } = new MagicLinkOptions();
         public List<string> AdditionalAllowedStaticFileLocations { get; set; } = new List<string>();
         public string AdministratorGroupName { get; set; } = "Administratör";
+        public bool HandleUserRolesManually { get; set; } = false;
     }
 
     public class SettingsOptions

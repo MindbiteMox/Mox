@@ -27,7 +27,10 @@ namespace Mindbite.Mox.Utils
                 switch(theObject)
                 {
                     case IDictionary<string, object> dictionary:
-                        result.Concat(dictionary);
+                        foreach (var pair in dictionary)
+                        {
+                            result.Add(pair);
+                        }
                         break;
                     default:
                         foreach (var fi in theObject.GetType().GetProperties())

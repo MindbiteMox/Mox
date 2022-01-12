@@ -162,7 +162,7 @@
                 if (form) {
                     form.addEventListener('submit', e => submitForm(form, e));
 
-                    const firstInput = form.querySelector('input[type="text"], textarea, select') as HTMLInputElement
+                    const firstInput = form.querySelector('input:not([type="hidden"]), textarea, select') as HTMLInputElement
                     if(firstInput) {
                         firstInput.focus();
                     }
@@ -379,13 +379,18 @@
                             case 'checkbox':
                                 result[x.name] = (x as HTMLInputElement).checked;
                                 break;
+                            case 'radio':
+                                if ((x as HTMLInputElement).checked) {
+                                    result[x.name] = x.value;
+                                }
+                                break;
                             default:
-                                result[x.name] = (x as HTMLInputElement).value;
+                                result[x.name] = x.value;
                                 break;
                         }
                         break;
                     case 'SELECT':
-                        result[x.name] = (x as HTMLSelectElement).value;
+                        result[x.name] = x.value;
                         break;
                     default:
                         throw new TypeError('Filter "' + x.name + '" is not an input or select');
@@ -447,6 +452,9 @@
                             switch (x.type) {
                                 case 'checkbox':
                                     (x as HTMLInputElement).checked = queryParams.get(x.name).toLowerCase() === 'true';
+                                    break;
+                                case 'radio':
+                                    (x as HTMLInputElement).checked = queryParams.get(x.name) === x.value;
                                     break;
                                 default:
                                     x.value = queryParams.get(x.name);

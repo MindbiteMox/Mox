@@ -16,8 +16,8 @@ namespace Mindbite.Mox.Images.Data
 {
     public interface IImagesDbContext : Core.Data.IDbContext
     {
-        DbSet<Image> AllImages { get; }
-        DbSet<File> AllFiles { get; }
+        DbSet<Image> AllImages { get; set; }
+        DbSet<File> AllFiles { get; set; }
     }
 
     public class ImageEntityTypeConfiguration : IEntityTypeConfiguration<Image>

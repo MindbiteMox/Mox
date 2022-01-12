@@ -131,6 +131,15 @@ namespace Mindbite.Mox.Extensions
 
             return attributes?.FirstOrDefault()?.Name ?? value.ToString();
         }
+
+        public static string GetShortName(this Enum value)
+        {
+            var field = value.GetType().GetField(value.ToString());
+
+            var displayAttribute = field.GetCustomAttribute<DisplayAttribute>(false);
+
+            return displayAttribute.ShortName;
+        }
     }
 
     public static partial class MoxExtensions

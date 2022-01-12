@@ -365,7 +365,7 @@ function getFormData(form, prefix) {
                 formData.append(name_1, field.files.item(i));
             }
         }
-        else if (field.tagName === 'INPUT' && field.type === 'checkbox') {
+        else if (field.tagName === 'INPUT' && (field.type === 'checkbox' || field.type === 'radio')) {
             if (field.checked) {
                 formData.append(name_1, field.value);
             }

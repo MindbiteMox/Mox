@@ -67,7 +67,20 @@ namespace Mindbite.Mox.Reporting.Services
 
             var data = new StringContent(JsonConvert.SerializeObject(dataDict), Encoding.UTF8, "application/json");
             var response = await this._client.PostAsync($"/webapi/v1/reports/export/pdf?sharedSecret={this._options.SharedSecret}", data);
-            response.EnsureSuccessStatusCode();
+
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch(HttpRequestException ex)
+            {
+                if(response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    throw new Exception($"Report with UID {reportUID} could not be found!", ex);
+                }
+
+                throw;
+            }
 
             return await response.Content.ReadAsByteArrayAsync();
         }
