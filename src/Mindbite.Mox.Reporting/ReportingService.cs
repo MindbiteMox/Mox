@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Mindbite.Mox.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,6 +23,7 @@ namespace Mindbite.Mox.Reporting.Services
             public string UID { get; set; }
             public string Name { get; set; }
             public string ReportPath { get; set; }
+            public string FilterArgument { get; set; }
             public bool ShowInList { get; set; }
         }
 
@@ -52,36 +55,50 @@ namespace Mindbite.Mox.Reporting.Services
             return JsonConvert.DeserializeObject<IEnumerable<Report>>(await response.Content.ReadAsStringAsync()) ?? Enumerable.Empty<Report>();
         }
 
+        [Obsolete("Use GenerateReportAsync")]
         public async Task<byte[]?> GeneratePDFReportAsync(string reportUID, params object[] parameters)
+        {
+            return await GenerateReportAsync(ReportFormat.PDF, reportUID, parameters);
+        }
+
+        public enum ReportFormat
+        {
+            [Display(Name = "PDF")]
+            PDF,
+            [Display(Name = "EXCEL")]
+            Excel,
+            [Display(Name = "WORD")]
+            Word,
+            [Display(Name = "HTML4.0")]
+            HTML,
+            [Display(Name = "IMAGE")]
+            Image,
+            [Display(Name = "CSV")]
+            CSV
+        }
+
+        public async Task<byte[]?> GenerateReportAsync(ReportFormat format, string reportUID, params object[] parameters)
         {
             var dataDict = new Dictionary<string, object>
             {
                 { "source", _options.ReportDirectory },
-                { "uid", reportUID }
+                { "uid", reportUID },
+                { "format", format.GetDescription() }
             };
 
-            for(var i = 0; i < (parameters?.Length ?? 0); i++)
+            for (var i = 0; i < (parameters?.Length ?? 0); i++)
             {
                 dataDict[$"P{i + 1}"] = parameters[i];
             }
 
             var data = new StringContent(JsonConvert.SerializeObject(dataDict), Encoding.UTF8, "application/json");
             var response = await this._client.PostAsync($"/webapi/v1/reports/export/pdf?sharedSecret={this._options.SharedSecret}", data);
-
-            try
+            if (!response.IsSuccessStatusCode)
             {
-                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error {(int)response.StatusCode} {response.StatusCode}\n" + content);
             }
-            catch(HttpRequestException ex)
-            {
-                if(response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    throw new Exception($"Report with UID {reportUID} could not be found!", ex);
-                }
-
-                throw;
-            }
-
+            
             return await response.Content.ReadAsByteArrayAsync();
         }
     }

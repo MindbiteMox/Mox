@@ -20,10 +20,16 @@
 {
     var reportParams = options.Value.GetReportParams(selectedReport, ViewContext.HttpContext);
     var reportParamsQueryString = string.Join("&", reportParams.Select((x, i) => $"p{i + 1}={Uri.EscapeUriString(x?.ToString() ?? "")}"));
-    <iframe style="width: 100%; height: calc(100vh - 80px); border: 0;" id="reportframe" src="@options.Value.ServerUrl.GetLeftPart(UriPartial.Authority)/ReportViewer.aspx?source=@options.Value.ReportDirectory&uid=@selectedReport&@reportParamsQueryString"></iframe>
+
+    var namedReportParams = options.Value.GetReportNamedParams(selectedReport, ViewContext.HttpContext);
+    var namedReportParamsQueryString = string.Join("&", namedReportParams.Select((x, i) => $"p{i + 100}={Uri.EscapeUriString(x.value?.ToString() ?? "")}&n{i + 100}={Uri.EscapeUriString(x.name)}"));
+
+    var fullParamsQueryString = string.Join("&", new[] { reportParamsQueryString, namedReportParamsQueryString }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+    <iframe style="width: 100%; height: calc(100vh - 80px); border: 0;" id="reportframe" src="@options.Value.ServerUrl.GetLeftPart(UriPartial.Authority)/ReportViewer.aspx?source=@options.Value.ReportDirectory&uid=@selectedReport.UID&@fullParamsQueryString"></iframe>
 }
-else
-{
+    else
+    {
     <p style="padding: 20px;">Välj en rapport till vänster</p>
 }
 

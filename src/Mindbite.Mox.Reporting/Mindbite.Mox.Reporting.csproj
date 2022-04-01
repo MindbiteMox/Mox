@@ -8,13 +8,13 @@
     <OutputTypeEx>library</OutputTypeEx>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
-    <Version>5.0.1</Version>
-    <AssemblyVersion>5.0.1.0</AssemblyVersion>
+    <Version>5.0.5</Version>
+    <AssemblyVersion>5.0.5.0</AssemblyVersion>
     <Nullable>enable</Nullable>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
-    <FileVersion>5.0.1.0</FileVersion>
+    <FileVersion>5.0.5.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
