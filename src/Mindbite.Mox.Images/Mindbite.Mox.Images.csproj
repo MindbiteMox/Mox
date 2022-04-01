@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup Label="Configuration">
     <OutputType>Library</OutputType>
@@ -9,17 +9,16 @@
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <AssemblyName>Mindbite.Mox.Images</AssemblyName>
     <RootNamespace>Mindbite.Mox.Images</RootNamespace>
-    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.1.1</Version>
+    <Version>5.1.2</Version>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <IsPackable>true</IsPackable>
-    <AssemblyVersion>5.1.1.0</AssemblyVersion>
-    <FileVersion>5.1.1.0</FileVersion>
+    <AssemblyVersion>5.1.2.0</AssemblyVersion>
+    <FileVersion>5.1.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

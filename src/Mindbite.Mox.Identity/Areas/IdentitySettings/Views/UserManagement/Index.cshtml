@@ -1,11 +1,18 @@
 ﻿@using Mindbite.Mox.Extensions
 @using Mindbite.Mox.UI
-@using Microsoft.Extensions.Localization;
+@using Microsoft.Extensions.Localization
+@using Microsoft.EntityFrameworkCore
+
+@inject Mindbite.Mox.Services.IDbContextFetcher dbContextFetcher
+@inject IStringLocalizer localizer
+
+@model Mindbite.Mox.UI.IDataTable
 @{
     Layout = "Mox/_Layout";
+    var dbContext = dbContextFetcher.FetchDbContext<Mindbite.Mox.Identity.Data.MoxIdentityDbContext>();
+
+    var roleGroups = await dbContext.RoleGroups.OrderBy(x => x.GroupName).Select(x => new SelectListItem(x.GroupName, x.Id.ToString())).ToListAsync();
 }
-@model Mindbite.Mox.UI.IDataTable
-@inject IStringLocalizer localizer
 
 @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = false }.ToExpando())
 
@@ -16,6 +23,9 @@
 <ul class="mox-filters">
     <li class="break">
         @Html.ActionLink(localizer["Skapa ny"], "Create", null, null, new { @class = "mox-button" })
+    </li>
+    <li>
+        @Html.DropDownList("RoleGroup", roleGroups, localizer["- Alla behörighetsgrupper -"])
     </li>
     <li>
         <input type="text" id="js-filter" name="filter" placeholder="@localizer["Sök på epost eller namn"]">
@@ -29,7 +39,7 @@
         Mox.UI.DataTable.create({
             container: document.getElementById('js-table'),
             url: '@Url.Action("Table")',
-            filters: ['js-filter']
+            filters: ['@Html.Id("RoleGroup")', 'js-filter']
         });
     });
 </script>

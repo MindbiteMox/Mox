@@ -118,6 +118,54 @@ namespace Mindbite.Mox.Images.Services
             return null;
         }
 
+        public async Task CreateMissingSizesAsync(Type t, Data.Models.Image image)
+        {
+            var sizes = this.GetSizes(t);
+
+            var missingSizes = sizes.Where(x =>
+            {
+                var filePath = image.FilePath(this._environment, x.Name);
+                return !File.Exists(filePath);
+            });
+
+            if (missingSizes.Any())
+            {
+                var originalPath = image.FilePath(this._environment, null);
+                var originalStream = new FileStream(originalPath, FileMode.Open);
+
+                await this.OptimizeImageAsync(t, image, originalStream, sizePredicate: size => missingSizes.Any(y => y.Name == size.Name));
+            }
+        }
+
+        public async Task CreateMissingSizesAsync<TImage>(TImage image) where TImage : Data.Models.Image
+        {
+            await CreateMissingSizesAsync(typeof(TImage), image);
+        }
+
+        public async Task DeleteDepricatedSizesAsync(Type t, Data.Models.Image image)
+        {
+            var sizes = this.GetSizes(t);
+
+            var wildcardFileName = Path.GetFileNameWithoutExtension(image.GetFileNameForSize(null)) + "*";
+            var directory = Path.GetDirectoryName(image.FilePath(this._environment, null));
+            var allSizeFilePaths = Directory.GetFiles(directory, wildcardFileName, SearchOption.TopDirectoryOnly);
+
+            var sizeFilePathsToKeep = sizes.Select(x => image.FilePath(this._environment, x.Name)).Append(image.FilePath(this._environment, null));
+            foreach(var file in allSizeFilePaths.Except(sizeFilePathsToKeep))
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch { }
+            }
+        }
+
+        public async Task DeleteDepricatedSizesAsync<TImage>(TImage image) where TImage : Data.Models.Image
+        {
+            await DeleteDepricatedSizesAsync(typeof(TImage), image);
+        }
+
         public async Task SaveFormImagesAsync<TImage>(ViewModels.EditorTemplates.MultiImage viewModel, IEnumerable<TImage> existingImages, Action<TImage>? setParams = null) where TImage : Data.Models.Image, new()
         {
             var imageUIDsToKeep = viewModel.Images.ToList();
@@ -209,14 +257,29 @@ namespace Mindbite.Mox.Images.Services
             return images;
         }
 
-        public async Task OptimizeImageAsync<T>(T image, Stream fileStream, int? frameIndex = null) where T : Data.Models.Image
+        public IEnumerable<ImageSizeAttribute> GetSizes(Type imageType)
         {
-            await OptimizeImageAsync(typeof(T), image, fileStream, frameIndex);
+            if (!imageType.IsAssignableTo(typeof(Data.Models.Image)))
+            {
+                throw new ArgumentException($"imageType must be of type {typeof(Data.Models.Image).FullName}");
+            }
+
+            return imageType.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
         }
 
-        public async Task OptimizeImageAsync(Type t, Data.Models.Image image, Stream fileStream, int? frameIndex = null)
+        public IEnumerable<ImageSizeAttribute> GetSizes<TImage>() where TImage : Data.Models.Image
         {
-            var sizes = t.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
+            return GetSizes(typeof(TImage));
+        }
+
+        public async Task OptimizeImageAsync<T>(T image, Stream fileStream, int? frameIndex = null, Func<ImageSizeAttribute, bool>? sizePredicate = null) where T : Data.Models.Image
+        {
+            await OptimizeImageAsync(typeof(T), image, fileStream, frameIndex, sizePredicate);
+        }
+
+        public async Task OptimizeImageAsync(Type t, Data.Models.Image image, Stream fileStream, int? frameIndex = null, Func<ImageSizeAttribute, bool>? sizePredicate = null)
+        {
+            var sizes = this.GetSizes(t);
 
             var originalFilePath = image.FilePath(this._environment, null);
             var originalFileDirectoryPath = Path.GetDirectoryName(originalFilePath) ?? string.Empty;
@@ -233,6 +296,11 @@ namespace Mindbite.Mox.Images.Services
 
             foreach (var size in sizes)
             {
+                if(sizePredicate != null && !sizePredicate(size))
+                {
+                    continue;
+                }
+
                 var sizeFilePath = image.FilePath(this._environment, size.Name);
 
                 var magicImage = new ImageMagick.MagickImage();

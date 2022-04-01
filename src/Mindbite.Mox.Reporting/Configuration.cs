@@ -15,6 +15,10 @@ namespace Mindbite.Mox.Reporting
         public Uri ServerUrl { get; set; }
         public string SharedSecret { get; set; }
         public Func<Services.ReportingService.Report, Microsoft.AspNetCore.Http.HttpContext, bool> FilterReportingAppList { get; set; } = (x, y) => x.ShowInList;
+        /// <summary>
+        /// Parameters will be forwarded to the reportviewer. Parameter names are formatted with $"p{index + 1}"
+        /// </summary>
+        public Func<Services.ReportingService.Report, Microsoft.AspNetCore.Http.HttpContext, IEnumerable<object>> GetReportParams => (x, y) => Enumerable.Empty<object>();
         public bool EnableAuthorization { get; set; }
         public int AuthorizationTimeoutInMinutes { get; set; } = 5;
         public Func<Microsoft.AspNetCore.Http.HttpContext, bool> AuthorizeUser { get; set; } = (x) => true;

@@ -6,18 +6,21 @@
 @{
     Layout = "Mox/_Layout";
 
-    var selectedReport = ViewContext.HttpContext.Request.Query["reportUID"].ToString();
-
     var reports = await reportingService.AllReportsAsync();
+
+    var selectedReportUID = ViewContext.HttpContext.Request.Query["reportUID"].ToString();
+    var selectedReport = reports.Where(x => options.Value.FilterReportingAppList(x, ViewContext.HttpContext)).FirstOrDefault(x => x.UID == selectedReportUID);
 }
 
 <style>
     .mox-content { padding: 0 }
 </style>
 
-@if(!string.IsNullOrWhiteSpace(selectedReport))
+@if(selectedReport != null)
 {
-    <iframe style="width: 100%; height: calc(100vh - 80px); border: 0;" id="reportframe" src="@options.Value.ServerUrl.GetLeftPart(UriPartial.Authority)/ReportViewer.aspx?source=@options.Value.ReportDirectory&uid=@selectedReport"></iframe>
+    var reportParams = options.Value.GetReportParams(selectedReport, ViewContext.HttpContext);
+    var reportParamsQueryString = string.Join("&", reportParams.Select((x, i) => $"p{i + 1}={Uri.EscapeUriString(x?.ToString() ?? "")}"));
+    <iframe style="width: 100%; height: calc(100vh - 80px); border: 0;" id="reportframe" src="@options.Value.ServerUrl.GetLeftPart(UriPartial.Authority)/ReportViewer.aspx?source=@options.Value.ReportDirectory&uid=@selectedReport&@reportParamsQueryString"></iframe>
 }
 else
 {
@@ -30,7 +33,7 @@ else
         <ul class="mox-menu">
             @foreach(var report in reports.Where(x => options.Value.FilterReportingAppList(x, ViewContext.HttpContext)).OrderBy(x => x.Name))
             {
-                <li><a class="@(report.UID.Equals(selectedReport, StringComparison.OrdinalIgnoreCase) ? "selected" : "")" href="?reportUID=@report.UID">@report.Name</a></li>
+                <li><a class="@(report.UID.Equals(selectedReportUID, StringComparison.OrdinalIgnoreCase) ? "selected" : "")" href="?reportUID=@report.UID">@report.Name</a></li>
             }
         </ul>
     </div>

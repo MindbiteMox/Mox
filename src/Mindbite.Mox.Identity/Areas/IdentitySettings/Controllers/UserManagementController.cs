@@ -57,7 +57,7 @@ namespace Mindbite.Mox.Identity.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Table(DataTableSort sort, string filter)
+        public async Task<IActionResult> Table(DataTableSort sort, string filter, int? roleGroup)
         {
             if (this._identityOptions.UsersTable != null)
             {
@@ -70,6 +70,11 @@ namespace Mindbite.Mox.Identity.Controllers
             {
                 var normalizedFilter = filter.ToLower();
                 dataSource = dataSource.Where(x => x.Email.ToLower().Contains(normalizedFilter) || x.Name.ToLower().Contains(normalizedFilter));
+            }
+
+            if(roleGroup != null)
+            {
+                dataSource = dataSource.Where(x => x.RoleGroupId == roleGroup);
             }
 
             var dataTable = DataTableBuilder
