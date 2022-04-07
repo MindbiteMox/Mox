@@ -55,7 +55,6 @@ namespace Mindbite.Mox.Reporting.Services
             return JsonConvert.DeserializeObject<IEnumerable<Report>>(await response.Content.ReadAsStringAsync()) ?? Enumerable.Empty<Report>();
         }
 
-        [Obsolete("Use GenerateReportAsync")]
         public async Task<byte[]?> GeneratePDFReportAsync(string reportUID, params object[] parameters)
         {
             return await GenerateReportAsync(ReportFormat.PDF, reportUID, parameters);
