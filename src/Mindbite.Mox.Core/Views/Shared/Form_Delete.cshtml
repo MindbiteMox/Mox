@@ -35,7 +35,7 @@
         <fieldset>
             <p>
                 <input type="submit" value="@localizer["Ta bort"]" />
-                @Html.ActionLink("Avbryt", "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "cancel" })
+                @Html.ActionLink(localizer["Avbryt"], "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "cancel" })
             </p>
         </fieldset>
     }
@@ -47,6 +47,6 @@ else
         @ViewData["CanDeleteErrorMessage"]
     </p>
     <fieldset>
-        @Html.ActionLink("Tillbaka", "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "mox-button" })
+        @Html.ActionLink(localizer["Tillbaka"], "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "mox-button" })
     </fieldset>
 }

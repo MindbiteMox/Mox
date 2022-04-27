@@ -1,4 +1,8 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizer localizer
+
 @{
     Layout = (string)ViewData["Layout"];
 }
@@ -29,7 +33,7 @@
 
     <fieldset class="buttons">
         <p>
-            <input type="submit" value="Spara ändringar" />
+            <input type="submit" value="@localizer["Spara ändringar"]" />
         </p>
     </fieldset>
 }

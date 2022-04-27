@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Mindbite.Mox.UI;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,13 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual bool RenderDefaultDeleteHeader => true;
         public virtual bool CanCreate => true;
         public abstract string IndexPageHeading { get; }
-        public virtual string EditPageHeading(ViewModel_T viewModel) => typeof(ViewModel_T).GetProperty(this.ModelTitleFieldName).GetValue(viewModel)?.ToString() ?? $"Redigera {this.ModelDisplayName}";
+        public virtual string EditPageHeading(ViewModel_T viewModel)
+        {
+            var localizer = HttpContext.RequestServices.GetRequiredService<IStringLocalizer>();
+
+            return typeof(ViewModel_T).GetProperty(this.ModelTitleFieldName).GetValue(viewModel)?.ToString() ?? localizer["Redigera {0}", localizer[this.ModelDisplayName]];
+        }
+
         public virtual FormControllerRedirectTarget RedirectAfterSaveTarget => FormControllerRedirectTarget.Index;
         public virtual RedirectToActionResult RedirectAfterSave(Id_T id, ViewModel_T viewModel)
         {
@@ -57,10 +64,11 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual Task InitViewDataAsync(string actionName, ViewModel_T viewModel)
         {
             var modelDisplayAttribute = typeof(ViewModel_T).GetCustomAttributes(typeof(DisplayAttribute)).FirstOrDefault() as DisplayAttribute;
+            var localizer = HttpContext.RequestServices.GetRequiredService<IStringLocalizer>();
 
             ViewData[nameof(Layout)] = this.Layout;
-            ViewData[nameof(IndexPageHeading)] = this.IndexPageHeading;
-            ViewData[nameof(ModelDisplayName)] = this.ModelDisplayName ?? modelDisplayAttribute?.GetName();
+            ViewData[nameof(IndexPageHeading)] = localizer[this.IndexPageHeading];
+            ViewData[nameof(ModelDisplayName)] = localizer[this.ModelDisplayName ?? modelDisplayAttribute?.GetName() ?? ""];
             ViewData[nameof(EditPageHeading)] = viewModel != null ? this.EditPageHeading(viewModel) : string.Empty;
             ViewData[nameof(ModelTitleFieldName)] = this.ModelTitleFieldName;
             ViewData[nameof(RedirectToIndexRouteValues)] = viewModel != null ? this.RedirectToIndexRouteValues(viewModel) : new object();
@@ -168,6 +176,8 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpGet]
         public virtual async Task<IActionResult> Delete(Id_T id)
         {
+            var localizer = HttpContext.RequestServices.GetRequiredService<IStringLocalizer>();
+
             var _id = this.GetId != null ? this.GetId() : id;
 
             var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
@@ -177,7 +187,7 @@ namespace Mindbite.Mox.Core.Controllers
             var (canDelete, errorMessage) = await this.CanDeleteAsync(_id, viewModel);
 
             ViewData["CanDelete"] = canDelete;
-            ViewData["CanDeleteErrorMessage"] = errorMessage;
+            ViewData["CanDeleteErrorMessage"] = localizer[errorMessage ?? ""];
 
             return View("Form_Delete", viewModel);
         }

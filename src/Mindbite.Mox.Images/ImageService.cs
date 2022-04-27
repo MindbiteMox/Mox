@@ -99,6 +99,8 @@ namespace Mindbite.Mox.Images.Services
 
                 Utils.Dynamics.SetPropertyValue(model, getExistingImage, theImage);
 
+                this._context.Update(model);
+
                 await this._context.SaveChangesAsync();
 
                 return theImage;
@@ -111,6 +113,8 @@ namespace Mindbite.Mox.Images.Services
                 }
 
                 Utils.Dynamics.SetPropertyValue(model, getExistingImage, null);
+
+                this._context.Update(model);
 
                 await this._context.SaveChangesAsync();
             }

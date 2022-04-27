@@ -1,4 +1,8 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizer localizer
+
 @{
     Layout = (string)ViewData["Layout"];
 
@@ -20,7 +24,7 @@
             <li class="break">
                 @if (canCreate)
                 {
-                    @Html.ActionLink($"Skapa {ViewData["ModelDisplayName"]?.ToString().ToLower()}", "Create", null, ViewContext.RouteData.Values, new { @class = "mox-button" })
+                    @Html.ActionLink(localizer["Skapa {0}", ViewData["ModelDisplayName"]?.ToString().ToLower()], "Create", null, ViewContext.RouteData.Values, new { @class = "mox-button" })
                 }
             </li>
             @await Html.PartialAsync("_Form_Filters")

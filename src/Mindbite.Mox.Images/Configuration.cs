@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Mindbite.Mox.Extensions;
+using Mindbite.Mox.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,6 +47,11 @@ namespace Mindbite.Mox.Images
                 c.Files.Add(Mox.Configuration.StaticIncludes.StaticFile.Style("mox/static/images/css/images.css"));
             });
 
+            mvc.Services.Configure<LocalizationSources>(options =>
+            {
+                options.ResouceTypes.Add(typeof(Localization));
+            });
+
             return mvc;
         }
 
@@ -59,4 +65,6 @@ namespace Mindbite.Mox.Images
             app.AddStaticFileFileProvider(typeof(Configuration), webHostEnvironment, requestPath);
         }
     }
+
+    public class Localization { }
 }

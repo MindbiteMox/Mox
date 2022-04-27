@@ -1,8 +1,10 @@
 ﻿@using Microsoft.EntityFrameworkCore
 @using Mindbite.Mox.Images
 @using Mindbite.Mox.Images.Attributes
+@using Microsoft.Extensions.Localization
 
 @inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
+@inject IStringLocalizer localizer
 
 @model Mindbite.Mox.Images.ViewModels.EditorTemplates.MultiImage
 @{
@@ -38,30 +40,30 @@
                     <img src="@images[i].DefaultSizeFileUrl" class="multi-image-image" />
                 </span>
                 <span class="multi-image-buttons">
-                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i], -1))"><i class="mox-icon arrow-left"></i></button>
-                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i],  1))"><i class="mox-icon arrow-right"></i></button>
-                    <button type="button" class="mox-button" onclick="@(onRemoveClicked(Model.Images[i]))"><i class="mox-icon trash"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i], -1))" title="@localizer["Flytta upp"]"><i class="mox-icon arrow-left"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Images[i],  1))" title="@localizer["Flytta ner"]"><i class="mox-icon arrow-right"></i></button>
+                    <button type="button" class="mox-button" onclick="@(onRemoveClicked(Model.Images[i]))" title="@localizer["Ta bort"]"><i class="mox-icon trash"></i></button>
                 </span>
             </li>
         }
         <li class="multi-image-item">
             <label class="multi-image-label" for="@Html.IdFor(x => x.Upload)">
                 <span>
-                    Välj bild(er)
+                    @localizer["Välj bild(er)"]
                     @if(maxSize != null)
                     {
                         <br />
                         if(maxSize.Width > 0 && maxSize.Height > 0)
                         {
-                            <span class="multi-image-size-label">Minst @(maxSize.Width)x@(maxSize.Height)px</span>
+                            <span class="multi-image-size-label">@localizer["Minst {0}x{1}px", maxSize.Width, maxSize.Height]</span>
                         }
                         else if(maxSize.Width > 0)
                         {
-                            <span class="multi-image-size-label">Minst @(maxSize.Width)px bred</span>
+                            <span class="multi-image-size-label">@localizer["Minst {0}px bred", maxSize.Width]</span>
                         }
                         else if(maxSize.Height > 0)
                         {
-                            <span class="multi-image-size-label">Minst @(maxSize.Height)px hög</span>
+                            <span class="multi-image-size-label">@localizer["Minst {0}px hög", maxSize.Height]</span>
                         }
                     }
                 </span>

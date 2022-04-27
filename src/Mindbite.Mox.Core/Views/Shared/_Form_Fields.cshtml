@@ -1,6 +1,10 @@
 ﻿@using System.Reflection;
 @using Mindbite.Mox.Attributes;
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizer localizer
+
 @{
     var modelType = ((object)Model).GetType();
     var formFields = modelType.GetProperties();
@@ -31,7 +35,7 @@
         currentFieldSet = fieldSetAttribute?.Name;
         @Html.Raw("</fieldset>")
         @Html.Raw("<fieldset>")
-        <legend>@currentFieldSet</legend>
+        <legend>@localizer[currentFieldSet]</legend>
     }
 
     if (excludedFields.Contains(field))
@@ -85,7 +89,7 @@
                 <p>
                     @Html.Label(field.Name)
                     @Html.ValidationMessage(field.Name)
-                    @Html.DropDownList(field.Name, items, emptyMessage)
+                    @Html.DropDownList(field.Name, items, localizer[emptyMessage ?? ""])
                 </p>
                 break;
             case Render.CheckBoxList:

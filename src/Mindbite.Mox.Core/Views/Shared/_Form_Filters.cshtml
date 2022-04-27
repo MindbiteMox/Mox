@@ -1,4 +1,8 @@
-﻿@{
+﻿@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizer localizer
+
+@{
     var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
     var filters = Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetFilters(actionDescriptor.ControllerTypeInfo.AsType());
 }
@@ -13,10 +17,10 @@
                 switch (filter.Type)
                 {
                     case Mindbite.Mox.Attributes.MoxFormFilterType.Text:
-                        @Html.TextBox(filter.Name, null, new { placeholder = filter.Placeholder })
+                        @Html.TextBox(filter.Name, null, new { placeholder = localizer[filter.Placeholder] })
                         break;
                     case Mindbite.Mox.Attributes.MoxFormFilterType.Dropdown:
-                        @Html.DropDownList(filter.Name, selectList, filter.Placeholder)
+                        @Html.DropDownList(filter.Name, selectList, localizer[filter.Placeholder])
                         break;
                 }
             }

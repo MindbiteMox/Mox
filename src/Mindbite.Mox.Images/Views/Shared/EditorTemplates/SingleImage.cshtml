@@ -1,7 +1,9 @@
 ﻿@using Mindbite.Mox.Images
 @using Mindbite.Mox.Images.Attributes
+@using Microsoft.Extensions.Localization
 
 @inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
+@inject IStringLocalizer localizer
 
 @model Mindbite.Mox.Images.ViewModels.EditorTemplates.SingleImage
 @{
@@ -16,18 +18,17 @@
     {
         if (maxSize.Width > 0 && maxSize.Height > 0)
         {
-            maxSizeText = $"(Minst {maxSize.Width}x{maxSize.Height}px)";
+            maxSizeText = localizer["(Minst {0}x{1}px)", maxSize.Width, maxSize.Height];
         }
         else if (maxSize.Width > 0)
         {
-            maxSizeText = $"(Minst {maxSize.Width}px bred)";
+            maxSizeText = localizer["(Minst {0}px bred)", maxSize.Width];
         }
         else if (maxSize.Height > 0)
         {
-            maxSizeText = $"(Minst {maxSize.Height}px hög)";
+            maxSizeText = localizer["(Minst {0}px hög)", maxSize.Height];
         }
     }
-
 }
 
 @Html.HiddenFor(x => x.ImageTypeFullName)
@@ -39,11 +40,11 @@
 
     <div class="single-image-image-container hidden-if-checked">
         <img src="@Model.Url" width="400" />
-        <label for="@Html.IdFor(x => x.Delete)" class="mox-button">Ta bort bild</label>
+        <label for="@Html.IdFor(x => x.Delete)" class="mox-button">@localizer["Ta bort bild"]</label>
     </div>
 
     <div class="hidden-if-not-checked" style="margin-bottom: 30px;">
-        <label for="@Html.IdFor(x => x.Delete)" class="mox-button">Ta inte bort bild</label>
+        <label for="@Html.IdFor(x => x.Delete)" class="mox-button">@localizer["Ta inte bort bild"]</label>
     </div>
 }
 
