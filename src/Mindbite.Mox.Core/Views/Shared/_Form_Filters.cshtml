@@ -17,10 +17,10 @@
                 switch (filter.Type)
                 {
                     case Mindbite.Mox.Attributes.MoxFormFilterType.Text:
-                        @Html.TextBox(filter.Name, null, new { placeholder = localizer[filter.Placeholder] })
+                        @Html.TextBox(filter.Name, null, new { placeholder = filter.Placeholder != null ? localizer[filter.Placeholder] : null })
                         break;
                     case Mindbite.Mox.Attributes.MoxFormFilterType.Dropdown:
-                        @Html.DropDownList(filter.Name, selectList, localizer[filter.Placeholder])
+                        @Html.DropDownList(filter.Name, selectList, filter.Placeholder != null ? localizer[filter.Placeholder] : null)
                         break;
                 }
             }

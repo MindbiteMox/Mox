@@ -25,6 +25,7 @@ namespace Mindbite.Mox.Images.Areas.Controllers
             ModelState.Clear();
             ViewData.TemplateInfo.HtmlFieldPrefix = prefix;
 
+            var errors = new List<string>();
             var fileUIDs = viewModel.Files.ToList();
 
             foreach (var file in viewModel.Upload ?? Array.Empty<IFormFile>())
@@ -33,9 +34,17 @@ namespace Mindbite.Mox.Images.Areas.Controllers
 
                 var uploadedFile = await this._fileService.UploadFileAsync(type, file);
 
-                fileUIDs.Add(uploadedFile.UID);
+                if(uploadedFile.File != null)
+                {
+                    fileUIDs.Add(uploadedFile.File.UID);
+                }
+                else
+                {
+                    errors.Add(uploadedFile.ErrorMessage!);
+                }
             }
 
+            ViewData["Errors"] = errors.AsEnumerable();
             viewModel.Files = fileUIDs.ToArray();
 
             return View("EditorTemplates/MultiFile", viewModel);

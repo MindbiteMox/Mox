@@ -24,6 +24,7 @@ using Mindbite.Mox.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Mindbite.Mox.Identity
 {
@@ -58,7 +59,7 @@ namespace Mindbite.Mox.Identity
 
         public BackdoorOptions Backdoor { get; set; }
         public Type DefaultUserType { get; set; }
-        public Func<ActionContext, UI.DataTableSort, string, Task<UI.IDataTable>> UsersTable { get; set; }
+        public Func<ActionContext, UI.DataTableSort, string, int?, Task<UI.IDataTable>> UsersTable { get; set; }
         public List<Configuration.StaticIncludes.StaticFile> LoginStaticFiles { get; set; } = new List<Configuration.StaticIncludes.StaticFile>();
         public Hooks HookTypes { get; set; } = new Hooks();
         public MagicLinkOptions MagicLink { get; set; } = new MagicLinkOptions();
@@ -71,14 +72,14 @@ namespace Mindbite.Mox.Identity
     {
         internal interface ISettingsExtension
         {
-            Task Save(string userId, object viewModel);
+            Task Save(string userId, object viewModel, ModelStateDictionary modelState);
             Task<object> GetViewModel(string userId);
             Task<object> TryUpdateModel(Func<object, Type, Task<bool>> tryUpdateModel);
         }
 
         public abstract class SettingsExtension<T> : ISettingsExtension where T : class, new()
         {
-            public abstract Task Save(string userId, object viewModel);
+            public abstract Task Save(string userId, object viewModel, ModelStateDictionary modelState);
             public abstract Task<object> GetViewModel(string userId);
             public async Task<object> TryUpdateModel(Func<object, Type, Task<bool>> tryUpdateModel)
             {

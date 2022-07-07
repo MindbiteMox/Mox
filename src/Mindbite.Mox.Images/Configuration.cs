@@ -14,6 +14,12 @@ using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Images
 {
+    public class MoxImageOptions
+    {
+        public Func<Type, Microsoft.AspNetCore.Http.IFormFile, MemoryStream, string?>? AllowUpload { get; set; }
+        public Func<Type, string?>? FormInputAccept { get; set; }
+    }
+
     public static class Configuration
     {
         public const string MainArea = "MoxImages";
@@ -50,6 +56,10 @@ namespace Mindbite.Mox.Images
             mvc.Services.Configure<LocalizationSources>(options =>
             {
                 options.ResouceTypes.Add(typeof(Localization));
+            });
+
+            mvc.Services.Configure<MoxImageOptions>(options =>
+            {
             });
 
             return mvc;

@@ -5,6 +5,7 @@
 
 @inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
 @inject IStringLocalizer localizer
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Images.MoxImageOptions> options
 
 @model Mindbite.Mox.Images.ViewModels.EditorTemplates.MultiFile
 @{
@@ -23,11 +24,15 @@
 
     string removeUrl(Guid id) => Url.Action("Remove", "Files", new { id, Area = Mindbite.Mox.Images.Configuration.MainArea });
     string onRemoveClicked(Guid id) => $"Mox.Images.updateMulti('{removeUrl(id)}', this.form, Mox.Utils.DOM.closest(this, '.multi-file-container').parentElement, '{prefix}');";
+
+    var accept = options.Value.FormInputAccept?.Invoke(context.GetEntityType(Model));
+
+    var errors = ViewData["Errors"] as IEnumerable<string>;
 }
 
 <div class="multi-file-container">
     @Html.HiddenFor(x => x.FileTypeFullName)
-    @if(files.Any())
+    @if (files.Any())
     {
         <ul class="multi-file-list">
             @for (var i = 0; i < files.Count; i++)
@@ -50,6 +55,16 @@
         <span>
             @localizer["Välj fil(er)"]
         </span>
-        <input type="file" class="multi-file-input" multiple name="@Html.NameFor(x => x.Upload)" id="@Html.IdFor(x => x.Upload)" onchange="@onUploadChange" />
+        <input type="file" class="multi-file-input" multiple name="@Html.NameFor(x => x.Upload)" id="@Html.IdFor(x => x.Upload)" onchange="@onUploadChange" accept="@accept" />
     </label>
+
+    @if (errors?.Any() ?? false)
+    {
+        <p>
+            @foreach (var error in errors ?? Enumerable.Empty<string>())
+            {
+                <span class="field-validation-error">@error</span>
+            }
+        </p>
+    }
 </div>

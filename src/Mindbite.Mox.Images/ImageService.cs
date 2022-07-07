@@ -14,13 +14,23 @@ namespace Mindbite.Mox.Images.Services
 {
     public class ImageService
     {
+        public class UploadResult<T> where T : Data.Models.Image
+        {
+            public IFormFile FormFile { get; set; }
+            public T? File { get; set; }
+            public string? ErrorMessage { get; set; }
+            public int PageIndex { get; set; }
+        }
+
         private readonly Data.IImagesDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly MoxImageOptions _options;
 
-        public ImageService(IDbContextFetcher dbContextFetcher, IWebHostEnvironment environment)
+        public ImageService(IDbContextFetcher dbContextFetcher, IWebHostEnvironment environment, Microsoft.Extensions.Options.IOptions<MoxImageOptions> options)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.IImagesDbContext>();
             this._environment = environment;
+            this._options = options.Value;
         }
 
         public static bool IsVector(string fileName)
@@ -52,7 +62,7 @@ namespace Mindbite.Mox.Images.Services
             };
         }
 
-        public async Task<T?> SaveFormImageAsync<T>(ViewModels.EditorTemplates.SingleImage viewModel, IEnumerable<T> existingImages, Action<T>? setParams = null) where T : Data.Models.Image, new()
+        public async Task<UploadResult<T>?> SaveFormImageAsync<T>(ViewModels.EditorTemplates.SingleImage viewModel, IEnumerable<T> existingImages, Action<T>? setParams = null) where T : Data.Models.Image, new()
         {
             if (viewModel.File != null)
             {
@@ -61,6 +71,10 @@ namespace Mindbite.Mox.Images.Services
                     var existingImagesCopy = existingImages.ToList();
 
                     var theImage = (await this.UploadImageAsync(viewModel.File, (T x) => setParams?.Invoke(x))).First();
+                    if(theImage.File == null)
+                    {
+                        return theImage;
+                    }
 
                     foreach (var image in existingImagesCopy)
                     {
@@ -70,7 +84,14 @@ namespace Mindbite.Mox.Images.Services
 
                     return theImage;
                 }
-                catch { }
+                catch 
+                {
+                    return new UploadResult<T>
+                    {
+                        FormFile = viewModel.File,
+                        ErrorMessage = "Bilden kunde inte laddas upp, kontrollera filen"
+                    };
+                }
             }
             else if (viewModel.Delete)
             {
@@ -84,20 +105,24 @@ namespace Mindbite.Mox.Images.Services
             return null;
         }
 
-        public async Task<TImage?> SaveFormImageAsync<TModel, TImage>(ViewModels.EditorTemplates.SingleImage viewModel, TModel model, Expression<Func<TModel, TImage?>> getExistingImage, Action<TImage>? setParams = null) where TImage : Data.Models.Image, new()
+        public async Task<UploadResult<TImage>?> SaveFormImageAsync<TModel, TImage>(ViewModels.EditorTemplates.SingleImage viewModel, TModel model, Expression<Func<TModel, TImage?>> getExistingImage, Action<TImage>? setParams = null) where TImage : Data.Models.Image, new()
         {
             var compiledGetExistingImage = getExistingImage.Compile();
 
             if (viewModel.File != null)
             {
                 var theImage = (await this.UploadImageAsync(viewModel.File, (TImage x) => setParams?.Invoke(x))).First();
+                if(theImage.File == null)
+                {
+                    return theImage;
+                }
 
                 if (compiledGetExistingImage(model) != null)
                 {
                     this._context.Remove(compiledGetExistingImage(model));
                 }
 
-                Utils.Dynamics.SetPropertyValue(model, getExistingImage, theImage);
+                Utils.Dynamics.SetPropertyValue(model, getExistingImage, theImage.File);
 
                 this._context.Update(model);
 
@@ -170,22 +195,28 @@ namespace Mindbite.Mox.Images.Services
             await DeleteDepricatedSizesAsync(typeof(TImage), image);
         }
 
-        public async Task SaveFormImagesAsync<TImage>(ViewModels.EditorTemplates.MultiImage viewModel, IEnumerable<TImage> existingImages, Action<TImage>? setParams = null) where TImage : Data.Models.Image, new()
+        public async Task<IEnumerable<UploadResult<TImage>>> SaveFormImagesAsync<TImage>(ViewModels.EditorTemplates.MultiImage viewModel, IEnumerable<TImage> existingImages, Action<TImage>? setParams = null) where TImage : Data.Models.Image, new()
         {
             var imageUIDsToKeep = viewModel.Images.ToList();
+            var uploadResults = new List<UploadResult<TImage>>();
 
             var uploadSort = 1000;
             foreach (var file in viewModel.Upload ?? Array.Empty<IFormFile>())
             {
-                var uploadedImages = await this.UploadImageAsync(typeof(TImage), file, x =>
+                var uploadedImages = await this.UploadImageAsync<TImage>(file, x =>
                 {
                     x.Sort = uploadSort++;
-                    setParams?.Invoke((TImage)x);
+                    setParams?.Invoke(x);
                 });
 
                 foreach (var uploadedImage in uploadedImages)
                 {
-                    imageUIDsToKeep.Add(uploadedImage.UID);
+                    if(uploadedImage.File != null)
+                    {
+                        imageUIDsToKeep.Add(uploadedImage.File.UID);
+                    }
+
+                    uploadResults.Add(uploadedImage);
                 }
             }
 
@@ -210,22 +241,44 @@ namespace Mindbite.Mox.Images.Services
             }
 
             await this._context.SaveChangesAsync();
+
+            return uploadResults;
         }
 
-        public async Task<IEnumerable<T>> UploadImageAsync<T>(IFormFile file, Action<T>? setParams = null) where T : Data.Models.Image, new()
+        public async Task<IEnumerable<UploadResult<T>>> UploadImageAsync<T>(IFormFile file, Action<T>? setParams = null) where T : Data.Models.Image, new()
         {
-            return (await UploadImageAsync(typeof(T), file, x => setParams?.Invoke((T)x))).Cast<T>();
+            var result = await UploadImageAsync(typeof(T), file, x => setParams?.Invoke((T)x));
+            return result.Select(x => new UploadResult<T>
+            {
+                File = (T?)x.File,
+                ErrorMessage = x.ErrorMessage,
+                FormFile = x.FormFile,
+                PageIndex = x.PageIndex
+            });
         }
 
-        public async Task<IEnumerable<Data.Models.Image>> UploadImageAsync(Type t, IFormFile file, Action<Data.Models.Image>? setParams = null)
+        public async Task<IEnumerable<UploadResult<Data.Models.Image>>> UploadImageAsync(Type t, IFormFile file, Action<Data.Models.Image>? setParams = null)
         {
             var pageCount = 1;
-            var images = new List<Data.Models.Image>();
+            var images = new List<UploadResult<Data.Models.Image>>();
 
             using var ms = new MemoryStream();
             await file.OpenReadStream().CopyToAsync(ms);
 
-            if(file.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            var allow = this._options.AllowUpload?.Invoke(t, file, ms);
+            if (!string.IsNullOrWhiteSpace(allow))
+            {
+                return new[]
+                {
+                    new UploadResult<Data.Models.Image>
+                    {
+                        ErrorMessage = allow,
+                        FormFile = file
+                    }
+                };
+            }
+
+            if (file.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
                 ms.Seek(0, SeekOrigin.Begin);
                 using var pdfImages = new ImageMagick.MagickImageCollection(ms);
@@ -250,12 +303,35 @@ namespace Mindbite.Mox.Images.Services
                     await ms.CopyToAsync(fs);
                 }
 
+                try
                 {
                     using var fs = new FileStream(originalFilePath, FileMode.Open, FileAccess.Read);
                     await this.OptimizeImageAsync(t, image, fs, page);
+                    images.Add(new UploadResult<Data.Models.Image>
+                    {
+                        File = image,
+                        FormFile = file,
+                        PageIndex = page
+                    });
                 }
+                catch
+                {
+                    try
+                    {
+                        File.Delete(originalFilePath);
+                    }
+                    catch { }
 
-                images.Add(image);
+                    this._context.Remove(image);
+                    await this._context.SaveChangesAsync();
+
+                    images.Add(new UploadResult<Data.Models.Image>
+                    {
+                        FormFile = file,
+                        PageIndex = page,
+                        ErrorMessage = "Filinnehållet kunde inte tolkas, kontrollera att filen är en bild"
+                    });
+                }
             }
 
             return images;

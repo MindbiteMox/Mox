@@ -80,6 +80,7 @@ namespace Mindbite.Mox.Images.Areas.Controllers
             ViewData.TemplateInfo.HtmlFieldPrefix = prefix;
 
             var imageUIDs = viewModel.Images.ToList();
+            var errors = new List<string>();
 
             foreach (var file in viewModel.Upload ?? Array.Empty<IFormFile>())
             {
@@ -89,10 +90,18 @@ namespace Mindbite.Mox.Images.Areas.Controllers
 
                 foreach (var uploadedImage in uploadedImages)
                 {
-                    imageUIDs.Add(uploadedImage.UID);
+                    if(uploadedImage.File != null) 
+                    { 
+                        imageUIDs.Add(uploadedImage.File.UID);
+                    }
+                    else
+                    {
+                        errors.Add($"{uploadedImage.FormFile.FileName}: {uploadedImage.ErrorMessage}");
+                    }
                 }
             }
 
+            ViewData["Errors"] = errors.AsEnumerable();
             viewModel.Images = imageUIDs.ToArray();
 
             return View("EditorTemplates/MultiImage", viewModel);

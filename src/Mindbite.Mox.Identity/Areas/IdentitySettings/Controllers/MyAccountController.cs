@@ -145,8 +145,11 @@ namespace Mindbite.Mox.Identity.Controllers
                 model = await extension.TryUpdateModel((o, t) => this.TryUpdateModelAsync(o, t, ""));
                 if (this.ModelState.IsValid)
                 {
-                    await extension.Save(userId, model);
-                    return RedirectToAction("EditOther", new { view });
+                    await extension.Save(userId, model, ModelState);
+                    if (ModelState.IsValid)
+                    {
+                        return RedirectToAction("EditOther", new { view });
+                    }
                 }
             }
             else

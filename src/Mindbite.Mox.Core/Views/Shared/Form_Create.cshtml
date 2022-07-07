@@ -11,7 +11,7 @@
     {
         @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
     }
-    <h1>@localizer["Skapa {0}", ViewData["ModelDisplayName"]?.ToString().ToLower()]</h1>
+    <h1>@localizer["Skapa {0}", ViewData["ModelDisplayName"]?.ToString().ToLower() ?? ""]</h1>
     @await Html.PartialAsync("Mox/UI/Message")
 }
 
@@ -31,7 +31,7 @@
 
     <fieldset class="buttons">
         <p>
-            <input type="submit" value="@localizer["Skapa {0}", ViewData["ModelDisplayName"]?.ToString().ToLower()]" />
+            <input type="submit" value="@localizer["Skapa {0}", ViewData["ModelDisplayName"]?.ToString().ToLower() ?? ""]" />
         </p>
     </fieldset>
 }

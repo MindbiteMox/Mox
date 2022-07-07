@@ -33,7 +33,7 @@ namespace Mindbite.Mox.DesignDemoApp.IdentityExtensions
             };
         }
 
-        public override async Task Save(string userId, object viewModel)
+        public override async Task Save(string userId, object viewModel, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState)
         {
             var userImageViewModel = (ViewModels.UserImage)viewModel;
 

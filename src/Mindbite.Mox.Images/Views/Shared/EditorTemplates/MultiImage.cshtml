@@ -5,6 +5,7 @@
 
 @inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
 @inject IStringLocalizer localizer
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Images.MoxImageOptions> options
 
 @model Mindbite.Mox.Images.ViewModels.EditorTemplates.MultiImage
 @{
@@ -27,6 +28,10 @@
     var type = context.GetEntityType(Model);
     var sizes = type.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
     var maxSize = sizes.OrderByDescending(x => x.Width * x.Height).FirstOrDefault();
+
+    var accept = options.Value.FormInputAccept?.Invoke(context.GetEntityType(Model)) ?? "image/*";
+
+    var errors = ViewData["Errors"] as IEnumerable<string>;
 }
 
 <div class="multi-image-container">
@@ -67,8 +72,18 @@
                         }
                     }
                 </span>
-                <input type="file" class="multi-image-input" multiple name="@Html.NameFor(x => x.Upload)" id="@Html.IdFor(x => x.Upload)" onchange="@onUploadChange" />
+                <input type="file" class="multi-image-input" multiple name="@Html.NameFor(x => x.Upload)" id="@Html.IdFor(x => x.Upload)" onchange="@onUploadChange" accept="@accept" />
             </label>
         </li>
     </ul>
+
+    @if (errors?.Any() ?? false)
+    {
+        <p>
+            @foreach (var error in errors ?? Enumerable.Empty<string>())
+            {
+                <span class="field-validation-error">@error</span>
+            }
+        </p>
+    }
 </div>

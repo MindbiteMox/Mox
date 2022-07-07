@@ -42,7 +42,7 @@ namespace Mindbite.Mox.Core.Controllers
         {
             var localizer = HttpContext.RequestServices.GetRequiredService<IStringLocalizer>();
 
-            return typeof(ViewModel_T).GetProperty(this.ModelTitleFieldName).GetValue(viewModel)?.ToString() ?? localizer["Redigera {0}", localizer[this.ModelDisplayName]];
+            return typeof(ViewModel_T).GetProperty(this.ModelTitleFieldName).GetValue(viewModel)?.ToString() ?? localizer["Redigera {0}", localizer[this.ModelDisplayName ?? ""]];
         }
 
         public virtual FormControllerRedirectTarget RedirectAfterSaveTarget => FormControllerRedirectTarget.Index;
@@ -128,9 +128,12 @@ namespace Mindbite.Mox.Core.Controllers
             {
                 var id = await SaveViewModelAsync(default, viewModel);
 
-                var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
-                viewMessage.DisplayMessage(this.ModelCreatedMessage);
-                return RedirectAfterSave(id, viewModel);
+                if (ModelState.IsValid)
+                {
+                    var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
+                    viewMessage.DisplayMessage(this.ModelCreatedMessage);
+                    return RedirectAfterSave(id, viewModel);
+                }
             }
 
             await this.SetStaticViewModelData(viewModel);
@@ -162,10 +165,13 @@ namespace Mindbite.Mox.Core.Controllers
             {
                 var newId = await SaveViewModelAsync((NullableId_T)(object)_id, viewModel);
 
-                var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
-                viewMessage.DisplayMessage(this.ModelUpdatedMessage);
+                if (ModelState.IsValid)
+                {
+                    var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
+                    viewMessage.DisplayMessage(this.ModelUpdatedMessage);
 
-                return RedirectAfterSave(newId, viewModel);
+                    return RedirectAfterSave(newId, viewModel);
+                }
             }
 
             await this.SetStaticViewModelData(viewModel);

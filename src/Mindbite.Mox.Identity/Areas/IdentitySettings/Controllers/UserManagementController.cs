@@ -61,7 +61,7 @@ namespace Mindbite.Mox.Identity.Controllers
         {
             if (this._identityOptions.UsersTable != null)
             {
-                return PartialView("Mox/UI/DataTable", await this._identityOptions.UsersTable(this.ControllerContext, sort, filter));
+                return PartialView("Mox/UI/DataTable", await this._identityOptions.UsersTable(this.ControllerContext, sort, filter, roleGroup));
             }
 
             var dataSource = this._context.Users.Where(x => !x.IsHidden);
@@ -316,8 +316,11 @@ namespace Mindbite.Mox.Identity.Controllers
 
                 if(this.ModelState.IsValid)
                 {
-                    await extension.Save(id, model);
-                    return RedirectToAction("EditOther", new { id, view });
+                    await extension.Save(id, model, ModelState);
+                    if (ModelState.IsValid)
+                    {
+                        return RedirectToAction("EditOther", new { id, view });
+                    }
                 }
             }
             else

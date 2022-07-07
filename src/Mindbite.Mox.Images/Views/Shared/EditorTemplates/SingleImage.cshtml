@@ -4,6 +4,7 @@
 
 @inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
 @inject IStringLocalizer localizer
+@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Images.MoxImageOptions> options
 
 @model Mindbite.Mox.Images.ViewModels.EditorTemplates.SingleImage
 @{
@@ -13,7 +14,7 @@
     var sizes = type.GetCustomAttributes(typeof(ImageSizeAttribute), false).Cast<ImageSizeAttribute>().ToList();
     var maxSize = sizes.OrderByDescending(x => x.Width * x.Height).FirstOrDefault();
     var maxSizeText = "";
-    
+
     if (maxSize != null)
     {
         if (maxSize.Width > 0 && maxSize.Height > 0)
@@ -29,6 +30,10 @@
             maxSizeText = localizer["(Minst {0}px hög)", maxSize.Height];
         }
     }
+
+    var accept = options.Value.FormInputAccept?.Invoke(context.GetEntityType(Model)) ?? "image/*";
+
+    var errors = ViewData["Errors"] as IEnumerable<string>;
 }
 
 @Html.HiddenFor(x => x.ImageTypeFullName)
@@ -50,5 +55,15 @@
 
 <p class="material-input">
     @Html.LabelFor(x => x.File, Html.DisplayNameFor(x => x.File) + " " + maxSizeText)
-    @Html.EditorFor(x => x.File)
+    @Html.EditorFor(x => x.File, new { htmlAttributes = new { accept } })
 </p>
+
+@if (errors?.Any() ?? false)
+{
+    <p>
+        @foreach (var error in errors ?? Enumerable.Empty<string>())
+        {
+            <span class="field-validation-error">@error</span>
+        }
+    </p>
+}

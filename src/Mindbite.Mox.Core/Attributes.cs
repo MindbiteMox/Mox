@@ -405,7 +405,7 @@ namespace Mindbite.Mox.Attributes
         {
             viewModelType ??= GetViewModelType(controllerType);
 
-            var method = viewModelType.GetMethod(this.SelectListFunctionName, BindingFlags.Static | BindingFlags.Public);
+            var method = viewModelType.GetMethod(this.SelectListFunctionName, BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
             if (method == null)
             {
                 throw new Exception($"public static Task<IEnumerable<SelectListItem>> {this.SelectListFunctionName}(HttpContext) could not be found!");
@@ -430,7 +430,7 @@ namespace Mindbite.Mox.Attributes
             if (!string.IsNullOrWhiteSpace(this.EmptyMessageFunctionName))
             {
                 var viewModelType = GetViewModelType(controllerType);
-                var method = viewModelType.GetMethod(this.EmptyMessageFunctionName, BindingFlags.Static | BindingFlags.Public);
+                var method = viewModelType.GetMethod(this.EmptyMessageFunctionName, BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
                 if (method == null)
                 {
                     throw new Exception($"public static Task<string?> {this.EmptyMessageFunctionName}(HttpContext) could not be found!");
@@ -503,7 +503,7 @@ namespace Mindbite.Mox.Attributes
             if (!string.IsNullOrWhiteSpace(this.GetSelectListFunction))
             {
                 var viewModelType = GetViewModelType(controllerType);
-                var method = viewModelType.GetMethod(this.GetSelectListFunction, BindingFlags.Static | BindingFlags.Public);
+                var method = viewModelType.GetMethod(this.GetSelectListFunction, BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
                 if(method == null)
                 {
                     throw new Exception($"public static {nameof(this.GetSelectListFunction)}(HttpContext) could not be found!");
