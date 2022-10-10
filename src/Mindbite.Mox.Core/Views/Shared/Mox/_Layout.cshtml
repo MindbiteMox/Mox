@@ -31,8 +31,8 @@
     @await Html.PartialAsync("Mox/LayoutParts/_Head")
     <title>@(ViewData["Title"] ?? currentSelectedMenu?.Title ?? "Mox") - @(Config.Value.SiteTitle)</title>
     <meta name="viewport" content="width=device-width">
-    @await Html.PartialAsync("Mox/StaticIncludes/_Files", new { RenderInHead = true }.ToExpando())
-    @await Html.PartialAsync("Mox/StaticIncludes/_AppFiles", new { RenderInHead = true }.ToExpando())
+    @await Html.Mox().StaticFilesAsync(true)
+    @await Html.Mox().AppStaticFilesAsync(true)
     @RenderSection("styles", required: false)
 </head>
 <body>
@@ -40,7 +40,7 @@
         <div class="mox-header">
             <div class="mox-header-menu-container">
                 <div class="mox-header-logo">@Config.Value.SiteTitle</div>
-                @await Html.Mox().Menu().AppMenuAsync(includeApp: true, maxDepth: 1)
+                @await Html.Mox().AppMenuAsync(includeApp: true, maxDepth: 1)
 
                 <div class="mox-header-right-menu">
                     @await Component.InvokeAsync("Mox/AppHeaderPartials")
@@ -51,7 +51,7 @@
         </div>
 
         <div class="mox-header-sub-menu">
-            @await Html.Mox().Menu().AppMenuAsync(onlyCurrentApp: true, maxDepth: 1)
+            @await Html.Mox().AppMenuAsync(onlyCurrentApp: true, maxDepth: 1)
         </div>
     </header>
     <div style="clear: both;"></div>
@@ -62,7 +62,7 @@
             {
                 <div class="mox-side-menu">
                     <span class="app-title">@localizer[currentSelectedMenu.AllParents.First().Title]</span>
-                    @Html.Mox().Menu().RenderMenu(root: currentSelectedMenu.AllParents.First(), startLevel: 0, maxDepth: 1)
+                    @Html.Mox().Menu(root: currentSelectedMenu.AllParents.First(), startLevel: 0, maxDepth: 1)
                 </div>
             }
         }
@@ -74,9 +74,8 @@
         </div>
     </div>
 
-
-    @await Html.PartialAsync("Mox/StaticIncludes/_Files", new { RenderInHead = false }.ToExpando())
-    @await Html.PartialAsync("Mox/StaticIncludes/_AppFiles", new { RenderInHead = false }.ToExpando())
+    @await Html.Mox().StaticFilesAsync(false)
+    @await Html.Mox().AppStaticFilesAsync(false)
     @RenderSection("scripts", required: false)
     
     <script>Mox.UI.GlobalInstances.initDefault()</script>

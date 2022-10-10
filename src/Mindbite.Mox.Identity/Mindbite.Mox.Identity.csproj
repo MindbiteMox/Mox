@@ -9,9 +9,9 @@
     <ApplicationIcon />
     <OutputTypeEx>library</OutputTypeEx>
     <StartupObject />
-    <Version>6.0.5</Version>
-    <AssemblyVersion>6.0.5.0</AssemblyVersion>
-    <FileVersion>6.0.5.0</FileVersion>
+    <Version>6.1.0</Version>
+    <AssemblyVersion>6.1.0.0</AssemblyVersion>
+    <FileVersion>6.1.0.0</FileVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
@@ -25,7 +25,7 @@
     <ProjectReference Include="..\Mindbite.Mox.Verification\Mindbite.Mox.Verification.csproj" />
     <ProjectReference Include="..\Mindbite.Mox.Core\Mindbite.Mox.Core.csproj" />
 
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.1.0">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

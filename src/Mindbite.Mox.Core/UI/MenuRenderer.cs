@@ -147,6 +147,17 @@ namespace Mindbite.Mox.UI.Menu.Renderer
             sb = RenderMenu(sb, root.Children, startLevel, maxDepth);
             return new HtmlString(sb.ToString());
         }
+
+        public IHtmlContent RenderMenu(Action<Configuration.AppMenus.AppMenuItemBuilderBuilder> builderAction, bool selectCurrentMenuByAction = false)
+        {
+            var builder = new Configuration.AppMenus.AppMenuBuilder();
+            builder.Items(builderAction);
+
+            var items = builder.Build(this._htmlExtensions.UrlHelper).ToList();
+            items.SelectCurrentMenu(this._htmlExtensions.HtmlHelper.ViewContext, selectCurrentMenuByAction);
+            items.FixParents();
+            return RenderMenu(items);
+        }
     }
 
     public class AppMenuRendererEventArgs

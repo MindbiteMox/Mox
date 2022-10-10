@@ -45,14 +45,14 @@ namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
             this._serviceProvider = serviceProvider;
         }
 
-        public async Task RefreshLoginAsync(string userId)
+        public async Task<bool> RefreshLoginAsync(string userId)
         {
             if (!_refreshedUsers.TryGetValue(userId, out var _))
             {
                 var user = await this._userManager.FindByIdAsync(userId);
                 if(user == null)
                 {
-                    return;
+                    return false;
                 }
 
                 await this._signInManager.RefreshSignInAsync(user);
@@ -62,7 +62,11 @@ namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
                 {
                     await hook.OnLoginRefreshedAsync(user);
                 }
+
+                return true;
             }
+
+            return false;
         }
 
         public void UserChanged(string userId)
@@ -100,14 +104,22 @@ namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            var didRefreshLogin = false;
             if (context.HttpContext.User.Identity.IsAuthenticated)
             {
                 var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                await this._refreshLoginService.RefreshLoginAsync(userId);
+                didRefreshLogin = await this._refreshLoginService.RefreshLoginAsync(userId);
             }
 
             await next();
+
+            if(didRefreshLogin && !(context.HttpContext.Response.StatusCode >= 200 && context.HttpContext.Response.StatusCode < 300))
+            {
+                var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                this._refreshLoginService.UserChanged(userId);
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿@inject Mindbite.Mox.Services.ViewMessaging viewMessaging
+﻿@using Mindbite.Mox.UI
+
+@*@inject Mindbite.Mox.Services.ViewMessaging viewMessaging
 
 @if(viewMessaging.AnyMessages)
 {
@@ -17,4 +19,6 @@
             }
         </p>
     </div>
-}
+}*@
+
+@Html.Mox().Message()

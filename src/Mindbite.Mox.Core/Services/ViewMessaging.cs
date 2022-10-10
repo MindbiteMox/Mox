@@ -13,20 +13,23 @@ namespace Mindbite.Mox.Services
         {
             public string Title { get; set; }
             public IEnumerable<string> AdditionalLines { get; set; }
+            public string CssClass { get; set; }
 
             public string Serialize()
             {
-                return Title + "$$" + string.Join("$$", AdditionalLines);
+                return System.Text.Json.JsonSerializer.Serialize(this);
             }
 
             public static Message Deserialize(string serializedMessage)
             {
-                var parts = serializedMessage.Split("$$");
-                return new Message
+                try
                 {
-                    Title = parts[0],
-                    AdditionalLines = parts.Skip(1).Where(x => !string.IsNullOrWhiteSpace(x)),
-                };
+                    return System.Text.Json.JsonSerializer.Deserialize<Message>(serializedMessage);
+                }
+                catch
+                {
+                    return new Message();
+                }
             }
         }
 
@@ -66,6 +69,18 @@ namespace Mindbite.Mox.Services
             {
                 Title = this._localizer[title],
                 AdditionalLines = additionalLines?.Select(x => this._localizer[x].ToString()) ?? Enumerable.Empty<string>()
+            };
+
+            this._session.SetString("Mox.Message", this.CurrentMessage.Serialize());
+        }
+
+        public void DisplayError(string title, params string[] additionalLines)
+        {
+            this.CurrentMessage = new Message
+            {
+                Title = this._localizer[title],
+                AdditionalLines = additionalLines?.Select(x => this._localizer[x].ToString()) ?? Enumerable.Empty<string>(),
+                CssClass = "mox-message-error"
             };
 
             this._session.SetString("Mox.Message", this.CurrentMessage.Serialize());

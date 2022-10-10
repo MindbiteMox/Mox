@@ -13,12 +13,12 @@
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>6.0.5</Version>
+    <Version>6.1.0</Version>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <IsPackable>true</IsPackable>
-    <AssemblyVersion>6.0.5.0</AssemblyVersion>
-    <FileVersion>6.0.5.0</FileVersion>
+    <AssemblyVersion>6.1.0.0</AssemblyVersion>
+    <FileVersion>6.1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,10 +30,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="11.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.3" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.9" />
 
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.1.0">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

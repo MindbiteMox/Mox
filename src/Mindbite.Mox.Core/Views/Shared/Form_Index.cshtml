@@ -1,5 +1,6 @@
 ﻿@using Mindbite.Mox.Extensions
 @using Microsoft.Extensions.Localization
+@using Mindbite.Mox.UI
 
 @inject IStringLocalizer localizer
 
@@ -14,9 +15,9 @@
 
 @if ((bool)ViewData["RenderDefaultIndexHeader"])
 {
-    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = false }.ToExpando())
+    @await Html.Mox().BreadCrumbsAsync(BreadCrumbMenuReference.Parent)
     <h1>@ViewData["IndexPageHeading"]</h1>
-    @await Html.PartialAsync("Mox/UI/Message")
+    @Html.Mox().Message()
 
     @if(canCreate || filters.Any())
     {

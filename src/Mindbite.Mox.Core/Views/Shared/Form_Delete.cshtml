@@ -1,4 +1,5 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Mindbite.Mox.UI
 @using Microsoft.Extensions.Localization;
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @inject IStringLocalizer localizer
@@ -9,9 +10,9 @@
 
 @if ((bool)ViewData["RenderDefaultDeleteHeader"])
 {
-    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    @await Html.Mox().BreadCrumbsAsync(BreadCrumbMenuReference.Current)
     <h1>@localizer["Ta bort {0}", ViewData["ModelDisplayName"]?.ToString().ToLower() ?? ""]</h1>
-    @await Html.PartialAsync("Mox/UI/Message")
+    @Html.Mox().Message()
 }
 
 @if (!string.IsNullOrWhiteSpace((string)ViewData["DeleteHeaderPartial"]))

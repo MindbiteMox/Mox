@@ -65,9 +65,11 @@ namespace Mindbite.Mox.Images
             return mvc;
         }
 
-        public static void MapMoxImagesRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox")
+        public static void MapMoxImagesRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox", Action<IEndpointConventionBuilder>? endpointAdded = null)
         {
-            endpoints.MapAreaControllerRoute(MainArea, MainArea, $"{moxPath}/{MainArea}/{{controller}}/{{action=Index}}/{{id?}}");
+            endpointAdded ??= _ => { };
+
+            endpointAdded(endpoints.MapAreaControllerRoute(MainArea, MainArea, $"{moxPath}/{MainArea}/{{controller}}/{{action=Index}}/{{id?}}"));
         }
 
         public static void UseMoxImagesStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "")

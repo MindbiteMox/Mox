@@ -31,4 +31,9 @@
     menu.SelectCurrentMenu(ViewContext, true);
 }
 
-@Html.Mox().Menu().RenderMenu(menu)
+@Html.Mox().Menu(builder =>
+{
+    builder.Add().Title("Design").AreaAction(ViewContext.RouteData.Values["Area"].ToString(), "Designs", "Display", new { id = ViewContext.RouteData.Values["Id"] });
+    builder.Add().Title("Bilder").AreaAction(ViewContext.RouteData.Values["Area"].ToString(), "Images", "Display", new { id = ViewContext.RouteData.Values["Id"] });
+    builder.Add().Title("Kommentarer").AreaAction(ViewContext.RouteData.Values["Area"].ToString(), "Comments", "Display", new { id = ViewContext.RouteData.Values["Id"] });
+}, true)

@@ -43,6 +43,7 @@
                         <span class="multi-file-item-title">@files[i].FileName</span>
                     </span>
                     <span class="multi-file-buttons">
+                        <a href="@files[i].FileUrl" class="mox-button" target="_blank" title="@localizer["Ladda ner fil"]"><i class="mox-icon download"></i></a>
                         <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Files[i], -1))" title="@localizer["Flytta upp"]"><i class="mox-icon arrow-up"></i></button>
                         <button type="button" class="mox-button" onclick="@(onMoveClicked(Model.Files[i],  1))" title="@localizer["Flytta ner"]"><i class="mox-icon arrow-down"></i></button>
                         <button type="button" class="mox-button" onclick="@(onRemoveClicked(Model.Files[i]))" title="@localizer["Ta bort"]"><i class="mox-icon trash"></i></button>

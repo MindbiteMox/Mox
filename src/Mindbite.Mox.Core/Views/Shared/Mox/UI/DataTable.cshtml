@@ -18,7 +18,7 @@
                     {
                         <th style="@(column.Width > 0 ? $"width: {column.Width}px;" : "") text-align: @column.Align.ToString().ToLower();" class="sortable @(column.FieldName == Model.SortColumn ? Model.SortDirection.ToLower() : "")">
                             <a href="@Url.Action(null, new { DataTableSortColumn = column.FieldName, DataTableSortDirection = column.GetNextSortDirection(Model) })">
-                                @localizer[column.Title]&nbsp;<span style="font-size: 0.7em;">@Html.Raw(column.FieldName == Model.SortColumn ? (Model.SortDirection.ToLower().StartsWith("asc") ? "&#9650;" : "&#9660;") : "")</span>
+                                @(localizer[column.Title ?? ""])&nbsp;<span style="font-size: 0.7em;">@Html.Raw(column.FieldName == Model.SortColumn ? (Model.SortDirection.ToLower().StartsWith("asc") ? "&#9650;" : "&#9660;") : "")</span>
                             </a>
                         </th>
                     }
@@ -31,7 +31,7 @@
                             }
                             else
                             {
-                                <span>@localizer[column.Title]</span>
+                                <span>@localizer[column.Title ?? ""]</span>
                             }
                             </th>
                     }
@@ -85,7 +85,7 @@
                                     }
                                     else
                                     {
-                                        <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass(row)" @(button.OpenInNewTab(row) ? "target=\"_blank\"" : "") title="@localizer[button.Title(row)]">@(button.Text(row) ?? Html.Raw("&nbsp;"))</a></li>
+                                        <li><a href="@button.GetAction(row)" class="mox-datatable-button @button.CssClass(row)" @(button.OpenInNewTab(row) ? "target=\"_blank\"" : "") title="@localizer[button.Title(row) ?? ""]">@(button.Text(row) ?? Html.Raw("&nbsp;"))</a></li>
                                     }
                                 }
                             </ul>

@@ -222,30 +222,35 @@ namespace Mindbite.Mox.Extensions
             return mvc;
         }
 
-        public static void MapMoxRoutes(this IEndpointRouteBuilder endpoints, string path = "Mox")
+#nullable enable
+        public static void MapMoxRoutes(this IEndpointRouteBuilder endpoints, string path = "Mox", Action<IEndpointConventionBuilder>? endpointAdded = null)
         {
-            endpoints.MapAreaControllerRoute("Mox Start", "Mox", path, new
+            endpointAdded ??= _ => { };
+
+            endpointAdded(endpoints.MapAreaControllerRoute("Mox Start", "Mox", path, new
             {
                 Area = "Mox",
                 Controller = "Home",
                 Action = "Index",
-            });
-            endpoints.MapAreaControllerRoute("Mox Error", "Mox", "Mox/Error/{errorCode}", new
+            }));
+            endpointAdded(endpoints.MapAreaControllerRoute("Mox Error", "Mox", "Mox/Error/{errorCode}", new
             {
                 Area = "Mox",
                 Controller = "Home",
                 Action = "Error",
-            });
+            }));
         }
 
-        public static void MapRedirectToMoxRoutes(this IEndpointRouteBuilder endpoints)
+        public static void MapRedirectToMoxRoutes(this IEndpointRouteBuilder endpoints, string path = "Mox", Action<IEndpointConventionBuilder>? endpointAdded = null)
         {
-            endpoints.MapAreaControllerRoute(nameof(MapRedirectToMoxRoutes), "Mox", "{*wildcard}", new
+            endpointAdded ??= _ => { };
+
+            endpointAdded(endpoints.MapAreaControllerRoute(nameof(MapRedirectToMoxRoutes), "Mox", "{*wildcard}", new
             {
                 Area = "Mox",
                 Controller = "RedirectToMox",
                 Action = "Index",
-            });
+            }));
         }
 
         public static void UseMoxExceptionPage(this IApplicationBuilder app)
@@ -329,6 +334,18 @@ namespace Mindbite.Mox.Extensions
                 return controller.View(dataTable);
             }
         }
+
+        public static void DisplayMessage(this Controller controller, string message, params string[] additionalLines)
+        {
+            var viewMessaging = controller.HttpContext.RequestServices.GetRequiredService<ViewMessaging>();
+            viewMessaging.DisplayMessage(message, additionalLines);
+        }
+
+        public static void DisplayError(this Controller controller, string message, params string[] additionalLines)
+        {
+            var viewMessaging = controller.HttpContext.RequestServices.GetRequiredService<ViewMessaging>();
+            viewMessaging.DisplayError(message, additionalLines);
+        }
     }
 
     public static class QueryableExtensions
@@ -374,7 +391,7 @@ namespace Mindbite.Mox.Extensions
         public static bool IsAjaxRequest(this HttpRequest request)
         {
             if (request == null)
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
 
             if (request.Headers != null)
             {

@@ -1,10 +1,10 @@
-﻿@using Microsoft.AspNetCore.Mvc.Controllers
+﻿@using Mindbite.Mox.UI
 @using Mindbite.Mox.UI.Menu
+@*@using Microsoft.AspNetCore.Mvc.Controllers
 @using Mindbite.Mox.Extensions
 @using System.Reflection
 @using System.Linq
 @using Microsoft.Extensions.Localization;
-@using Mindbite.Mox.UI
 @inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.Config> Config
 @inject IStringLocalizer localizer
 
@@ -38,4 +38,20 @@
     {
         <li><a href="@Url.MenuAction(parent, roles)">@localizer[parent.Title]</a></li>
     }
-</ul>
+</ul>*@
+
+@{ 
+    var includeCurrentMenu = false;
+    var additionalNodes = Enumerable.Empty<MenuItem>();
+    try
+    {
+        includeCurrentMenu = Model.IncludeCurrentMenu;
+    }
+    catch { }
+    try
+    {
+        additionalNodes = Model.AdditionalNodes;
+    }
+    catch { }
+}
+@await Html.Mox().BreadCrumbsAsync(includeCurrentMenu ? BreadCrumbMenuReference.Current : BreadCrumbMenuReference.Parent, additionalNodes)

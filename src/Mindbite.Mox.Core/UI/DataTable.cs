@@ -10,6 +10,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mindbite.Mox.UI
 {
+    public class DataTableRenderer
+    {
+        private readonly MoxHtmlExtensionCollection _htmlExtensions;
+
+        public DataTableRenderer(MoxHtmlExtensionCollection htmlExtensions)
+        {
+            this._htmlExtensions = htmlExtensions;
+        }
+
+        public async Task<IHtmlContent> RenderAsync(IDataTable dataTable, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData = null)
+        {
+            return await this._htmlExtensions.HtmlHelper.PartialAsync("Mox/UI/DataTable", dataTable, viewData ?? this._htmlExtensions.HtmlHelper.ViewData);
+        }
+    }
+
     public interface IDataTable
     {
         int PageCount { get; }
@@ -472,14 +487,7 @@ namespace Mindbite.Mox.UI
                 }
                 catch
                 {
-                    if (!string.IsNullOrWhiteSpace(column))
-                    {
-                        this._sortColumn = Utils.Dynamics.GetFullPropertyName(defaultColumn); // User error
-                    }
-                    else
-                    {
-                        throw; // Programmer error
-                    }
+                    this._sortColumn = Utils.Dynamics.GetFullPropertyName(defaultColumn);
                 }
 
                 return this;

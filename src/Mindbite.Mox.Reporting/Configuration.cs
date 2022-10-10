@@ -33,6 +33,13 @@ namespace Mindbite.Mox.Reporting
         public const string AppId = "Reports";
         public const string MainArea = "Reports";
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mvc"></param>
+        /// <param name="config">Gets the config from the section named "Reporting"</param>
+        /// <param name="setupAction"></param>
+        /// <returns></returns>
         public static IMvcBuilder AddMoxReportingApp(this IMvcBuilder mvc, IConfiguration config, Action<MoxReportingOptions>? setupAction = null)
         {
             mvc.Services.AddMoxReportingServices(config.GetSection("Reporting"), setupAction);
@@ -68,9 +75,11 @@ namespace Mindbite.Mox.Reporting
             return mvc;
         }
 
-        public static void MapMoxReportingAppRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox")
+        public static void MapMoxReportingAppRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox", Action<IEndpointConventionBuilder>? endpointAdded = null)
         {
-            endpoints.MapAreaControllerRoute(AppId, MainArea, $"{moxPath}/{MainArea}/{{controller}}/{{action=Index}}/{{id?}}");
+            endpointAdded ??= _ => { };
+
+            endpointAdded(endpoints.MapAreaControllerRoute(AppId, MainArea, $"{moxPath}/{MainArea}/{{controller}}/{{action=Index}}/{{id?}}"));
         }
 
         public static IServiceCollection AddMoxReportingServices(this IServiceCollection services, IConfiguration? config = null, Action<MoxReportingOptions>? setupAction = null)

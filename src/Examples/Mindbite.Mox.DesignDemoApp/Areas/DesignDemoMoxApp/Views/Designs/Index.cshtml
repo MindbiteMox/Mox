@@ -1,13 +1,15 @@
 ﻿@using System.Linq;
-@using Microsoft.EntityFrameworkCore;
+@using Microsoft.EntityFrameworkCore
+@using Mindbite.Mox.UI 
 @model Mindbite.Mox.UI.IDataTable
 @{
     Layout = "Mox/_Layout";
 }
 
-@await Html.PartialAsync("Mox/UI/AppBreadCrumbs")
+@await Html.Mox().BreadCrumbsAsync(BreadCrumbMenuReference.Parent)
 
 <h1>Mina designs</h1>
+@Html.Mox().Message()
 
 <p>
     @Html.ActionLink("Skapa ny", "Create", null, null, new { @class = "mox-button", onclick = "openModalForm(this, event)" })

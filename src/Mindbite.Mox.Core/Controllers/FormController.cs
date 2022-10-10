@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Mindbite.Mox.Extensions;
 using Mindbite.Mox.UI;
 using System;
 using System.Collections.Generic;
@@ -130,8 +131,7 @@ namespace Mindbite.Mox.Core.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
-                    viewMessage.DisplayMessage(this.ModelCreatedMessage);
+                    this.DisplayMessage(this.ModelCreatedMessage);
                     return RedirectAfterSave(id, viewModel);
                 }
             }
@@ -167,9 +167,7 @@ namespace Mindbite.Mox.Core.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Services.ViewMessaging>();
-                    viewMessage.DisplayMessage(this.ModelUpdatedMessage);
-
+                    this.DisplayMessage(this.ModelUpdatedMessage);
                     return RedirectAfterSave(newId, viewModel);
                 }
             }
@@ -218,8 +216,7 @@ namespace Mindbite.Mox.Core.Controllers
             {
                 await DeleteAsync(_id);
 
-                var viewMessage = this.HttpContext.RequestServices.GetRequiredService<Mindbite.Mox.Services.ViewMessaging>();
-                viewMessage.DisplayMessage(this.ModelDeletedMessage);
+                this.DisplayMessage(this.ModelDeletedMessage);
                 return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
             }
 

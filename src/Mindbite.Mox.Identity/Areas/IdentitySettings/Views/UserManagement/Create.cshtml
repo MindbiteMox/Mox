@@ -1,4 +1,5 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Mindbite.Mox.UI 
 @using Microsoft.Extensions.Localization
 @using Microsoft.EntityFrameworkCore
 
@@ -13,9 +14,9 @@
     var roleGroupSelectList = roleGroups.Select(x => new SelectListItem(x.GroupName, x.Id.ToString()));
 }
 
-@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
-
+@await Html.Mox().BreadCrumbsAsync(BreadCrumbMenuReference.Current) 
 <h1>@localizer["Skapa användare"]</h1>
+@Html.Mox().Message()
 
 @using (Html.BeginForm())
 {

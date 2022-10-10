@@ -14,11 +14,9 @@
     var roleGroups = await dbContext.RoleGroups.OrderBy(x => x.GroupName).Select(x => new SelectListItem(x.GroupName, x.Id.ToString())).ToListAsync();
 }
 
-@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = false }.ToExpando())
-
+@await Html.Mox().BreadCrumbsAsync(BreadCrumbMenuReference.Parent) 
 <h1>@localizer["Inloggningskonton"]</h1>
-
-@await Html.PartialAsync("Mox/UI/Message")
+@Html.Mox().Message()
 
 <ul class="mox-filters">
     <li class="break">

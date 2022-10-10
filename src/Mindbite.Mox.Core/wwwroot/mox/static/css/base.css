@@ -106,6 +106,7 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-icon.arrow-right { background-image: url('/mox/static/svg/pointing-arrow-right.svg'); }
 .mox-icon.arrow-left { background-image: url('/mox/static/svg/pointing-arrow-left.svg'); }
 .mox-icon.trash { background-image: url('/mox/static/svg/x.svg'); }
+.mox-icon.download { background-image: url('/mox/static/svg/download.svg'); }
 
 
 /**************************************************************
@@ -189,6 +190,7 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-message p { margin: 0; }
 .mox-message-neutral { border-radius: 3px; padding: 10px 20px; padding-left: 20px; border: 1px solid #bbc; border-left: 5px solid #bbc; }
 .mox-message-neutral p { margin: 0; }
+.mox-message-error { border: 1px solid #ff6868; border-left: 5px solid #ff3131; background-image: url('/mox/static/svg/x.svg'); }
 
 .validation-summary-errors { background-color: #faa; border-radius: 3px; padding: 10px 20px; }
 .validation-summary-errors ul { list-style: none; padding: 0; margin: 0; }

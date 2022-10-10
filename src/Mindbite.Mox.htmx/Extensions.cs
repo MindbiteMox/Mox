@@ -40,6 +40,7 @@ namespace Mindbite.Mox.Extensions
             {
                 prefix = helper.ViewData.TemplateInfo.HtmlFieldPrefix,
                 template = helper.ViewContext.View.Path,
+                Area = ""
             }) ?? throw new Exception("Route not found");
             return new UpdatePanel(helper, helper.ViewData.TemplateInfo.HtmlFieldPrefix, id);
         }

@@ -186,12 +186,15 @@ namespace Mindbite.Mox.Extensions
             return mvc;
         }
 
-        public static void MapMoxIdentityRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox")
+#nullable enable
+        public static void MapMoxIdentityRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox", Action<IEndpointConventionBuilder>? endpointAdded = null)
         {
-            endpoints.MapControllerRoute("IdentityLogIn", $"{moxPath}/LogIn/{{action=Index}}".TrimStart('/'), new { Controller = "LogIn" });
-            endpoints.MapControllerRoute("IdentityLogOut", $"{moxPath}/LogOut/{{action=Index}}".TrimStart('/'), new { Controller = "LogOut" });
-            endpoints.MapControllerRoute("IdentityForgotPassword", $"{moxPath}/Forgot/{{action=Index}}".TrimStart('/'), new { Controller = "ForgotPassword" });
-            endpoints.MapAreaControllerRoute("Identity", Constants.SettingsArea, $"{moxPath}/Settings/Identity/{{controller=MyAccount}}/{{action=Index}}/{{id?}}".TrimStart('/'));
+            endpointAdded ??= _ => { };
+
+            endpointAdded(endpoints.MapControllerRoute("IdentityLogIn", $"{moxPath}/LogIn/{{action=Index}}".TrimStart('/'), new { Controller = "LogIn" }));
+            endpointAdded(endpoints.MapControllerRoute("IdentityLogOut", $"{moxPath}/LogOut/{{action=Index}}".TrimStart('/'), new { Controller = "LogOut" }));
+            endpointAdded(endpoints.MapControllerRoute("IdentityForgotPassword", $"{moxPath}/Forgot/{{action=Index}}".TrimStart('/'), new { Controller = "ForgotPassword" }));
+            endpointAdded(endpoints.MapAreaControllerRoute("Identity", Constants.SettingsArea, $"{moxPath}/Settings/Identity/{{controller=MyAccount}}/{{action=Index}}/{{id?}}".TrimStart('/')));
         }
 
         public static void UseMoxIdentityStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "")

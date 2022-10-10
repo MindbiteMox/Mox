@@ -39,6 +39,7 @@ namespace Mindbite.Mox.DesignDemoApp.Controllers
 
         public IActionResult Index()
         {
+            this.DisplayError("Errror!", "Nåt har gått fel!");
             return View();
         }
 

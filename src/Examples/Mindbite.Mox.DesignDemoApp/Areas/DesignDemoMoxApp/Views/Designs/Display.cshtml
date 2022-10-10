@@ -1,4 +1,5 @@
 ﻿@using Mindbite.Mox.Extensions
+@using Mindbite.Mox.UI 
 @{
     Layout = this.Context.Request.IsAjaxRequest() ? "" : "Mox/_Layout";
 }
@@ -6,10 +7,11 @@
 
 @if (!this.Context.Request.IsAjaxRequest())
 {
-    @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = true }.ToExpando())
+    @await Html.Mox().BreadCrumbsAsync(BreadCrumbMenuReference.Current)
 }
 
 <h1>@Model.Title</h1>
+@Html.Mox().Message()
 
 @await Html.PartialAsync("_DisplayMenu")
 
