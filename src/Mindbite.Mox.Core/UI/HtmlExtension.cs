@@ -10,6 +10,7 @@ using Mindbite.Mox.UI.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Mindbite.Mox.UI
@@ -130,12 +131,72 @@ namespace Mindbite.Mox.UI
         }
     }
 
+#nullable enable
     public static class HtmlExtension
     {
         public static MoxHtmlExtensionCollection Mox(this IHtmlHelper htmlHelper)
         {
             var urlHelperFactory = htmlHelper.ViewContext.HttpContext.RequestServices.GetRequiredService<IUrlHelperFactory>();
             return htmlHelper.ViewBag.MoxHtmlExtensionCollection as MoxHtmlExtensionCollection ?? (htmlHelper.ViewBag.MoxHtmlExtensionCollection = new MoxHtmlExtensionCollection(htmlHelper, urlHelperFactory));
+        }
+
+        public static IHtmlContent CheckBoxList(this IHtmlHelper htmlHelper, string expression, IEnumerable<SelectListItem> selectList, object? htmlAttributes = null)
+        {
+            var additionalViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(htmlHelper.ViewData)
+            {
+                ["SelectList"] = selectList,
+                ["HtmlAttributes"] = htmlAttributes
+            };
+            return htmlHelper.Editor(expression, "CheckBoxList", additionalViewData);
+        }
+
+        public static IHtmlContent CheckBoxListFor<TModel, TResult>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TResult>> expression, IEnumerable<SelectListItem> selectList, object? htmlAttributes = null)
+        {
+            var additionalViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(htmlHelper.ViewData)
+            {
+                ["SelectList"] = selectList,
+                ["HtmlAttributes"] = htmlAttributes
+            };
+            return htmlHelper.EditorFor(expression, "CheckBoxList", additionalViewData);
+        }
+
+        public static IHtmlContent RadioList(this IHtmlHelper htmlHelper, string expression, IEnumerable<SelectListItem> selectList, object? htmlAttributes = null)
+        {
+            var additionalViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(htmlHelper.ViewData)
+            {
+                ["SelectList"] = selectList,
+                ["HtmlAttributes"] = htmlAttributes
+            };
+            return htmlHelper.Editor(expression, "RadioList", additionalViewData);
+        }
+
+        public static IHtmlContent RadioListFor<TModel, TResult>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TResult>> expression, IEnumerable<SelectListItem> selectList, object? htmlAttributes = null)
+        {
+            var additionalViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(htmlHelper.ViewData)
+            {
+                ["SelectList"] = selectList,
+                ["HtmlAttributes"] = htmlAttributes
+            };
+            return htmlHelper.EditorFor(expression, "RadioList", additionalViewData);
+        }
+
+        public static IHtmlContent HtmlAttributesFromObject(this IHtmlHelper htmlHelper, object? htmlAttributes)
+        {
+            IDictionary<string, object>? htmlAttributeDictionary = new Dictionary<string, object>();
+
+            if (htmlAttributes != null)
+            {
+                htmlAttributeDictionary = htmlAttributes as IDictionary<string, object>;
+                if (htmlAttributeDictionary == null)
+                {
+                    htmlAttributeDictionary = Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
+                }
+                
+                var attributeString = string.Join(" ", htmlAttributeDictionary.Select(x => $"{x.Key}=\"{System.Web.HttpUtility.HtmlEncode(x.Value?.ToString() ?? "")}\""));
+                return htmlHelper.Raw(attributeString);
+            }
+
+            return htmlHelper.Raw("");
         }
     }
 }

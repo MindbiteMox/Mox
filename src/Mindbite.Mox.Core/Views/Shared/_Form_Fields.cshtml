@@ -1,7 +1,8 @@
-﻿@using System.Reflection;
-@using Mindbite.Mox.Attributes;
+﻿@using System.Reflection
+@using Mindbite.Mox.Attributes
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.Extensions.Localization
+@using Mindbite.Mox.UI
 
 @inject IStringLocalizer localizer
 
@@ -43,6 +44,16 @@
         continue;
     }
 
+    var formDataSourceAttributeSelectList = default(IEnumerable<SelectListItem>);
+    var formDataSourceAttributeEmptyMessage = default(string);
+    if (field.GetCustomAttributes<MoxFormDataSourceAttribute>().Any())
+    {
+        var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
+        var dataSourceAttribute = field.GetCustomAttribute<MoxFormDataSourceAttribute>();
+        formDataSourceAttributeSelectList = await dataSourceAttribute.GetSelectListAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType(), ((object)Model).GetType());
+        formDataSourceAttributeEmptyMessage = await dataSourceAttribute.GetEmptyMessageAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+    }
+
     if (hiddenFields.Contains(field) || field.GetCustomAttributes(typeof(HiddenInputAttribute), true).Any())
     {
         @Html.Hidden(field.Name)
@@ -57,12 +68,10 @@
         {
             items = Html.GetEnumSelectList(field.PropertyType).ToArray();
         }
-        else if(field.GetCustomAttributes<MoxFormDataSourceAttribute>().Any())
+        else if(formDataSourceAttributeSelectList != null)
         {
-            var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
-            var dataSourceAttribute = field.GetCustomAttribute<MoxFormDataSourceAttribute>();
-            items = await dataSourceAttribute.GetSelectListAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType(), ((object)Model).GetType());
-            emptyMessage = await dataSourceAttribute.GetEmptyMessageAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+            items = formDataSourceAttributeSelectList;
+            emptyMessage = formDataSourceAttributeEmptyMessage;
         }
         else if(!string.IsNullOrWhiteSpace(fieldTypeAttribute.DataSourcePropertyName))
         {
@@ -83,6 +92,10 @@
 
         emptyMessage ??= fieldTypeAttribute.EmptyLabel;
 
+        var additionalViewData = new ViewDataDictionary(ViewData);
+        additionalViewData["SelectList"] = items;
+        additionalViewData["OptionLabel"] = localizer[emptyMessage ?? ""];
+
         switch (fieldTypeAttribute.Render)
         {
             case Render.DropDown:
@@ -93,32 +106,45 @@
                 </p>
                 break;
             case Render.CheckBoxList:
-                <ul class="checkbox">
-                    <li><p>@Html.DisplayName(field.Name)</p></li>
-                    @for (int i = 0; i < items.Count(); i++)
-                    {
-                        <li>
-                            @Html.Hidden($"{field.Name}[{i}].Value", items.ElementAt(i).Value)
-                            @Html.Hidden($"{field.Name}[{i}].Text", items.ElementAt(i).Text)
-                            @Html.CheckBox($"{field.Name}[{i}].Selected", items.ElementAt(i).Selected)
-                            @Html.Label($"{field.Name}[{i}].Selected", items.ElementAt(i).Text)
-                        </li>
-                    }
-                </ul>
+                <div>
+                    @Html.Label(field.Name)
+                    @Html.ValidationMessage(field.Name)
+                    @Html.CheckBoxList(field.Name, items, new { the_form = "moxform\"<zdasd>das" })
+                </div>
                 break;
             case Render.Radio:
+                <div>
+                    @Html.Label(field.Name)
+                    @Html.ValidationMessage(field.Name)
+                    @Html.RadioList(field.Name, items, new { the_form = new Guid() })
+                </div>
+                break;
             default:
-                throw new NotImplementedException();
+                {
+                    <div>
+                        @Html.Label(field.Name)
+                        @Html.ValidationMessage(field.Name)
+                        @Html.Editor(field.Name, additionalViewData: additionalViewData)
+                    </div>
+                }
+                break;
         }
     }
     else
     {
         var renderAttribute = field.GetCustomAttributes<MoxFormFieldTypeAttribute>().FirstOrDefault();
+        var additionalViewData = new ViewDataDictionary(ViewData);
+
+        if (formDataSourceAttributeSelectList != null)
+        {
+            additionalViewData["SelectList"] = formDataSourceAttributeSelectList;
+            additionalViewData["OptionLabel"] = localizer[formDataSourceAttributeEmptyMessage ?? ""];
+        }
 
         @if (field.PropertyType == typeof(bool))
         {
             <p class="checkbox">
-                @Html.Editor(field.Name)
+                @Html.Editor(field.Name, additionalViewData)
                 @Html.Label(field.Name)
                 @Html.ValidationMessage(field.Name)
             </p>
@@ -128,7 +154,7 @@
             @if (renderAttribute?.Render == Render.EditorOnly)
             {
                 <div>
-                    @Html.Editor(field.Name)
+                    @Html.Editor(field.Name, additionalViewData)
                 </div>
             }
             else if(renderAttribute?.Render == Render.DivContainer)
@@ -139,12 +165,10 @@
 
                     @if (!hasRenderedFirstField)
                     {
-                        @Html.Editor(field.Name, new { htmlAttributes = new { autofocus = "autofocus" } })
+                        additionalViewData["htmlAttributes"] = new { autofocus = "autofocus" };
                     }
-                    else
-                    {
-                        @Html.Editor(field.Name)
-                    }
+                     
+                    @Html.Editor(field.Name, additionalViewData)
                 </div>
             }
             else
@@ -155,12 +179,10 @@
 
                     @if (!hasRenderedFirstField)
                     {
-                        @Html.Editor(field.Name, new { htmlAttributes = new { autofocus = "autofocus" } })
+                        additionalViewData["htmlAttributes"] = new { autofocus = "autofocus" };
                     }
-                    else
-                    {
-                        @Html.Editor(field.Name)
-                    }
+                     
+                    @Html.Editor(field.Name, additionalViewData)
                 </p>
             }
             hasRenderedFirstField = true;

@@ -232,6 +232,12 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-content fieldset ul.checkbox { list-style: none; margin: 1em 0; padding: 0; display: inline-block; }
 .mox-content fieldset ul.checkbox li { display: block; }
 
+.mox-checkboxlist { display: flex; flex-direction: column; list-style: none; padding: 0; margin: 1em 2px; }
+.mox-checkboxlist > * { display: flex; align-items: flex-end; }
+label ~ .mox-checkboxlist { margin-top: 2px; }
+.mox-checkboxlist label { margin-left: 4px; display: inline-block; }
+.mox-checkboxlist input[type="radio"] { margin: 3px 0; }
+
 .mox-content fieldset.buttons { width: 100%; box-sizing: border-box; }
 
 .mox-hidden-if-not-checked { display: none; padding-top: 1em; margin-bottom: 30px; }
