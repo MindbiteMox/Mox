@@ -154,11 +154,18 @@ namespace Mindbite.Mox.Identity.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MagicLinkLogIn(MagicLinkEmailViewModel model)
+        public IActionResult MagicLinkLogIn(MagicLinkEmailViewModel model)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ActionName(nameof(MagicLinkLogIn))]
+        public async Task<IActionResult> DoMagicLinkLogIn(MagicLinkEmailViewModel model)
         {
             var (isValid, user) = await this._magicLinkManager.ValidateMagicTokenAsync(model.MagicToken);
 
-            if(!isValid)
+            if (!isValid)
             {
                 return RedirectToAction("Index");
             }

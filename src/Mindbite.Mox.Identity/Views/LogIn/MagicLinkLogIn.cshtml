@@ -1,0 +1,43 @@
+﻿@using Microsoft.Extensions.Localization;
+@{
+    Layout = "Mox/LogIn/_Layout";
+}
+@model Mindbite.Mox.Identity.ViewModels.AccountViewModel.MagicLinkEmailViewModel
+@inject IStringLocalizer localizer
+
+@using (Html.BeginForm(ViewContext.RouteData.Values["Action"].ToString(), ViewContext.RouteData.Values["Controller"].ToString(), ViewContext.RouteData.Values, FormMethod.Post, null, new { id = "autoLoginForm" }))
+{
+    <fieldset>
+        @Html.ValidationSummary(true)
+
+        <p>@localizer["Du loggas in..."]</p>
+
+        @Html.HiddenFor(x => x.RememberMe)
+        @Html.HiddenFor(x => x.ReturnUrl)
+        @Html.HiddenFor(x => x.ShortCode)
+        @Html.HiddenFor(x => x.MagicToken)
+
+        <p id="delayMessage" style="display: none">
+            @localizer["Klicka på logga in för att komma vidare"]
+            <br /><br/>
+
+            <input type="submit" value="@localizer["Logga in"]" />
+            @Html.ActionLink(localizer["Avbryt"], "Index", "LogIn")
+        </p>
+
+        <noscript>
+            <p>@localizer["Med javascript inaktiverat måste du klicka på logga in för att komma vidare"]</p>
+            <p>
+                <input type="submit" value="@localizer["Logga in"]" />
+                @Html.ActionLink(localizer["Avbryt"], "Index", "LogIn")
+            </p>
+        </noscript>
+    </fieldset>
+}
+
+<script>
+    window.autoLoginForm.submit();
+    setTimeout(function () {
+        window.delayMessage.style.display = '';
+    }, 2000);
+</script>
