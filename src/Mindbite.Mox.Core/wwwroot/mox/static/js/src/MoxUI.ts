@@ -90,7 +90,7 @@
 
         contentContainer: HTMLElement;
 
-        private static allOpenModals: Modal[];
+        static allOpenModals: Modal[];
 
         constructor(options?: ModalOptions) {
             let _options = options || {} as ModalOptions;
@@ -123,7 +123,7 @@
             this.escapeHandle = CloseOnEscapeQueue.enqueue(() => this.close());
         }
 
-        static async createDialog(url: string): Promise<Mox.UI.Modal> {
+        static async createDialog(url: string, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal> {
             let modal = new Modal({
                 className: 'mox-modal mox-dialog',
                 contentClassName: 'mox-modal-content mox-content'
@@ -135,6 +135,9 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             };
+
+            configureRequestInit?.call(this, getInit);
+
             let response = await fetch(url, getInit)
                 .then(Mox.Utils.Fetch.checkErrorCode)
                 .then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
@@ -151,11 +154,11 @@
             return modal;
         }
 
-        static async createFormDialog(url: string, options: FormDialogOptions): Promise<Mox.UI.Modal> {
+        static async createFormDialog(url: string, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal> {
             const _options = options || {} as FormDialogOptions;
             _options.actualWindowHref = _options.actualWindowHref || window.location.href;
 
-            const modal = await Modal.createDialog(url);
+            const modal = await Modal.createDialog(url, configureRequestInit);
 
             function bindEvents() {
                 const form = modal.contentContainer.querySelector('form');
@@ -189,26 +192,26 @@
             async function submitForm(form, event) {
                 event.preventDefault();
 
-                const response = await Mox.Utils.Fetch.submitAjaxForm(form, event);
+                const response = await post(form.action, new FormData(form), null, null, configureRequestInit)
                 console.log(response);
-                if(response.type === 'html') {
+                if (response.type === 'html') {
                     modal.replaceContentWithHtml(response.data as string);
 
-                    if(_options.onSubmit) {
+                    if (_options.onSubmit) {
                         _options.onSubmit(modal, form, event);
                     }
-                } else if(response.type === 'json') {
+                } else if (response.type === 'json') {
                     const responseData = response.data as Mox.Utils.Fetch.FormPostResponse;
-                    
-                    if(_options.onSubmitFormData) {
+
+                    if (_options.onSubmitFormData) {
                         _options.onSubmitFormData(modal, form, responseData);
                     }
 
-                    if(_options.onSubmit) {
+                    if (_options.onSubmit) {
                         _options.onSubmit(modal, form, event);
                     }
 
-                    if(responseData.handleManually) {
+                    if (responseData.handleManually) {
                         return;
                     }
 
@@ -216,11 +219,13 @@
                         modal.replaceContentWithHtml(responseData.data);
                     } else if (responseData.action === 'redirect') {
                         const indexOfPath = _options.actualWindowHref.toLowerCase().indexOf((responseData.data as string).toLowerCase())
-                        if(indexOfPath !== _options.actualWindowHref.length - (responseData.data as string).length) {
+                        if (indexOfPath !== _options.actualWindowHref.length - (responseData.data as string).length) {
                             window.location.href = _options.actualWindowHref;
                         } else {
                             await modal.close();
                         }
+                    } else if (responseData.action === 'close') {
+                        await modal.close();
                     }
                 }
             }
@@ -281,13 +286,15 @@
             });
         }
 
-        async replaceContent(url: string) {
+        async replaceContent(url: string, configureRequestInit?: (init: RequestInit) => void) {
             let getInit: RequestInit = {
                 credentials: 'same-origin',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             };
+            configureRequestInit?.call(this, getInit);
+
             this.shadow.classList.add('loading');
             this.contentWrapper.classList.add('loading');
             let response = await fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(url => { window.location.href = url; }));
@@ -355,6 +362,7 @@
         filters: (HTMLInputElement | HTMLSelectElement | string)[];
         rememberFilters?: boolean;
         skipRenderOnCreate?: boolean;
+        configureRequestInit?: (init: RequestInit) => void;
     }
 
     export class DataTable {
@@ -500,6 +508,7 @@
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             };
+            this.options.configureRequestInit?.call(this, getInit);
             this.options.container.innerHTML = await fetch(url, getInit)
                 .then(Mox.Utils.Fetch.checkErrorCode)
                 .then(Mox.Utils.Fetch.parseText);

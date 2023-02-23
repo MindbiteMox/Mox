@@ -469,11 +469,16 @@ namespace Mindbite.Mox.Attributes
         public string? Placeholder { get; set; }
         public int Order { get; set; } = 0;
         public bool SpacingAfter { get; set; } = false;
-
+        
         /// <summary>
         /// A static function on this class with the following signature: Task<IEnumerable<SelectListItem>> YourAsyncMethod(HttpContext context)
         /// </summary>
         public string? GetSelectListFunction { get; set; }
+
+        /// <summary>
+        /// A static function on this class with the following signature: Task<bool> YourAsyncMethod(HttpContext context)
+        /// </summary>
+        public string? IsVisibleFunction { get; set; }
 
         public MoxFormFilterAttribute(MoxFormFilterType type, string name)
         {
@@ -506,7 +511,7 @@ namespace Mindbite.Mox.Attributes
                 var method = viewModelType.GetMethod(this.GetSelectListFunction, BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
                 if(method == null)
                 {
-                    throw new Exception($"public static {nameof(this.GetSelectListFunction)}(HttpContext) could not be found!");
+                    throw new Exception($"public static Task<IEnumerable<SelectListItem>> {nameof(this.GetSelectListFunction)}(HttpContext) could not be found!");
                 }
 
                 if(method.GetParameters().FirstOrDefault()?.ParameterType != typeof(Microsoft.AspNetCore.Http.HttpContext))
@@ -533,6 +538,49 @@ namespace Mindbite.Mox.Attributes
         public static IEnumerable<MoxFormFilterAttribute> GetFilters(Type controllerType)
         {
             return GetViewModelType(controllerType).GetCustomAttributes<MoxFormFilterAttribute>().ToList();
+        }
+
+        public static async Task<IEnumerable<MoxFormFilterAttribute>> GetVisibleFiltersAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Type controllerType)
+        {
+            var allFilters = GetFilters(controllerType);
+            var visibleFilters = new List<MoxFormFilterAttribute>();
+            foreach (var filter in allFilters)
+            {
+                if (await filter.IsVisible(httpContext, controllerType))
+                {
+                    visibleFilters.Add(filter);
+                }
+            }
+
+            return visibleFilters;
+        }
+
+        public async Task<bool> IsVisible(Microsoft.AspNetCore.Http.HttpContext httpContext, Type controllerType)
+        {
+            if (string.IsNullOrWhiteSpace(this.IsVisibleFunction))
+            {
+                return true;
+            }
+
+            var viewModelType = GetViewModelType(controllerType);
+            var method = viewModelType.GetMethod(this.IsVisibleFunction, BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+            if (method == null)
+            {
+                throw new Exception($"public static Task<bool> {nameof(this.IsVisibleFunction)}(HttpContext) could not be found!");
+            }
+
+            if (method.GetParameters().FirstOrDefault()?.ParameterType != typeof(Microsoft.AspNetCore.Http.HttpContext))
+            {
+                throw new Exception($"{nameof(this.IsVisibleFunction)} must be defined with exactly 1 parameter of type 'HttpContext'");
+            }
+
+            if (method.ReturnType != typeof(Task<bool>))
+            {
+                throw new Exception($"{nameof(this.IsVisibleFunction)} must be defined with return type 'Task<bool>'");
+            }
+
+            var result = (Task<bool>)method.Invoke(null, new[] { httpContext })!;
+            return await result;
         }
     }
 }

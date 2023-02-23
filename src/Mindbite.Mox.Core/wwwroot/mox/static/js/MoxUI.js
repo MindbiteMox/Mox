@@ -118,7 +118,7 @@ var Mox;
                 this.onContentReplacedCallbacks = [];
                 this.escapeHandle = CloseOnEscapeQueue.enqueue(function () { return _this.close(); });
             }
-            Modal.createDialog = function (url) {
+            Modal.createDialog = function (url, configureRequestInit) {
                 return __awaiter(this, void 0, void 0, function () {
                     var modal, getInit, response, text;
                     return __generator(this, function (_a) {
@@ -134,6 +134,7 @@ var Mox;
                                         'X-Requested-With': 'XMLHttpRequest'
                                     }
                                 };
+                                configureRequestInit === null || configureRequestInit === void 0 ? void 0 : configureRequestInit.call(this, getInit);
                                 return [4 /*yield*/, fetch(url, getInit)
                                         .then(Mox.Utils.Fetch.checkErrorCode)
                                         .then(Mox.Utils.Fetch.redirect(function (url) { window.location.href = url; }))];
@@ -154,7 +155,7 @@ var Mox;
                     });
                 });
             };
-            Modal.createFormDialog = function (url, options) {
+            Modal.createFormDialog = function (url, options, configureRequestInit) {
                 return __awaiter(this, void 0, void 0, function () {
                     function bindEvents() {
                         var form = modal.contentContainer.querySelector('form');
@@ -187,7 +188,7 @@ var Mox;
                                 switch (_a.label) {
                                     case 0:
                                         event.preventDefault();
-                                        return [4 /*yield*/, Mox.Utils.Fetch.submitAjaxForm(form, event)];
+                                        return [4 /*yield*/, post(form.action, new FormData(form), null, null, configureRequestInit)];
                                     case 1:
                                         response = _a.sent();
                                         console.log(response);
@@ -196,9 +197,9 @@ var Mox;
                                         if (_options.onSubmit) {
                                             _options.onSubmit(modal, form, event);
                                         }
-                                        return [3 /*break*/, 6];
+                                        return [3 /*break*/, 9];
                                     case 2:
-                                        if (!(response.type === 'json')) return [3 /*break*/, 6];
+                                        if (!(response.type === 'json')) return [3 /*break*/, 9];
                                         responseData = response.data;
                                         if (_options.onSubmitFormData) {
                                             _options.onSubmitFormData(modal, form, responseData);
@@ -211,9 +212,9 @@ var Mox;
                                         }
                                         if (!(responseData.action === 'replaceWithContent')) return [3 /*break*/, 3];
                                         modal.replaceContentWithHtml(responseData.data);
-                                        return [3 /*break*/, 6];
+                                        return [3 /*break*/, 9];
                                     case 3:
-                                        if (!(responseData.action === 'redirect')) return [3 /*break*/, 6];
+                                        if (!(responseData.action === 'redirect')) return [3 /*break*/, 7];
                                         indexOfPath = _options.actualWindowHref.toLowerCase().indexOf(responseData.data.toLowerCase());
                                         if (!(indexOfPath !== _options.actualWindowHref.length - responseData.data.length)) return [3 /*break*/, 4];
                                         window.location.href = _options.actualWindowHref;
@@ -222,7 +223,14 @@ var Mox;
                                     case 5:
                                         _a.sent();
                                         _a.label = 6;
-                                    case 6: return [2 /*return*/];
+                                    case 6: return [3 /*break*/, 9];
+                                    case 7:
+                                        if (!(responseData.action === 'close')) return [3 /*break*/, 9];
+                                        return [4 /*yield*/, modal.close()];
+                                    case 8:
+                                        _a.sent();
+                                        _a.label = 9;
+                                    case 9: return [2 /*return*/];
                                 }
                             });
                         });
@@ -233,7 +241,7 @@ var Mox;
                             case 0:
                                 _options = options || {};
                                 _options.actualWindowHref = _options.actualWindowHref || window.location.href;
-                                return [4 /*yield*/, Modal.createDialog(url)];
+                                return [4 /*yield*/, Modal.createDialog(url, configureRequestInit)];
                             case 1:
                                 modal = _a.sent();
                                 modal.onContentReplaced(function () {
@@ -291,7 +299,7 @@ var Mox;
                     });
                 });
             };
-            Modal.prototype.replaceContent = function (url) {
+            Modal.prototype.replaceContent = function (url, configureRequestInit) {
                 return __awaiter(this, void 0, void 0, function () {
                     var getInit, response, text;
                     return __generator(this, function (_a) {
@@ -303,6 +311,7 @@ var Mox;
                                         'X-Requested-With': 'XMLHttpRequest'
                                     }
                                 };
+                                configureRequestInit === null || configureRequestInit === void 0 ? void 0 : configureRequestInit.call(this, getInit);
                                 this.shadow.classList.add('loading');
                                 this.contentWrapper.classList.add('loading');
                                 return [4 /*yield*/, fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode).then(Mox.Utils.Fetch.redirect(function (url) { window.location.href = url; }))];
@@ -495,11 +504,12 @@ var Mox;
                 });
             };
             DataTable.prototype.render = function (url) {
+                var _a;
                 return __awaiter(this, void 0, void 0, function () {
-                    var getInit, _a, sortLinks;
+                    var getInit, _b, sortLinks;
                     var _this = this;
-                    return __generator(this, function (_b) {
-                        switch (_b.label) {
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
                             case 0:
                                 if (!this.options.container.children.length) {
                                     this.options.container.classList.add('mox-datatable-loader');
@@ -510,12 +520,13 @@ var Mox;
                                         'X-Requested-With': 'XMLHttpRequest',
                                     },
                                 };
-                                _a = this.options.container;
+                                (_a = this.options.configureRequestInit) === null || _a === void 0 ? void 0 : _a.call(this, getInit);
+                                _b = this.options.container;
                                 return [4 /*yield*/, fetch(url, getInit)
                                         .then(Mox.Utils.Fetch.checkErrorCode)
                                         .then(Mox.Utils.Fetch.parseText)];
                             case 1:
-                                _a.innerHTML = _b.sent();
+                                _b.innerHTML = _c.sent();
                                 if (this.options.rememberFilters) {
                                     localStorage.setItem(this.tableId + '_fullurl', url);
                                     localStorage.setItem(this.tableId + '_filtersquery', this.filterQueryString);
@@ -536,8 +547,8 @@ var Mox;
                                 if (!this.options.onRenderComplete) return [3 /*break*/, 3];
                                 return [4 /*yield*/, this.options.onRenderComplete(this)];
                             case 2:
-                                _b.sent();
-                                _b.label = 3;
+                                _c.sent();
+                                _c.label = 3;
                             case 3: return [2 /*return*/];
                         }
                     });

@@ -7,10 +7,10 @@
     <TargetFramework>net6.0</TargetFramework>
     <OutputTypeEx>library</OutputTypeEx>
     <IsPackable>true</IsPackable>
-    <Version>6.1.1</Version>
+    <Version>6.1.4</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <FileVersion>6.1.1.0</FileVersion>
-    <AssemblyVersion>6.1.1.0</AssemblyVersion>
+    <FileVersion>6.1.4.0</FileVersion>
+    <AssemblyVersion>6.1.4.0</AssemblyVersion>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <Copyright>Mindbite AB</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>

@@ -217,35 +217,36 @@ function addQueryToUrl(url: string, queryString: string): string {
     return `${url}${separator}${queryString}`;
 }
 
-function get(url: string, queryParams?: any): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-        const request = new XMLHttpRequest();
+async function get(url: string, queryParams?: any, additionalHeaders?: any, configureRequestInit?: (init: RequestInit) => void): Promise<string> {
+    let _url = url;
+    if (queryParams) {
+        _url = addQueryToUrl(url, queryString(queryParams));
+    }
 
-        let _url = url;
-        if (queryParams) {
-            _url = addQueryToUrl(url, queryString(queryParams));
-        }
+    let headers = {
+        'X-Requested-With': 'XMLHttpRequest'
+    };
 
-        request.open("GET", _url, true);
-        request.onreadystatechange = function (event) {
-            if (request.readyState === 4) {
-                if (request.status === 200) {
-                    resolve(request.responseText);
-                } else {
-                    reject(request.status);
-                }
-            }
-        };
+    for (var name in additionalHeaders || {}) {
+        headers[name] = additionalHeaders[name];
+    }
 
-        request.send();
-    });
+    let requestInit: RequestInit = {
+        credentials: 'same-origin',
+        headers: headers
+    };
+    configureRequestInit?.call(this, requestInit);
+
+    var response = await fetch(_url, requestInit).then(Mox.Utils.Fetch.checkErrorCode);
+
+    return await Mox.Utils.Fetch.parseText(response);
 }
 
 async function getJSON(url: string, queryParams?: any): Promise<any> {
     return JSON.parse(await get(url, queryParams));
 }
 
-async function post(url: string, body: BodyInit, queryParams?: any, additionalHeaders?: any): Promise<{ type: 'html' | 'json', data: string | Mox.Utils.Fetch.FormPostResponse | any }> {
+async function post(url: string, body: BodyInit, queryParams?: any, additionalHeaders?: any, configureRequestInit?: (init: RequestInit) => void): Promise<{ type: 'html' | 'json', data: string | Mox.Utils.Fetch.FormPostResponse | any, statusCode: number }> {
 
     let _url = url;
     if (queryParams) {
@@ -260,21 +261,24 @@ async function post(url: string, body: BodyInit, queryParams?: any, additionalHe
         headers[name] = additionalHeaders[name];
     }
 
-    var response = await fetch(_url, {
+    let requestInit: RequestInit = {
         method: 'POST',
         body: body,
         credentials: 'same-origin',
         headers: headers
-    }).then(Mox.Utils.Fetch.checkErrorCode);
+    };
+    configureRequestInit?.call(this, requestInit);
+
+    var response = await fetch(_url, requestInit).then(Mox.Utils.Fetch.checkErrorCode);
 
     const contentType = response.headers.get('Content-Type');
 
     if (!contentType) {
-        return { type: 'html', data: '' };
+        return { type: 'html', data: '', statusCode: response.status };
     } else if (contentType.indexOf('text/html') > -1 || contentType.indexOf("text/plain") > -1) {
-        return { type: 'html', data: await Mox.Utils.Fetch.parseText(response) };
+        return { type: 'html', data: await Mox.Utils.Fetch.parseText(response), statusCode: response.status };
     } else if (contentType.indexOf('application/json') > -1) {
-        return { type: 'json', data: await Mox.Utils.Fetch.parseJson(response) };
+        return { type: 'json', data: await Mox.Utils.Fetch.parseJson(response), statusCode: response.status };
     } else {
         throw new Error('Content-Type: "' + contentType + '" cannot be used when responing to a form post request.');
     }

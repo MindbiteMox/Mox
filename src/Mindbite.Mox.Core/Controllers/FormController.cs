@@ -216,8 +216,11 @@ namespace Mindbite.Mox.Core.Controllers
             {
                 await DeleteAsync(_id);
 
-                this.DisplayMessage(this.ModelDeletedMessage);
-                return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
+                if (ModelState.IsValid)
+                {
+                    this.DisplayMessage(this.ModelDeletedMessage);
+                    return RedirectToAction("Index", this.RedirectToIndexRouteValues(viewModel));
+                }
             }
 
 

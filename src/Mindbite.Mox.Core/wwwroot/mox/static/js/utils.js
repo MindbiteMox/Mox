@@ -274,25 +274,34 @@ function addQueryToUrl(url, queryString) {
     var separator = url.indexOf('?') > -1 ? '&' : '?';
     return "" + url + separator + queryString;
 }
-function get(url, queryParams) {
-    return new Promise(function (resolve, reject) {
-        var request = new XMLHttpRequest();
-        var _url = url;
-        if (queryParams) {
-            _url = addQueryToUrl(url, queryString(queryParams));
-        }
-        request.open("GET", _url, true);
-        request.onreadystatechange = function (event) {
-            if (request.readyState === 4) {
-                if (request.status === 200) {
-                    resolve(request.responseText);
-                }
-                else {
-                    reject(request.status);
-                }
+function get(url, queryParams, additionalHeaders, configureRequestInit) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _url, headers, name, requestInit, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _url = url;
+                    if (queryParams) {
+                        _url = addQueryToUrl(url, queryString(queryParams));
+                    }
+                    headers = {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    };
+                    for (name in additionalHeaders || {}) {
+                        headers[name] = additionalHeaders[name];
+                    }
+                    requestInit = {
+                        credentials: 'same-origin',
+                        headers: headers
+                    };
+                    configureRequestInit === null || configureRequestInit === void 0 ? void 0 : configureRequestInit.call(this, requestInit);
+                    return [4 /*yield*/, fetch(_url, requestInit).then(Mox.Utils.Fetch.checkErrorCode)];
+                case 1:
+                    response = _a.sent();
+                    return [4 /*yield*/, Mox.Utils.Fetch.parseText(response)];
+                case 2: return [2 /*return*/, _a.sent()];
             }
-        };
-        request.send();
+        });
     });
 }
 function getJSON(url, queryParams) {
@@ -308,9 +317,9 @@ function getJSON(url, queryParams) {
         });
     });
 }
-function post(url, body, queryParams, additionalHeaders) {
+function post(url, body, queryParams, additionalHeaders, configureRequestInit) {
     return __awaiter(this, void 0, void 0, function () {
-        var _url, headers, name, response, contentType;
+        var _url, headers, name, requestInit, response, contentType;
         var _a, _b;
         return __generator(this, function (_c) {
             switch (_c.label) {
@@ -325,27 +334,29 @@ function post(url, body, queryParams, additionalHeaders) {
                     for (name in additionalHeaders || {}) {
                         headers[name] = additionalHeaders[name];
                     }
-                    return [4 /*yield*/, fetch(_url, {
-                            method: 'POST',
-                            body: body,
-                            credentials: 'same-origin',
-                            headers: headers
-                        }).then(Mox.Utils.Fetch.checkErrorCode)];
+                    requestInit = {
+                        method: 'POST',
+                        body: body,
+                        credentials: 'same-origin',
+                        headers: headers
+                    };
+                    configureRequestInit === null || configureRequestInit === void 0 ? void 0 : configureRequestInit.call(this, requestInit);
+                    return [4 /*yield*/, fetch(_url, requestInit).then(Mox.Utils.Fetch.checkErrorCode)];
                 case 1:
                     response = _c.sent();
                     contentType = response.headers.get('Content-Type');
                     if (!!contentType) return [3 /*break*/, 2];
-                    return [2 /*return*/, { type: 'html', data: '' }];
+                    return [2 /*return*/, { type: 'html', data: '', statusCode: response.status }];
                 case 2:
                     if (!(contentType.indexOf('text/html') > -1 || contentType.indexOf("text/plain") > -1)) return [3 /*break*/, 4];
                     _a = { type: 'html' };
                     return [4 /*yield*/, Mox.Utils.Fetch.parseText(response)];
-                case 3: return [2 /*return*/, (_a.data = _c.sent(), _a)];
+                case 3: return [2 /*return*/, (_a.data = _c.sent(), _a.statusCode = response.status, _a)];
                 case 4:
                     if (!(contentType.indexOf('application/json') > -1)) return [3 /*break*/, 6];
                     _b = { type: 'json' };
                     return [4 /*yield*/, Mox.Utils.Fetch.parseJson(response)];
-                case 5: return [2 /*return*/, (_b.data = _c.sent(), _b)];
+                case 5: return [2 /*return*/, (_b.data = _c.sent(), _b.statusCode = response.status, _b)];
                 case 6: throw new Error('Content-Type: "' + contentType + '" cannot be used when responing to a form post request.');
             }
         });

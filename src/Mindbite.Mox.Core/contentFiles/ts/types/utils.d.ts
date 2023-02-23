@@ -37,10 +37,11 @@ declare namespace Mox.Utils {
 }
 declare function queryString(params: any): string;
 declare function addQueryToUrl(url: string, queryString: string): string;
-declare function get(url: string, queryParams?: any): Promise<string>;
+declare function get(url: string, queryParams?: any, additionalHeaders?: any, configureRequestInit?: (init: RequestInit) => void): Promise<string>;
 declare function getJSON(url: string, queryParams?: any): Promise<any>;
-declare function post(url: string, body: BodyInit, queryParams?: any, additionalHeaders?: any): Promise<{
+declare function post(url: string, body: BodyInit, queryParams?: any, additionalHeaders?: any, configureRequestInit?: (init: RequestInit) => void): Promise<{
     type: 'html' | 'json';
     data: string | Mox.Utils.Fetch.FormPostResponse | any;
+    statusCode: number;
 }>;
 declare function getFormData(form: HTMLFormElement, prefix: string): FormData;

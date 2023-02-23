@@ -4,7 +4,9 @@
 
 @{
     var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
-    var filters = Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetFilters(actionDescriptor.ControllerTypeInfo.AsType());
+    var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
+
+    var filters = await Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetVisibleFiltersAsync(ViewContext.HttpContext, controllerType);
 }
 
 @foreach (var filter in filters.OrderBy(x => x.Order))
@@ -12,7 +14,7 @@
     <li class="@(filter.SpacingAfter ? "spacing" : "")">
         <div class="material-input tight">
             @{
-                var selectList = await filter.GetSelectListAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+                var selectList = await filter.GetSelectListAsync(ViewContext.HttpContext, controllerType);
                
                 switch (filter.Type)
                 {

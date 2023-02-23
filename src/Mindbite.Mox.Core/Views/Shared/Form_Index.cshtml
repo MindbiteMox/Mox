@@ -8,7 +8,7 @@
     Layout = (string)ViewData["Layout"];
 
     var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
-    var filters = Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetFilters(actionDescriptor.ControllerTypeInfo.AsType());
+    var filters = await Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetVisibleFiltersAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
 
     var canCreate = (bool)ViewData["CanCreate"];
 }
