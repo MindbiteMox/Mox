@@ -83,14 +83,16 @@ namespace Mindbite.Mox.Identity.Services
 
         public string GenerateNormalizedShortCode()
         {
-            const int size = 6;
+            int size = this._identityOptions.MagicLink?.ShortCodeGeneration?.CharacterCount ?? 6;
             var chars = "ABCDEFGHJKMNPQRTWXYZ2346789".ToCharArray();
 
-            var data = new byte[size];
-            using (var generator = new RNGCryptoServiceProvider())
+            if (!string.IsNullOrWhiteSpace(this._identityOptions.MagicLink?.ShortCodeGeneration?.CharacterSet))
             {
-                generator.GetNonZeroBytes(data);
+                chars = this._identityOptions.MagicLink.ShortCodeGeneration.CharacterSet.ToCharArray();
             }
+
+            var data = new byte[size];
+            RandomNumberGenerator.Fill(data);
 
             var result = new System.Text.StringBuilder(size);
             foreach (var b in data)
@@ -98,11 +100,16 @@ namespace Mindbite.Mox.Identity.Services
                 result.Append(chars[b % chars.Length]);
             }
 
-            return result.ToString();
+            return result.ToString().ToUpper();
         }
 
         public string FormatShortCode(string normalizedShortCode)
         {
+            if(this._identityOptions.MagicLink?.ShortCodeGeneration?.Format != null)
+            {
+                return this._identityOptions.MagicLink.ShortCodeGeneration.Format(normalizedShortCode);
+            }
+
             var parts = new List<string>();
             var shortCodeView = normalizedShortCode;
             while(shortCodeView.Length > 0)

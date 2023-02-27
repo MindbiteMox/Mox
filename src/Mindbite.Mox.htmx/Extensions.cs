@@ -36,7 +36,7 @@ namespace Mindbite.Mox.Extensions
         public static UpdatePanel BeginUpdatePanel(this IHtmlHelper helper, out string htmxPostUrl, string? id = null)
         {
             var linkGenerator = helper.ViewContext.HttpContext.RequestServices.GetRequiredService<LinkGenerator>();
-            htmxPostUrl = linkGenerator.GetPathByAction(helper.ViewContext.HttpContext, action: "UpdateEditorTemplate", controller: "Htmx", values: new
+            htmxPostUrl = linkGenerator.GetPathByAction(action: "UpdateEditorTemplate", controller: "Htmx", values: new
             {
                 prefix = helper.ViewData.TemplateInfo.HtmlFieldPrefix,
                 template = helper.ViewContext.View.Path,

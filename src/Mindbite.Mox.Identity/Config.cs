@@ -53,8 +53,20 @@ namespace Mindbite.Mox.Identity
 
         public class MagicLinkOptions
         {
-            // In minutes
+#nullable enable
+            public class ShortCodeOptions
+            {
+                public Func<string, string>? Format { get; set; }
+                public int? CharacterCount { get; set; }
+                /// <summary>
+                /// Do not use lower case characters, the short code is normalized as upper case.
+                /// </summary>
+                public string? CharacterSet { get; set; }
+            }
+#nullable disable
+
             public int ValidForMinutes { get; set; } = 5;
+            public ShortCodeOptions ShortCodeGeneration { get; set; } = new();
         }
 
         public BackdoorOptions Backdoor { get; set; }
