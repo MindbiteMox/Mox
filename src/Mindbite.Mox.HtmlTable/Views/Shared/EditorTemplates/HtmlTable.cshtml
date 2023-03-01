@@ -1,0 +1,59 @@
+﻿@using Mindbite.Mox.HtmlTable
+@model HtmlTable
+
+<div class="data-table">
+    <div>
+        <table class="@Model.Options.Css @Model.Options.TextAlign">
+            <tbody>
+                @foreach (IRow row in Model.Rows)
+                {
+                    @row.ToHtmlString()
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function toggleRowsExplicitArray(el, show, rowsToToggle) {
+        for (row = 0; row < rowsToToggle.length; row++) {
+            if (document.getElementById("Row_" + rowsToToggle[row].toString())) {
+                if (show) {
+                    document.getElementById("Row_" + rowsToToggle[row].toString()).removeAttribute("style");
+                }
+                else {
+                    document.getElementById("Row_" + rowsToToggle[row].toString()).setAttribute("style", "display:none;");
+                }
+            }
+        }
+        if (el) {
+            updateToggler(el, show);
+        }
+    }
+
+    function toggleRows(el, show, ...rowsToToggle) {
+        toggleRowsExplicitArray(el, show, rowsToToggle);
+    }
+
+    function toggleAllRows(show) {
+        let allRows = document.querySelectorAll(".data-table tr");
+        for (i = 0; i < allRows.length; i++) {
+            let toggler = allRows[i].querySelector("i");
+            if (toggler) {
+                let args = toggler.getAttribute("onclick").replace(" true", "").replace(" false", "").replace("toggleRows(this,, ", "").replace(")", "").split(',').map(v => parseInt(v));
+                toggleRowsExplicitArray(toggler, show, args);
+            }
+        }
+    }
+
+    function updateToggler(toggler, show) {
+        if (show) {
+            toggler.classList = "fas fa-minus";
+            toggler.setAttribute("onclick", toggler.getAttribute("onclick").replace("true", "false"));
+        }
+        else {
+            toggler.classList = "fas fa-plus";
+            toggler.setAttribute("onclick", toggler.getAttribute("onclick").replace("false", "true"));
+        }
+    }
+</script>
