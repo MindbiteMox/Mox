@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoApp", "src\Examples\DemoApp\DemoApp.csproj", "{59EE9983-9F7D-4935-9C2A-A222F8A8E056}"
 EndProject
@@ -31,7 +31,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mindbite.Mox.Reporting", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mindbite.Mox.Images", "src\Mindbite.Mox.Images\Mindbite.Mox.Images.csproj", "{6516AC4A-9B20-4B66-92C3-2BC5130878E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mindbite.Mox.htmx", "src\Mindbite.Mox.htmx\Mindbite.Mox.htmx.csproj", "{B0041EB5-FCE3-45EB-9ACB-8C2F09EF314D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mindbite.Mox.htmx", "src\Mindbite.Mox.htmx\Mindbite.Mox.htmx.csproj", "{B0041EB5-FCE3-45EB-9ACB-8C2F09EF314D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mindbite.Mox.HtmlTable", "src\Mindbite.Mox.HtmlTable\Mindbite.Mox.HtmlTable.csproj", "{C3BFECAE-C139-46A5-A9E5-D301C87D532C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +101,10 @@ Global
 		{B0041EB5-FCE3-45EB-9ACB-8C2F09EF314D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0041EB5-FCE3-45EB-9ACB-8C2F09EF314D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0041EB5-FCE3-45EB-9ACB-8C2F09EF314D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3BFECAE-C139-46A5-A9E5-D301C87D532C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3BFECAE-C139-46A5-A9E5-D301C87D532C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3BFECAE-C139-46A5-A9E5-D301C87D532C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3BFECAE-C139-46A5-A9E5-D301C87D532C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup Label="Configuration">
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyVersion>6.0.1.0</AssemblyVersion>
+		<FileVersion>6.0.1.0</FileVersion>
+		<Version>6.0.15</Version>
+		<OutputTypeEx>library</OutputTypeEx>
+		<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+		<Copyright>UCS Mindbite AB</Copyright>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IsPackable>true</IsPackable>
+		<Nullable>enable</Nullable>
+		<Title>Mindbite.Mox.HtmlTable</Title>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.1.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+		<PackageReference Include="NPOI" Version="2.6.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="wwwroot\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Mox\src\Mindbite.Mox.Core\Mindbite.Mox.Core.csproj" />
+	</ItemGroup>
+</Project>
