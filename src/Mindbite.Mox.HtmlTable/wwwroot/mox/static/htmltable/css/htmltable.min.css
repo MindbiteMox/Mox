@@ -1,25 +1,38 @@
-﻿.data-table { max-width: fit-content; font-size: 12px; }
-.data-table > div { overflow: auto; max-height: calc(100vh - 300px); min-height: 130px; }
-.data-table table { border-collapse: separate; border-spacing: 0; position: relative; box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); border: 1px solid rgba(0,0,0,.5); }
-.data-table td, .data-table th { border-left: 1px solid #ddd; padding: 2px 6px; white-space: nowrap; }
-.data-table tr:nth-of-type(even) { background-color: #f3f3f3; }
-.data-table tr:nth-of-type(even) th { background-color: #f3f3f3; }
-.data-table tr:nth-of-type(odd) th { background-color: #ffffff; }
-.data-table tr:hover { background-color: #e3e3e3; }
-.data-table td:first-child, .data-table th:first-child { border-left: none; }
-.data-table td { }
-.data-table th { font-weight: bold; color: rgba(0,0,0,.9); background-color: #ffffff; }
-.data-table-sticky-row-zindex { z-index: 1 }
-.data-table-sticky-row { position: sticky; top: 0; z-index: 1 }
-.data-table-sticky-col { position: sticky; left: 0; }
-.data-table-sticky-row.data-table-sticky-col { z-index: 2 }
-.data-table-head-row { border-bottom: 1px solid rgba(0,0,0,.5); }
-.data-table-head-col { border-right: 1px solid rgba(0,0,0,.5); }
-.data-table-text-left { text-align: left }
-.data-table-text-center { text-align: center }
-.data-table-text-right { text-align: right }
-.data-table-border-top { border-top: 1px solid #333 }
-.data-table-border-bottom { border-bottom: 1px solid #333 }
-.data-table-border-left { border-left: 1px solid #333 }
-.data-table-border-right { border-right: 1px solid #333 }
-.data-table-font-bold { font-weight: bold; }
+﻿.mox-html-table { max-width: fit-content; font-size: 12px; }
+.mox-html-table > div { overflow: auto; max-height: calc(100vh - 300px); min-height: 130px; }
+.mox-html-table table { border-collapse: separate; border-spacing: 0; position: relative; box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); border: 1px solid rgba(0,0,0,.5); }
+.mox-html-table td, .mox-html-table th { border-left: 1px solid #ddd; padding: 2px 6px; white-space: nowrap; }
+.mox-html-table tr:nth-of-type(even) { background-color: #f3f3f3; }
+.mox-html-table tr:nth-of-type(even) th { background-color: #f3f3f3; }
+.mox-html-table tr:nth-of-type(odd) th { background-color: #ffffff; }
+.mox-html-table tr:hover { background-color: #e3e3e3; }
+.mox-html-table td:first-child, .mox-html-table th:first-child { border-left: none; }
+.mox-html-table td { }
+.mox-html-table th { font-weight: bold; color: rgba(0,0,0,.9); background-color: #ffffff; }
+.mox-html-table-sticky-row-zindex { z-index: 1 }
+.mox-html-table-sticky-row { position: sticky; top: 0; z-index: 1 }
+.mox-html-table-sticky-col { position: sticky; left: 0; }
+.mox-html-table-sticky-row.mox-html-table-sticky-col { z-index: 2 }
+.mox-html-table-head-row { border-bottom: 1px solid rgba(0,0,0,.5); }
+.mox-html-table-head-col { border-right: 1px solid rgba(0,0,0,.5); }
+.mox-html-table-text-left { text-align: left }
+.mox-html-table-text-center { text-align: center }
+.mox-html-table-text-right { text-align: right }
+.mox-html-table-border-top { border-top: 1px solid #333 }
+.mox-html-table-border-bottom { border-bottom: 1px solid #333 }
+.mox-html-table-border-left { border-left: 1px solid #333 }
+.mox-html-table-border-right { border-right: 1px solid #333 }
+.mox-html-table-font-bold { font-weight: bold; }
+.mox-html-table-controls { display: flex; flex-flow: row nowrap; justify-content: flex-end; }
+.mox-html-table-select-chart-type { width: 200px; margin-right: 5px; }
+.mox-html-table-select-chart-type > p { display: flex; flex-flow: row nowrap; align-items: baseline; }
+.mox-html-table-select-chart-type > p > select { padding: 3px 8px !important; }
+.mox-html-table-select-chart-type > p > *:first-child { margin-right: 5px; }
+.mox-html-table-controls fieldset { margin-bottom: 0px; }
+.mox-html-table-controls fieldset > p { margin-bottom: 2px; }
+
+.mox-html-table-column-selected, .mox-html-table tr:nth-of-type(odd) th.mox-html-table-column-selected, .mox-html-table tr:nth-of-type(even) th.mox-html-table-column-selected { background-color: rgba(47, 128, 154, 0.2); }
+.mox-html-table-row-selected, .mox-html-table tr:nth-of-type(even) th.mox-html-table-row-selected, .mox-html-table tr:nth-of-type(odd) th.mox-html-table-row-selected { background-color: rgba(47, 128, 154, 0.2); }
+
+.mox-html-table .mox-html-table-sticky-col.mox-html-table-row-selected { background-color: #d5e6eb !important; }
+.mox-html-table .mox-html-table-sticky-row.mox-html-table-column-selected { background-color: #d5e6eb !important; }

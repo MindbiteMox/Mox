@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
+using System.Linq; 
 using System.Threading.Tasks;
 
 namespace Mindbite.Mox.HtmlTable
@@ -50,7 +50,7 @@ namespace Mindbite.Mox.HtmlTable
                 }
             }
 
-            Row row = new(_valueMatrix, Rows.Count(), Cols, options ?? new());
+            Row row = new(_valueMatrix, Rows.Count(), Cols, options ?? new(), this);
             Rows.Add(row);
 
             List<ICell?> cells = new List<ICell?>();

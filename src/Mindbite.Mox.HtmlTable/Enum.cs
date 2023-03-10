@@ -5,11 +5,11 @@ namespace Mindbite.Mox.HtmlTable
 {
     public enum TextAlign
     {
-        [Display(Name = "data-table-text-left")]
+        [Display(Name = "mox-html-table-text-left")]
         Left,
-        [Display(Name = "data-table-text-center")]
+        [Display(Name = "mox-html-table-text-center")]
         Center,
-        [Display(Name = "data-table-text-right")]
+        [Display(Name = "mox-html-table-text-right")]
         Right
     }
 }

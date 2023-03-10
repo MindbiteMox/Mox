@@ -46,6 +46,7 @@ namespace Mindbite.Mox.HtmlTable
         public RowOptions() : base()
         {
             RowsToToggle = new List<int>();
+            StartToggled = true;
         }
         public bool HasRowToggler { get; set; }
         public bool StartToggled { get; set; }
@@ -68,5 +69,18 @@ namespace Mindbite.Mox.HtmlTable
     {
         public HtmlTableOptions() : base()
         { }
+
+        /// <summary>
+        /// Add a unique identifier if you use more than one table on the same page
+        /// </summary>
+        public string UniqueId { get; set; } = "MoxHtmlTable";
+        public string? Title { get; set; }
+        public bool HasChart { get; set; }
+        public string? ChartTitle { get; set; }
+        /// <summary>
+        /// Add a <canvas></canvas> with this Id where you want to show the chart
+        /// </summary>
+        public string? ChartCanvasId { get; set; }
+
     }
 }

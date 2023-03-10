@@ -6,7 +6,7 @@ namespace Mindbite.Mox.HtmlTable
     {
         public int ColIndex { get; set; }
         public string? Value { get; set; }
-        public int MainCellColIndex { get; set; }
+        public int MainCellColIndex { get; set; } = -1;
         public CellOptions Options { get; set; }
 
         public Cell() : this(null)
