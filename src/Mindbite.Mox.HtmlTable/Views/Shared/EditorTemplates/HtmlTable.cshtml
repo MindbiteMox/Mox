@@ -1,9 +1,38 @@
 ﻿@using Mindbite.Mox.HtmlTable
 @model HtmlTable
 
-<div class="data-table">
+<h2>@Model.Options.Title</h2>
+
+<div class="mox-html-table-controls">
+    @if (Model.Options.HasChart)
+    {
+        <fieldset class="mox-html-table-select-chart-type">
+            <p>
+                <label for="@(Model.Options.UniqueId)-label">Diagramtyp: </label>
+                <select id="@(Model.Options.UniqueId)-label" onchange="window.moxHtmlTables['x@(Model.Options.UniqueId)'].setChartType(this.value)">
+                    <option value="bar">Stapel</option>
+                    <option value="line">Linje</option>
+                    <option value="pie">Paj</option>
+                    <option value="doughnut">Munk</option>
+                    <option value="polarArea">Polar</option>
+                    <option value="radar">Radar</option>
+                    @*<option value="bubble">bubble</option>
+                    <option value="scatter">scatter</option>*@
+                </select>
+            </p>
+        </fieldset>
+
+        <fieldset class="mox-html-table-switch-x-axis">
+            <p>
+                <button type="button" class="mox-button" onclick="window.moxHtmlTables['x@(Model.Options.UniqueId)'].switchXAxis()">Växla rad/kolumn som X-axel</button>
+            </p>
+        </fieldset>
+    }
+
+</div>
+<div class="mox-html-table">
     <div>
-        <table class="@Model.Options.Css @Model.Options.TextAlign">
+        <table id="@Model.Options.UniqueId" class="@Model.Options.Css @Model.Options.TextAlign">
             <tbody>
                 @foreach (IRow row in Model.Rows)
                 {
@@ -15,45 +44,13 @@
 </div>
 
 <script>
-    function toggleRowsExplicitArray(el, show, rowsToToggle) {
-        for (row = 0; row < rowsToToggle.length; row++) {
-            if (document.getElementById("Row_" + rowsToToggle[row].toString())) {
-                if (show) {
-                    document.getElementById("Row_" + rowsToToggle[row].toString()).removeAttribute("style");
-                }
-                else {
-                    document.getElementById("Row_" + rowsToToggle[row].toString()).setAttribute("style", "display:none;");
-                }
-            }
-        }
-        if (el) {
-            updateToggler(el, show);
-        }
-    }
+    window.moxHtmlTables = window.moxHtmlTables || {};
 
-    function toggleRows(el, show, ...rowsToToggle) {
-        toggleRowsExplicitArray(el, show, rowsToToggle);
-    }
+    ready(setupTable);
 
-    function toggleAllRows(show) {
-        let allRows = document.querySelectorAll(".data-table tr");
-        for (i = 0; i < allRows.length; i++) {
-            let toggler = allRows[i].querySelector("i");
-            if (toggler) {
-                let args = toggler.getAttribute("onclick").replace(" true", "").replace(" false", "").replace("toggleRows(this,, ", "").replace(")", "").split(',').map(v => parseInt(v));
-                toggleRowsExplicitArray(toggler, show, args);
-            }
-        }
+    function setupTable()
+    {
+        window.moxHtmlTables['x@(Model.Options.UniqueId)'] = new HtmlTable.Table('@(Model.Options.ChartCanvasId)', '@(Model.Options.ChartTitle)', '@(Model.Options.UniqueId)', @(Model.Options.HasChart.ToString().ToLower()));        
     }
-
-    function updateToggler(toggler, show) {
-        if (show) {
-            toggler.classList = "fas fa-minus";
-            toggler.setAttribute("onclick", toggler.getAttribute("onclick").replace("true", "false"));
-        }
-        else {
-            toggler.classList = "fas fa-plus";
-            toggler.setAttribute("onclick", toggler.getAttribute("onclick").replace("false", "true"));
-        }
-    }
+        
 </script>

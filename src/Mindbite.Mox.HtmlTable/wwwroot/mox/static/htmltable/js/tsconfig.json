@@ -1,0 +1,23 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "module": "es6",
+    "target": "es6",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "outDir": "."
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "node_modules",
+    "contentFiles",
+    "wwwroot/mox/static/js",
+    "wwwroot/mox/static/htmltable/js"
+  ]
+}

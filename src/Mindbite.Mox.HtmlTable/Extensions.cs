@@ -38,6 +38,7 @@ namespace Mindbite.Mox.HtmlTable
 
             mvc.Services.Configure<Configuration.StaticIncludes.IncludeConfig>(c =>
             {
+                c.Files.Add(Configuration.StaticIncludes.StaticFile.Script("mox/static/htmltable/js/htmltable.js"));
                 c.Files.Add(Configuration.StaticIncludes.StaticFile.Style("mox/static/htmltable/css/htmltable.min.css"));
             });
 

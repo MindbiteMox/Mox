@@ -7,7 +7,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<AssemblyVersion>6.0.1.0</AssemblyVersion>
 		<FileVersion>6.0.1.0</FileVersion>
-		<Version>6.0.15</Version>
+		<Version>6.0.21</Version>
 		<OutputTypeEx>library</OutputTypeEx>
 		<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
 		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
@@ -23,6 +23,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Mindbite.Mox.Core" Version="6.0.10" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
 		<PackageReference Include="NPOI" Version="2.6.0" />
 	</ItemGroup>
@@ -32,6 +33,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\Mox\src\Mindbite.Mox.Core\Mindbite.Mox.Core.csproj" />
+	  <Content Remove="wwwroot\mox\static\htmltable\js\HtmlTable.js.map" />
+	  <Content Remove="wwwroot\mox\static\htmltable\js\HtmlTable.ts" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Remove="wwwroot\mox\static\htmltable\js\tsconfig.json" />
 	</ItemGroup>
 </Project>

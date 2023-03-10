@@ -1,0 +1,19 @@
+{
+  "name": "mox-htmltable",
+  "version": "1.0.0",
+  "description": "MoxHtmlTable",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode=development",
+    "build:prod": "webpack --mode=production"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.4.3",
+    "webpack": "^5.52.1",
+    "webpack-cli": "^4.8.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.2.1"
+  }
+}
