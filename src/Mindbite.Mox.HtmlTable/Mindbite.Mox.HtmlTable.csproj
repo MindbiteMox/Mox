@@ -32,6 +32,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\Mox\src\Mindbite.Mox.Core\Mindbite.Mox.Core.csproj" />
+    <ProjectReference Include="..\Mindbite.Mox.Core\Mindbite.Mox.Core.csproj" />
 	</ItemGroup>
 </Project>

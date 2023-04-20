@@ -103,10 +103,10 @@ namespace Mindbite.Mox.Core.Controllers
             return View("Form_Index");
         }
 
-        [HttpGet]
+        [HttpGet, HttpPost]
         public virtual async Task<IActionResult> Table(DataTableSort sort)
         {
-            return PartialView("Mox/UI/DataTable", await this.GetDataTableAsync(sort));
+            return (await this.GetDataTableAsync(sort)).GetActionResult(this);
         }
 
         [HttpGet]

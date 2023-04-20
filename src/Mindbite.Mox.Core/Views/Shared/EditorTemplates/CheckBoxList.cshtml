@@ -7,7 +7,7 @@
         throw new ArgumentException("Model must be enumerable. Something like: int[], Guid[], List<string>.");
     }
 
-    var selectedValues = ((System.Collections.IEnumerable)Model).Cast<object>().Select(x => x.ToString());
+    var selectedValues = ((System.Collections.IEnumerable)Model).Cast<object>().Select(x => x?.GetType().IsEnum ?? false ? Convert.ChangeType(x, Enum.GetUnderlyingType(x.GetType())).ToString() : x?.ToString());
     var listItems = (IEnumerable<SelectListItem>)ViewData["SelectList"];
 }
 

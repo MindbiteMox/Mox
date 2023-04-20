@@ -368,6 +368,8 @@
     export class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
+        selectedIds: [];
+        selectionEnabled: boolean;
 
         get tableId() {
             return Utils.URL.splitUrl(window.location.href).domainAndPath + (this.options.tableId || this.options.container.id);
@@ -508,10 +510,15 @@
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             };
+
             this.options.configureRequestInit?.call(this, getInit);
-            this.options.container.innerHTML = await fetch(url, getInit)
-                .then(Mox.Utils.Fetch.checkErrorCode)
-                .then(Mox.Utils.Fetch.parseText);
+            var response = fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode);
+            var headers = await response.then(x => x.headers);
+            console.log(headers, this.selectionEnabled, this);
+            if (headers.get('X-Mox-DataTable-Selection') == '1') {
+                this.selectionEnabled = true;
+            }
+            this.options.container.innerHTML = await response.then(Mox.Utils.Fetch.parseText);
 
             if (this.options.rememberFilters) {
                 localStorage.setItem(this.tableId + '_fullurl', url);
@@ -534,6 +541,10 @@
 
             this.options.container.classList.remove('mox-datatable-loader');
 
+            if (this.selectionEnabled) {
+                this.checkSelectedRows(headers);
+            }
+
             if (this.options.onRenderComplete) {
                 await this.options.onRenderComplete(this);
             }
@@ -544,6 +555,10 @@
             const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
             const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
             await this.render(url);
+        }
+
+        checkSelectedRows(headers) {
+
         }
     }
 

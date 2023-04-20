@@ -3,13 +3,14 @@
 @model object
 @{ 
     var listItems = (IEnumerable<SelectListItem>)ViewData["SelectList"];
+    var modelValue = Model?.GetType().IsEnum ?? false ? Convert.ChangeType(Model, Enum.GetUnderlyingType(Model.GetType())).ToString() : Model?.ToString();
 }
 
 <ul class="mox-checkboxlist" @Html.HtmlAttributesFromObject(ViewData["HtmlAttributes"])>
     @foreach (var item in listItems)
     {
         var id = Html.IdFor(x => x) + "_" + item.Value;
-        var isChecked = Model?.ToString() == item.Value;
+        var isChecked = modelValue == item.Value;
 
         <li>
             <input type="radio" name="@Html.NameFor(x => x)" id="@id" @(isChecked ? "checked" : "") value="@item.Value" />

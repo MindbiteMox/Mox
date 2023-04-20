@@ -42,9 +42,16 @@ namespace Mindbite.Mox.DemoApp.Areas.FormTest.Controllers
             //    x.Name
             //});
 
-            var dataTable = DataTableBuilder.Create(Enumerable.Empty<object>().AsQueryable())
+            var dataTable = DataTableBuilder.Create(new[] { new { id = 1, Title = "Hello 1" }, new { id = 2, Title = "Hello 2" }, new { id = 3, Title = "Hello 3" } }.AsQueryable())
                 .Page(sort.DataTablePage)
-                .Sortable(false);
+                .EnableSelection(true)
+                .RowId(x => x.id)
+                .Sort(x => x.Title, SortDirection.Ascending, sort.DataTableSortColumn, sort.DataTableSortDirection)
+                .Columns(columns =>
+                {
+                    columns.Add(x => x.id).Title("Id");
+                    columns.Add(x => x.Title).Title("Title");
+                });
 
             return Task.FromResult<IDataTable>(dataTable);
         }

@@ -84,7 +84,6 @@ namespace Mindbite.Mox.UI
                 else if(reference == BreadCrumbMenuReference.Parent)
                 {
                     nodes.AddRange(selectedMenu.AllParents);
-                    nodes.Add(selectedMenu);
                     nodes.AddRange(additionalNodes);
                 }
 

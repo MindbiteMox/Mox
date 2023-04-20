@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -506,7 +506,7 @@ var Mox;
             DataTable.prototype.render = function (url) {
                 var _a;
                 return __awaiter(this, void 0, void 0, function () {
-                    var getInit, _b, sortLinks;
+                    var getInit, response, headers, _b, sortLinks;
                     var _this = this;
                     return __generator(this, function (_c) {
                         switch (_c.label) {
@@ -521,11 +521,17 @@ var Mox;
                                     },
                                 };
                                 (_a = this.options.configureRequestInit) === null || _a === void 0 ? void 0 : _a.call(this, getInit);
-                                _b = this.options.container;
-                                return [4 /*yield*/, fetch(url, getInit)
-                                        .then(Mox.Utils.Fetch.checkErrorCode)
-                                        .then(Mox.Utils.Fetch.parseText)];
+                                response = fetch(url, getInit).then(Mox.Utils.Fetch.checkErrorCode);
+                                return [4 /*yield*/, response.then(function (x) { return x.headers; })];
                             case 1:
+                                headers = _c.sent();
+                                console.log(headers, this.selectionEnabled, this);
+                                if (headers.get('X-Mox-DataTable-Selection') == '1') {
+                                    this.selectionEnabled = true;
+                                }
+                                _b = this.options.container;
+                                return [4 /*yield*/, response.then(Mox.Utils.Fetch.parseText)];
+                            case 2:
                                 _b.innerHTML = _c.sent();
                                 if (this.options.rememberFilters) {
                                     localStorage.setItem(this.tableId + '_fullurl', url);
@@ -544,12 +550,15 @@ var Mox;
                                     }
                                 }); });
                                 this.options.container.classList.remove('mox-datatable-loader');
-                                if (!this.options.onRenderComplete) return [3 /*break*/, 3];
+                                if (this.selectionEnabled) {
+                                    this.checkSelectedRows(headers);
+                                }
+                                if (!this.options.onRenderComplete) return [3 /*break*/, 4];
                                 return [4 /*yield*/, this.options.onRenderComplete(this)];
-                            case 2:
+                            case 3:
                                 _c.sent();
-                                _c.label = 3;
-                            case 3: return [2 /*return*/];
+                                _c.label = 4;
+                            case 4: return [2 /*return*/];
                         }
                     });
                 });
@@ -570,6 +579,8 @@ var Mox;
                         }
                     });
                 });
+            };
+            DataTable.prototype.checkSelectedRows = function (headers) {
             };
             return DataTable;
         }());

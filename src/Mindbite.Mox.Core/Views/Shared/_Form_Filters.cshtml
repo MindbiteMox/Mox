@@ -24,6 +24,9 @@
                     case Mindbite.Mox.Attributes.MoxFormFilterType.Dropdown:
                         @Html.DropDownList(filter.Name, selectList, filter.Placeholder != null ? localizer[filter.Placeholder] : null)
                         break;
+                    case Mindbite.Mox.Attributes.MoxFormFilterType.CustomEditor:
+                        @Html.Editor(filter.Name, filter.EditorTemplate, new { Filter = filter })
+                        break;
                 }
             }
         </div>

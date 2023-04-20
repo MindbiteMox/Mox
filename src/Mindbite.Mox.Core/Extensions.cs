@@ -28,6 +28,8 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
+using System.Threading;
 
 namespace Mindbite.Mox.Extensions
 {
@@ -346,6 +348,12 @@ namespace Mindbite.Mox.Extensions
             var viewMessaging = controller.HttpContext.RequestServices.GetRequiredService<ViewMessaging>();
             viewMessaging.DisplayError(message, additionalLines);
         }
+    }
+
+    public static class JsonSerializerExtensions
+    {
+        public static T? DeserializeAnonymousObject<T>(string json, T obj, JsonSerializerOptions? options = default) => JsonSerializer.Deserialize<T>(json, options);
+        public static ValueTask<T?> DeserializeAnonymousObjectAsync<T>(Stream stream, T obj, JsonSerializerOptions? options = default, CancellationToken cancellationToken = default) => JsonSerializer.DeserializeAsync<T>(stream, options, cancellationToken);
     }
 
     public static class QueryableExtensions

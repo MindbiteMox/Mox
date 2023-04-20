@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Mindbite.Mox.Extensions;
 using Microsoft.AspNetCore.Html;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Mindbite.Mox.UI
 {
@@ -35,6 +37,7 @@ namespace Mindbite.Mox.UI
         string CssClass { get; }
         string GetRowCssClass(object row);
         HtmlString EmptyMessage { get; }
+        public bool EnableSelection { get; }
 
         IEnumerable<IDataTableColumn> Columns { get; }
         IEnumerable<IDataTableButton> Buttons { get; }
@@ -44,6 +47,8 @@ namespace Mindbite.Mox.UI
         string GetRowId(object rowData);
         bool IsGrouped { get; }
         string GetGroupValue(object o);
+
+        DataTableActionResult GetActionResult(Controller controller, string viewName = null);
     }
 
     public struct RowValue
@@ -351,7 +356,7 @@ namespace Mindbite.Mox.UI
             private int _pageSize;
             private List<IDataTableColumn> _columns;
             private Func<T, string> _rowLink;
-            private Func<T, object> _rowId;
+            private Expression<Func<T, object>> _rowId;
             private int? _pageCount;
             private List<IDataTableButton> _buttons;
             private bool _sortable;
@@ -361,6 +366,9 @@ namespace Mindbite.Mox.UI
             private Func<T, object> _groupMemberFunc;
             private Func<object, HtmlString> _groupMemberRender;
             private HtmlString _emptyMessage;
+            private bool _enableSelection;
+
+            private Lazy<Func<T, object>> _rowIdFunc => new(() => this._rowId.Compile());
 
             public int PageCount => this._pageCount ?? (this._pageCount = ((this._dataSource.Count() - 1) / this._pageSize) + 1).Value;
 
@@ -375,6 +383,8 @@ namespace Mindbite.Mox.UI
             IEnumerable<IDataTableButton> IDataTable.Buttons => this._buttons;
 
             bool IDataTable.IsGrouped => this._groupMemberFunc != null;
+
+            bool IDataTable.EnableSelection => this._enableSelection;
 
             string IDataTable.GetGroupValue(object o)
             {
@@ -459,7 +469,7 @@ namespace Mindbite.Mox.UI
             {
                 if (this._rowId == null)
                     return null;
-                return this._rowId((T)rowData).ToString();
+                return this._rowIdFunc.Value((T)rowData).ToString();
             }
 
             public QueryableDataTable<T> DataSource(IQueryable<T> dataSource)
@@ -527,7 +537,7 @@ namespace Mindbite.Mox.UI
                 return this;
             }
 
-            public QueryableDataTable<T> RowId(Func<T, object> rowId)
+            public QueryableDataTable<T> RowId(Expression<Func<T, object>> rowId)
             {
                 this._rowId = rowId;
                 return this;
@@ -565,6 +575,12 @@ namespace Mindbite.Mox.UI
                 return this;
             }
 
+            public QueryableDataTable<T> EnableSelection(bool enableSelection)
+            {
+                this._enableSelection = enableSelection;
+                return this;
+            }
+
             public QueryableDataTable<T> GroupBy<TProperty>(Expression<Func<T, TProperty>> groupFunc, Func<TProperty, HtmlString> render)
             {
                 this._groupMemberRender = (object o) => render((TProperty)o);
@@ -575,11 +591,73 @@ namespace Mindbite.Mox.UI
             {
                 return this._rowCssClass != null ? this._rowCssClass((T)row) : null;
             }
+
+            DataTableActionResult IDataTable.GetActionResult(Controller controller, string viewName) => this.GetActionResult(controller, viewName);
+
+            public DataTableActionResult<T> GetActionResult(Controller controller, string viewName = null)
+            {
+                return new DataTableActionResult<T>
+                {
+                    ViewName = viewName ?? "Mox/UI/DataTable",
+                    DataTable = this,
+                    Controller = controller
+                };
+            }
+
+            public async Task<IEnumerable<int>> GetAllRowIdsAsync()
+            {
+                return await this._dataSource.Select(this._rowId).Cast<int>().ToListAsync();
+            }
         }
         
         public static QueryableDataTable<T> Create<T>(IQueryable<T> dataSource)
         {
             return new QueryableDataTable<T>().DataSource(dataSource);
+        }
+    }
+
+    public abstract class DataTableActionResult : ActionResult
+    {
+        protected IDataTable _dataTable;
+        public IDataTable DataTable { get => _dataTable; set => _dataTable = value; }
+        public string ViewName { get; set; }
+        public Controller Controller { get; set; }
+    }
+
+    public class DataTableActionResult<T> : DataTableActionResult
+    {
+        public new DataTableBuilder.QueryableDataTable<T> DataTable { get => (DataTableBuilder.QueryableDataTable<T>)this._dataTable; set => _dataTable = value; }
+
+        public override async Task ExecuteResultAsync(ActionContext context)
+        {
+            if (((IDataTable)this.DataTable).EnableSelection)
+            {
+                context.HttpContext.Response.Headers["X-Mox-DataTable-Selection"] = "1";
+            }
+
+            if(context.HttpContext.Request.Method == "POST")
+            {
+                var selection = await JsonSerializerExtensions.DeserializeAnonymousObjectAsync(context.HttpContext.Request.BodyReader.AsStream(), new
+                {
+                    selectedIds = Array.Empty<int>()
+                });
+
+                var allSelectedIds = selection.selectedIds.ToHashSet();
+                var allIds = (await this.DataTable.GetAllRowIdsAsync()).ToHashSet();
+
+                context.HttpContext.Response.Headers["X-Mox-DataTable-AllSelected"] = allIds.All(x => allSelectedIds.Contains(x)) ? "1" : "0";
+            }
+
+            this.Controller.ViewData.Model = this.DataTable;
+            this.Controller.ViewData["ActionResult"] = this;
+
+            var viewResult = new ViewResult
+            {
+                ViewName = ViewName,
+                ViewData = this.Controller.ViewData,
+                TempData = this.Controller.TempData
+            };
+            await viewResult.ExecuteResultAsync(context);
         }
     }
 }

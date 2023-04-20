@@ -12,6 +12,13 @@
     <table class="@Model.CssClass">
         <thead>
             <tr>
+                @if (Model.EnableSelection)
+                {
+                    <th>
+                        <input type="checkbox">
+                    </th>
+                }
+
                 @foreach (var column in Model.Columns)
                 {
                     @if (Model.Sortable)
@@ -46,6 +53,7 @@
         </thead>
 
         <tbody>
+
             @foreach (var row in pageItems)
             {
                 string groupValue = null;
@@ -56,8 +64,15 @@
                         <td colspan="@(Model.Columns.Count() + (Model.Buttons.Any() ? 1 : 0))"><span>@groupValue</span></td>
                     </tr>
                 }
+
                 string rowId = Model.GetRowId(row);
                 <tr @(rowId != null ? Html.Raw($"data-id={rowId}") : null) class="@Model.GetRowCssClass(row)">
+                    @if (Model.EnableSelection)
+                    {
+                        <td>
+                            <input type="checkbox">
+                        </td>
+                    }
                     @{
                         var rowLink = Model.GetRowLink(row);
                         foreach (var column in Model.Columns)

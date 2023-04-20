@@ -458,7 +458,8 @@ namespace Mindbite.Mox.Attributes
     public enum MoxFormFilterType
     {
         Text,
-        Dropdown
+        Dropdown,
+        CustomEditor
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
@@ -469,7 +470,8 @@ namespace Mindbite.Mox.Attributes
         public string? Placeholder { get; set; }
         public int Order { get; set; } = 0;
         public bool SpacingAfter { get; set; } = false;
-        
+        public string? EditorTemplate { get; set; }
+
         /// <summary>
         /// A static function on this class with the following signature: Task<IEnumerable<SelectListItem>> YourAsyncMethod(HttpContext context)
         /// </summary>

@@ -57,6 +57,8 @@ declare namespace Mox.UI {
     class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
+        selectedIds: [];
+        selectionEnabled: boolean;
         get tableId(): string;
         get containerElement(): HTMLElement;
         get filterQueryString(): string;
@@ -64,6 +66,7 @@ declare namespace Mox.UI {
         private constructor();
         private render;
         refresh(): Promise<void>;
+        checkSelectedRows(headers: any): void;
     }
     type CloseOnEscapeHandle = number;
     class CloseOnEscapeQueue {
