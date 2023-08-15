@@ -1,0 +1,204 @@
+﻿@using Microsoft.AspNetCore.Routing;
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization;
+@using Mindbite.Mox.Extensions
+
+@inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
+@inject IStringLocalizer localizer
+
+@model Mindbite.Mox.DirectoryListing.Data.DocumentDirectory
+@{
+    Layout = "Mox/_Layout";
+
+    var dbContext = contextFetcher.FetchDbContext<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext>();
+    var getDirectories = ViewContext.HttpContext.Items["GetDirectories"] as Func<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext, IQueryable<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>>;
+    var allDirectories = await getDirectories(dbContext).ToListAsync();
+
+    var breadCrumbs = Model != null ? Mindbite.Mox.DirectoryListing.Utils.GetParents(allDirectories, Model) : Enumerable.Empty<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>();
+
+    var additionalNodes = (IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>)ViewData["AdditionalBreadCrumbNodes"];
+
+    additionalNodes = additionalNodes.Concat(breadCrumbs.Select(x => new Mindbite.Mox.UI.Menu.MenuItem
+    {
+        Url = Url.Action("ListDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", x.UID } }),
+        Title = x.Name
+    }))
+    .SkipLast(1)
+    .ToList();
+}
+
+@if ((bool)ViewData["RenderHeader"])
+{
+    if ((bool)ViewData["DefaultBreadCrumbsForDirectoryListing"])
+    {
+        @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = (bool)ViewData["BreadCrumbsIncludeCurrentMenu"] }.ToExpando())
+        <h1>@ViewContext.HttpContext.Items["RootDirectoryName"]</h1>
+    }
+    else
+    {
+        @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = (bool)ViewData["BreadCrumbsIncludeCurrentMenu"], AdditionalNodes = additionalNodes }.ToExpando())
+        <h1>@(Model?.Name ?? ViewContext.HttpContext.Items["RootDirectoryName"])</h1>
+    }
+}
+
+@if (!string.IsNullOrWhiteSpace(ViewData["HeaderPartial"]?.ToString()))
+{
+    @await Html.PartialAsync(ViewData["HeaderPartial"].ToString())
+}
+
+@await Html.PartialAsync("Mox/UI/Message")
+
+@Html.ValidationSummary(true)
+
+<ul class="mox-filters">
+    @if (Model != null)
+    {
+        <li>
+            <a href="@Url.Action("EditDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-edit"></i> Redigera mapp</a>
+        </li>
+
+        <li class="spacing">
+            <a href="@Url.Action("DeleteDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-trash-alt"></i> Radera mapp</a>
+        </li>
+    }
+
+    <li>
+        <a href="@Url.Action("CreateDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-plus"></i> Ny mapp</a>
+    </li>
+
+    <li class="spacing">
+        @using (Html.BeginForm("UploadFiles", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } }, FormMethod.Post, null, new { enctype = "multipart/form-data", id = "upload-form" }))
+        {
+            <fieldset class="document-upload-list-only">
+                <input type="file" id="UploadedFiles" multiple name="UploadedFiles" onchange="documentsUploadFile(this.form)" style="display: none;" />
+                <label for="UploadedFiles" class="mox-button"><i class="far fa-upload"></i> Ladda upp filer</label>
+            </fieldset>
+
+            <fieldset class="document-upload-modal-only">
+                <p style="border-radius: 5px; padding: 10px; border: 1px solid #ccc;">
+                    <i class="far fa-file"></i><span class="document-upload-uploaded-file-count"></span> fil(er) kommer laddas upp.
+                </p>
+            </fieldset>
+
+            <fieldset class="document-upload-modal-only">
+                <legend>Filer med samma namn</legend>
+                <p>
+                    <input type="radio" value="0" name="OverwriteFiles" id="OverwriteFiles_0" checked />
+                    <label for="OverwriteFiles_0">Skriv över filer med samma namn</label>
+                    <br />
+                    <input type="radio" value="1" name="OverwriteFiles" id="OverwriteFiles_1" />
+                    <label for="OverwriteFiles_1">Behåll båda</label>
+                    <br />
+                    <input type="radio" value="2" name="OverwriteFiles" id="OverwriteFiles_2" />
+                    <label for="OverwriteFiles_2">Behåll befintlig fil</label>
+                    <br />
+                </p>
+            </fieldset>
+        }
+    </li>
+
+    <li>
+        <a href="@Url.Action("DownloadAll", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-download"></i> Ladda ner mapp</a>
+    </li>
+</ul>
+
+<ul class="mox-filters" style="border-top: 1px solid #ddd; padding-top: 20px;">
+    <li class="break">
+        <div class="bread-crumbs">
+            <a href="@Url.Action("ListDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", "" } })" class="mox-button @(breadCrumbs.Any() ? "" : "open")"><i class="far fa-home"></i> @ViewContext.HttpContext.Items["RootDirectoryName"]</a>
+            @foreach (var breadCrumb in breadCrumbs)
+            {
+                <i class="far fa-chevron-right"></i>
+                <a href="@Url.Action("ListDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", breadCrumb.UID } })" class="mox-button @(breadCrumbs.Last() == breadCrumb ? "open" : "")"><i class="far fa-folder"></i> @breadCrumb.Name</a>
+            }
+        </div>
+    </li>
+    <li>
+        <label for="js-global" style="margin-bottom: 8px; display: inline-block;"> Sök i alla mappar</label><input type="checkbox" id="js-global" name="global" style="margin: 0px 10px;">
+    </li>
+    <li>
+        <input type="text" id="js-filter" name="filter" placeholder="Sök filer och mappar...">
+    </li>
+</ul>
+
+<div id="js-table"></div>
+
+<div style="visibility:hidden; opacity:0" id="dropzone">
+    <div id="textnode">@localizer["Släpp dina filer här för att ladda upp"]</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Mox.UI.DataTable.create({
+            container: document.getElementById('js-table'),
+            url: '@Url.Action("DisplayTable", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })',
+            filters: ['js-filter', 'js-global'],
+            onRenderComplete: function (instance) {
+                localStorage.removeItem(instance.tableId + '_filtersquery');
+            }
+        });
+
+    });
+</script>
+
+<script>
+    let lastTarget = null;
+
+    function isFile(e) {
+        return e.dataTransfer.types.indexOf("Files") > -1;
+    }
+
+    window.addEventListener("dragenter", function (e) {
+        if (isFile(e)) {
+            lastTarget = e.target;
+            document.querySelector("#dropzone").style.visibility = "";
+            document.querySelector("#dropzone").style.opacity = 1;
+            document.querySelector("#textnode").style.fontSize = "48px";
+        }
+    });
+
+    window.addEventListener("dragleave", function (e) {
+        e.preventDefault();
+        if (e.target === lastTarget || e.target === document) {
+            document.querySelector("#dropzone").style.visibility = "hidden";
+            document.querySelector("#dropzone").style.opacity = 0;
+            document.querySelector("#textnode").style.fontSize = "42px";
+        }
+    });
+
+    window.addEventListener("dragover", function (e) {
+        e.preventDefault();
+    });
+
+    window.addEventListener("drop", function (e) {
+        e.preventDefault();
+        document.querySelector("#dropzone").style.visibility = "hidden";
+        document.querySelector("#dropzone").style.opacity = 0;
+        document.querySelector("#textnode").style.fontSize = "42px";
+        if (e.dataTransfer.files.length > 0) {
+            var upload = document.querySelector(".mox-filters #UploadedFiles");
+            if (upload) {
+                upload.files = e.dataTransfer.files;
+                (function () {
+                    eval(upload.attributes.getNamedItem('onchange').value);
+                }).call(upload);
+            }
+            //document.querySelector("#upload-form").submit();
+        }
+    });
+</script>
+
+@section styles {
+    <style>
+        #dropzone { position: fixed; top: 0; left: 0; z-index: 9999999999; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); transition: visibility 175ms, opacity 175ms; display: table; color: #fff; background: rgba(0, 0, 0, 0.45); font: bold 42px sans-serif; }
+        #textnode { display: table-cell; text-align: center; vertical-align: middle; transition: font-size 175ms; }
+        i { margin-right: 10px; }
+        .mox-filters i { margin-right: 5px; }
+        .path-column > a:first-child { display: none; }
+        .bread-crumbs { }
+        .bread-crumbs .mox-button { background-color: #fff }
+        .bread-crumbs .mox-button:hover,
+        .bread-crumbs .mox-button.open { background-color: #eee; }
+        .bread-crumbs .fa-chevron-right { margin: 0px 10px; }
+    </style>
+}

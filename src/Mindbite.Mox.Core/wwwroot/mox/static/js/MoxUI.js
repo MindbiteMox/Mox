@@ -371,6 +371,7 @@ var Mox;
         UI.Modal = Modal;
         var DataTable = /** @class */ (function () {
             function DataTable(options) {
+                this.selectedIds = [];
                 this.options = options || {};
                 this.options.filters = this.options.filters || [];
                 this.options.rememberFilters = this.options.rememberFilters === undefined ? true : !!this.options.rememberFilters;
@@ -552,6 +553,26 @@ var Mox;
                                 this.options.container.classList.remove('mox-datatable-loader');
                                 if (this.selectionEnabled) {
                                     this.checkSelectedRows(headers);
+                                    this.options.container.addEventListener('change', function (e) {
+                                        var target = e.target;
+                                        if (target.tagName === 'INPUT' && target.type.toLowerCase() === 'checkbox') {
+                                            var checkbox = target;
+                                            if (checkbox.name === 'rowId') {
+                                                if (checkbox.checked) {
+                                                    _this.selectedIds.push(parseInt(checkbox.value));
+                                                }
+                                                else {
+                                                    _this.selectedIds.splice(_this.selectedIds.indexOf(parseInt(checkbox.value)), 1);
+                                                }
+                                                if (_this.options.onSelectedIdsChanged) {
+                                                    _this.options.onSelectedIdsChanged(_this);
+                                                }
+                                            }
+                                            else if (checkbox.name === 'selectAll') {
+                                                // TODO: this
+                                            }
+                                        }
+                                    });
                                 }
                                 if (!this.options.onRenderComplete) return [3 /*break*/, 4];
                                 return [4 /*yield*/, this.options.onRenderComplete(this)];
@@ -581,6 +602,7 @@ var Mox;
                 });
             };
             DataTable.prototype.checkSelectedRows = function (headers) {
+                // TODO: this
             };
             return DataTable;
         }());

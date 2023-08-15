@@ -1,0 +1,57 @@
+﻿@using Microsoft.AspNetCore.Routing;
+@using Mindbite.Mox.Extensions
+@using Microsoft.EntityFrameworkCore
+
+@inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
+
+@model Mindbite.Mox.DirectoryListing.ViewModels.DocumentDirectory
+@{
+    Layout = "Mox/_Layout";
+
+    var directoryUID = Guid.Parse(ViewContext.HttpContext.Request.Query["directoryId"].ToString());
+    var dbContext = contextFetcher.FetchDbContext<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext>();
+    
+    var getDirectories = ViewContext.HttpContext.Items["GetDirectories"] as Func<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext, IQueryable<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>>;
+    var allDirectories = await getDirectories(dbContext).ToListAsync();
+
+    var directory = allDirectories.First(x => x.UID == directoryUID);
+
+    var breadCrumbs = directory != null ? Mindbite.Mox.DirectoryListing.Utils.GetParents(allDirectories, directory) : Enumerable.Empty<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>();
+
+    var additionalNodes = (IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>)ViewData["AdditionalBreadCrumbNodes"];
+
+    additionalNodes = additionalNodes.Concat(breadCrumbs.Select(x => new Mindbite.Mox.UI.Menu.MenuItem
+    {
+        Url = Url.Action("ListDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", x.UID } }),
+        Title = x.Name
+    }))
+    .SkipLast(1)
+    .ToList();
+}
+
+@await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = (bool)ViewData["BreadCrumbsIncludeCurrentMenu"], AdditionalNodes = additionalNodes }.ToExpando())
+<h1>@Model.Name</h1>
+
+@await Html.PartialAsync("Mox/UI/Message")
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        @await Html.PartialAsync("_Form_Fields", Model)
+    </fieldset>
+    
+    <fieldset class="buttons" style="margin-top: 12px;">
+        <p>
+            <input type="submit" value="Spara ändringar" />
+            @{
+                var cancelRouteData = new RouteValueDictionary(ViewContext.RouteData.Values)
+                {
+                    { "DirectoryId", directoryUID }
+                };
+            }
+            @Html.ActionLink("Avbryt", "ListDirectory", null, cancelRouteData, new { @class = "cancel" })
+        </p>
+    </fieldset>
+}

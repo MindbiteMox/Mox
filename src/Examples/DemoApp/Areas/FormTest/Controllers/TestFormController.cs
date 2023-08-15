@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mindbite.Mox.Core.Controllers;
+using Mindbite.Mox.Extensions;
 using Mindbite.Mox.UI;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 namespace Mindbite.Mox.DemoApp.Areas.FormTest.Controllers
 {
     [Area(Configuration.MainArea)]
-    public class TestFormController : FormController<ViewModels.TestForm>
+    public class TestFormController : FormController<ViewModels.TestForm, int, int?>
     {
         public override string ModelTitleFieldName => nameof(ViewModels.TestForm.Name);
         public override string IndexPageHeading => "Test Form";
@@ -20,67 +21,78 @@ namespace Mindbite.Mox.DemoApp.Areas.FormTest.Controllers
 
         private readonly AppDbContext _context;
 
+        public class DataModel
+        {
+            public int Id { get; set; }
+            public string Title { get; set; }
+        }
+
+        private static List<DataModel> Data = new List<DataModel>
+        {
+            new DataModel { Id = 1, Title = "Hello 1" }, 
+            new DataModel { Id = 2, Title = "Hello 2" }, 
+            new DataModel { Id = 3, Title = "Hello 3" }
+        };
+
         public TestFormController(AppDbContext context)
         {
             this._context = context;
         }
 
-        public override async Task DeleteAsync(Guid id)
+        public override async Task DeleteAsync(int id)
         {
-            //var item = await this._context.ItemDataModels.FirstAsync(x => x.UID == id);
-            //this._context.Remove(item);
-            //await this._context.SaveChangesAsync();
+            Data.RemoveAll(x => x.Id == id);
         }
 
         public override Task<IDataTable> GetDataTableAsync(DataTableSort sort)
         {
-            //var items = this._context.ItemDataModels;
-
-            //var dataSource = items.Select(x => new
-            //{
-            //    x.UID,
-            //    x.Name
-            //});
-
-            var dataTable = DataTableBuilder.Create(new[] { new { id = 1, Title = "Hello 1" }, new { id = 2, Title = "Hello 2" }, new { id = 3, Title = "Hello 3" } }.AsQueryable())
+            var dataTable = DataTableBuilder.Create(Data.AsQueryable())
                 .Page(sort.DataTablePage)
                 .EnableSelection(true)
-                .RowId(x => x.id)
+                .RowId(x => x.Id)
                 .Sort(x => x.Title, SortDirection.Ascending, sort.DataTableSortColumn, sort.DataTableSortDirection)
                 .Columns(columns =>
                 {
-                    columns.Add(x => x.id).Title("Id");
+                    columns.Add(x => x.Id).Title("Id");
                     columns.Add(x => x.Title).Title("Title");
                 });
 
             return Task.FromResult<IDataTable>(dataTable);
         }
 
-        public override async Task<ViewModels.TestForm> GetViewModelAsync(Guid? id)
+        public override async Task<ViewModels.TestForm> GetViewModelAsync(int? id)
         {
-            //var item = await this._context.ItemDataModels.FirstOrDefaultAsync(x => x.UID == id);
-            //return item != null ? ViewModels.TestForm.From(item) : new ViewModels.TestForm();
             return new ViewModels.TestForm();
         }
 
-        public override async Task<Guid> SaveViewModelAsync(Guid? id, ViewModels.TestForm viewModel)
+        [HttpPost]
+        public async Task<IActionResult> RunBulk(ViewModels.TestFormBulkActions bulkAction, DataTableSelection selection)
         {
-            //var item = await this._context.ItemViewModels.FirstOrDefaultAsync(x => x.UID == id) ?? new Data.Models.ItemDataModel();
+            switch (bulkAction)
+            {
+                case ViewModels.TestFormBulkActions.Delete:
+                    Data.RemoveAll(x => selection.SelectedIds.Contains(x.Id));
+                    break;
+            }
 
-            // TODO: Fill item
+            this.DisplayMessage($"{bulkAction.GetDescription()} kördes på {selection.SelectedIds.Length} rader.");
+            return RedirectToAction("Index");
+        }
 
-            //if (item.UID == id)
-            //{
-            //    this._context.Update(item);
-            //}
-            //else
-            //{
-            //    this._context.Add(item);
-            //}
+        public override async Task<int> SaveViewModelAsync(int? id, ViewModels.TestForm viewModel)
+        {
+            if(id == null)
+            {
+                var newId = new Random().Next();
+                Data.Add(new DataModel
+                {
+                    Id = newId,
+                    Title = "New"
+                });
+                return newId;
+            }
 
-            //await this._context.SaveChangesAsync();
-
-            return Guid.NewGuid();
+            return id.Value;
         }
     }
 }

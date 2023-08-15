@@ -8,13 +8,13 @@
     <OutputTypeEx>library</OutputTypeEx>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
-    <Version>6.1.1</Version>
-    <AssemblyVersion>6.1.1.0</AssemblyVersion>
+    <Version>6.1.2</Version>
+    <AssemblyVersion>6.1.2.0</AssemblyVersion>
     <Nullable>enable</Nullable>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <Copyright>Mindbite AB</Copyright>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
-    <FileVersion>6.1.1.0</FileVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <FileVersion>6.1.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

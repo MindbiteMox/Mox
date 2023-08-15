@@ -1,0 +1,55 @@
+﻿@using Mindbite.Mox.Extensions
+@using Mindbite.Mox.UI
+@using Microsoft.Extensions.Localization;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IStringLocalizer localizer
+
+@{
+    Layout = (string)ViewData["Layout"];
+}
+
+@if ((bool)ViewData["RenderDefaultDeleteHeader"])
+{
+    var additionalNodes = (IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>)ViewData["AdditionalBreadCrumbNodes"];
+        
+    @await Html.Mox().BreadCrumbsAsync(BreadCrumbMenuReference.Current, additionalNodes)
+    <h1>@localizer["Ta bort {0}", ViewData["ModelDisplayName"]?.ToString().ToLower() ?? ""]</h1>
+    @Html.Mox().Message()
+}
+
+@if (!string.IsNullOrWhiteSpace((string)ViewData["DeleteHeaderPartial"]))
+{
+    @await Html.PartialAsync((string)ViewData["DeleteHeaderPartial"], (object)Model)
+}
+
+@if ((bool)ViewData["CanDelete"])
+{
+    <p class="text-danger">@ViewData["ErrorMessage"]</p>
+    <p>@localizer["Är du säker på att du vill ta bort {0}", Html.Value(ViewData["ModelTitleFieldName"]?.ToString() ?? "")]?</p>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        <div style="display: none">
+            @await Html.PartialAsync("_Form_Fields", (object)Model)
+        </div>
+
+        <fieldset>
+            <p>
+                <input type="submit" value="@localizer["Ta bort"]" />
+                @Html.ActionLink(localizer["Avbryt"], "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "cancel" })
+            </p>
+        </fieldset>
+    }
+}
+else
+{
+    <p>
+        <strong>@localizer["{0} kan inte tas bort!", Html.Value(ViewData["ModelTitleFieldName"]?.ToString() ?? "")]</strong><br />
+        @ViewData["CanDeleteErrorMessage"]
+    </p>
+    <fieldset>
+        @Html.ActionLink(localizer["Tillbaka"], "Index", null, ViewData["RedirectToIndexRouteValues"], new { @class = "mox-button" })
+    </fieldset>
+}

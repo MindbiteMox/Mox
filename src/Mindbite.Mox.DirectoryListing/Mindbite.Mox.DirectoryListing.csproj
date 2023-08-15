@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup Label="Configuration">
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<IsPackable>true</IsPackable>
+		<OutputTypeEx>library</OutputTypeEx>
+		<Version>6.1.2</Version>
+		<AssemblyVersion>6.1.2.0</AssemblyVersion>
+		<FileVersion>6.1.2.0</FileVersion>
+		<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IsPackable>true</IsPackable>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Copyright>Mindbite AB</Copyright>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="contentFiles\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Remove="tsconfig.json" />
+		<Content Remove="wwwroot\mox\Static\DirectoryListing\css\base.css" />
+		<Content Remove="wwwroot\mox\Static\DirectoryListing\js\src\global.ts" />
+		<Content Remove="wwwroot\mox\Static\DirectoryListing\js\src\MoxUI.d.ts" />
+		<Content Remove="wwwroot\mox\Static\DirectoryListing\js\src\utils.d.ts" />
+		<Content Remove="wwwroot\mox\Static\DirectoryListing\js\tsconfig.json" />
+		<Content Remove="Properties\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="wwwroot\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Mindbite.Mox.Core" Version="6.1.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.9" />
+		<PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+</Project>

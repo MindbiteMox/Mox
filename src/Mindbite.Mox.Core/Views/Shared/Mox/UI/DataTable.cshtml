@@ -14,8 +14,11 @@
             <tr>
                 @if (Model.EnableSelection)
                 {
-                    <th>
-                        <input type="checkbox">
+                    <th style="width: 36px">
+                        <span>
+                            &nbsp;
+                            @*<input type="checkbox" name="selectAll">*@
+                        </span>
                     </th>
                 }
 
@@ -40,7 +43,7 @@
                             {
                                 <span>@localizer[column.Title ?? ""]</span>
                             }
-                            </th>
+                        </th>
                     }
                 }
                 @if (Model.Buttons.Any())
@@ -70,7 +73,9 @@
                     @if (Model.EnableSelection)
                     {
                         <td>
-                            <input type="checkbox">
+                            <span>
+                                <input type="checkbox" name="rowId" value="@Model.GetRowId(row)">
+                            </span>
                         </td>
                     }
                     @{

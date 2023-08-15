@@ -9,8 +9,11 @@
 
     var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)ViewContext.ActionDescriptor;
     var filters = await Mindbite.Mox.Attributes.MoxFormFilterAttribute.GetVisibleFiltersAsync(ViewContext.HttpContext, actionDescriptor.ControllerTypeInfo.AsType());
+    var bulkActions = Mindbite.Mox.Attributes.MoxFormBulkActionsAttribute.GetViewModelAttribute(actionDescriptor.ControllerTypeInfo.AsType());
 
     var canCreate = (bool)ViewData["CanCreate"];
+
+    var selectionElementId = $"TableSelectedIds_{Guid.NewGuid().ToString().Replace("-", "")}";
 }
 
 @if ((bool)ViewData["RenderDefaultIndexHeader"])
@@ -19,15 +22,28 @@
     <h1>@ViewData["IndexPageHeading"]</h1>
     @Html.Mox().Message()
 
-    @if(canCreate || filters.Any())
+    @if(canCreate || filters.Any() || bulkActions != null)
     {
         <ul class="mox-filters">
-            <li class="break">
-                @if (canCreate)
-                {
-                    @Html.ActionLink(localizer["Skapa {0}", ViewData["ModelDisplayName"]?.ToString().ToLower() ?? ""], "Create", null, ViewContext.RouteData.Values, new { @class = "mox-button" })
-                }
-            </li>
+            @if(bulkActions == null || bulkActions != null && canCreate)
+            {
+                <li class="@(bulkActions != null ? "spacing" : "break")">
+                    @if (canCreate)
+                    {
+                        @Html.ActionLink(localizer["Skapa {0}", ViewData["ModelDisplayName"]?.ToString().ToLower() ?? ""], "Create", null, ViewContext.RouteData.Values, new { @class = "mox-button" })
+                    }
+                </li>
+            }
+            @if(bulkActions != null)
+            {
+                <li class="break">
+                    <form>
+                        <input type="hidden" id="@selectionElementId">
+                        @Html.DropDownList("BulkAction", Html.GetEnumSelectList(bulkActions.ActionsEnumType))
+                        <button type="submit" class="mox-button save">@localizer["Utför"]</button>
+                    </form>
+                </li>
+            }
             @await Html.PartialAsync("_Form_Filters")
         </ul>
     }
@@ -46,6 +62,10 @@
             container: document.getElementById('js-table'),
             url: '@Url.Action("Table", ViewContext.RouteData.Values)',
             filters: [@Html.Raw(string.Join(",", filters.Select(x => $"'{Html.Id(x.Name)}'")))],
+            @if(bulkActions != null)
+            {
+                @:onSelectedIdsChanged: function(dt) { document.getElementById('@selectionElementId').value = dt.selectedIds.join(',') }
+            }
         })
     });
 </script>

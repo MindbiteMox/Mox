@@ -98,6 +98,11 @@ namespace Mindbite.Mox.UI
         public int? DataTablePage { get; set; }
     }
 
+    public class DataTableSelection
+    {
+        public int[] SelectedIds { get; set; }
+    }
+
     public class DataTableButtonFactory<T>
     {
         public List<IDataTableButton> Buttons { get; private set; }

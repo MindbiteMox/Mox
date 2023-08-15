@@ -11,7 +11,7 @@
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <IsPackable>true</IsPackable>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Mindbite AB</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

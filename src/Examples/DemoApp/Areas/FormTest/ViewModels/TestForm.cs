@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 
 namespace Mindbite.Mox.DemoApp.Areas.FormTest.ViewModels
 {
+    public enum TestFormBulkActions
+    {
+        Delete
+    }
+
+    [MoxFormBulkActions(typeof(TestFormBulkActions), "RunBulk")]
     public class TestForm
     {
         [MoxRequired]

@@ -5,12 +5,12 @@
   
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyVersion>6.1.1.0</AssemblyVersion>
-    <FileVersion>6.1.1.0</FileVersion>
-    <Version>6.1.1</Version>
+    <AssemblyVersion>6.1.2.0</AssemblyVersion>
+    <FileVersion>6.1.2.0</FileVersion>
+    <Version>6.1.2</Version>
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Mindbite AB</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>

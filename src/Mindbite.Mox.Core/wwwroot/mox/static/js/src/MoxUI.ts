@@ -363,12 +363,13 @@
         rememberFilters?: boolean;
         skipRenderOnCreate?: boolean;
         configureRequestInit?: (init: RequestInit) => void;
+        onSelectedIdsChanged?: (dataTable: DataTable) => void;
     }
 
     export class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
-        selectedIds: [];
+        selectedIds: number[] = [];
         selectionEnabled: boolean;
 
         get tableId() {
@@ -543,6 +544,25 @@
 
             if (this.selectionEnabled) {
                 this.checkSelectedRows(headers);
+                this.options.container.addEventListener('change', e => {
+                    const target = e.target as HTMLElement;
+                    if (target.tagName === 'INPUT' && (target as HTMLInputElement).type.toLowerCase() === 'checkbox') {
+                        const checkbox = target as HTMLInputElement;
+                        if (checkbox.name === 'rowId') {
+                            if (checkbox.checked) {
+                                this.selectedIds.push(parseInt(checkbox.value));
+                            } else {
+                                this.selectedIds.splice(this.selectedIds.indexOf(parseInt(checkbox.value)), 1);
+                            }
+
+                            if (this.options.onSelectedIdsChanged) {
+                                this.options.onSelectedIdsChanged(this);
+                            }
+                        } else if (checkbox.name === 'selectAll') {
+                            // TODO: this
+                        }
+                    }
+                });
             }
 
             if (this.options.onRenderComplete) {
@@ -558,7 +578,7 @@
         }
 
         checkSelectedRows(headers) {
-
+            // TODO: this
         }
     }
 

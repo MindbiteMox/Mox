@@ -10,7 +10,7 @@
     <Version>6.1.0</Version>
     <OutputTypeEx>library</OutputTypeEx>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Mindbite AB</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>

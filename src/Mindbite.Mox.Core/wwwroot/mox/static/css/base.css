@@ -87,8 +87,8 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-button { border: 0; appearance: none; -webkit-appearance: none; padding: 6px 10px; border-radius: 3px; background-color: #eee; text-decoration: none; color: #24292e; font-size: 1rem; font-weight: 500; display: inline-block; line-height: 1.2rem; cursor: pointer; }
 .mox-button:hover { background-color: #cacaca; }
 
-.mox-button.save { background-color: #efe; }
-.mox-button.save:hover { background-color: #cec; }
+.mox-button.save { background-color: #20bea1; }
+.mox-button.save:hover { background-color: #1dab91; }
 
 .mox-button.plain { background-color: #eee; color: #24292e; }
 .mox-button.plain:hover { background-color: #cacaca; }
@@ -96,6 +96,7 @@ h4, h5, h6 { font-size: 1rem; }
 .mox-header-apps-button:hover { cursor: pointer; transition: transform .125s ease-out; transform: rotate(-10deg); animation: swag .5s ease-in-out infinite; animation-delay: .125s; }
 @keyframes swag { 0% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(-10deg); } }
 
+.mox-filters form > * { vertical-align: middle; }
 
 /**************************************************************
     ICONS

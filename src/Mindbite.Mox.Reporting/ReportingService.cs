@@ -73,7 +73,11 @@ namespace Mindbite.Mox.Reporting.Services
             [Display(Name = "IMAGE")]
             Image,
             [Display(Name = "CSV")]
-            CSV
+            CSV,
+            [Display(Name = "XML")]
+            XML,
+            [Display(Name = "NULL")]
+            NULL
         }
 
         public async Task<byte[]?> GenerateReportAsync(ReportFormat format, string reportUID, params object[] parameters)

@@ -454,6 +454,25 @@ namespace Mindbite.Mox.Attributes
         }
     }
 
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class MoxFormBulkActionsAttribute : Attribute
+    {
+        public Type ActionsEnumType { get; set; }
+        public string ActionName { get; set; }
+        public string? EmptyString { get; set; } = "- Välj en massåtgärd -";
+        public string? WarningMessageFormat { get; set; } = "{0} kommer köras på alla markerade rader ({1}).";
+
+        public MoxFormBulkActionsAttribute(Type actionsEnumType, string actionName)
+        {
+            this.ActionsEnumType = actionsEnumType;
+            this.ActionName = actionName;
+        }
+
+        public static MoxFormBulkActionsAttribute? GetViewModelAttribute(Type controllerType)
+        {
+            return MoxFormFilterAttribute.GetViewModelType(controllerType).GetCustomAttribute<MoxFormBulkActionsAttribute>();
+        }
+    }
 
     public enum MoxFormFilterType
     {

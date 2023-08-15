@@ -102,7 +102,7 @@
                 <p>
                     @Html.Label(field.Name)
                     @Html.ValidationMessage(field.Name)
-                    @Html.DropDownList(field.Name, items, localizer[emptyMessage ?? ""])
+                    @Html.DropDownList(field.Name, items, emptyMessage != null ? localizer[emptyMessage] : null)
                 </p>
                 break;
             case Render.CheckBoxList:

@@ -1,4 +1,4 @@
-declare namespace Mox.UI {
+﻿declare namespace Mox.UI {
     class MobileMenu {
         private openButton;
         private menu;
@@ -30,14 +30,14 @@ declare namespace Mox.UI {
         private onCloseCallbacks;
         private onContentReplacedCallbacks;
         contentContainer: HTMLElement;
-        static allOpenModals: Modal[];
+        private static allOpenModals;
         constructor(options?: ModalOptions);
-        static createDialog(url: string, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
-        static createFormDialog(url: string, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
+        static createDialog(url: string): Promise<Mox.UI.Modal>;
+        static createFormDialog(url: string, options: FormDialogOptions): Promise<Mox.UI.Modal>;
         static createDialogWithContent(htmlContent: string): Mox.UI.Modal;
         static closeAll(): Promise<void>;
         close(): Promise<void>;
-        replaceContent(url: string, configureRequestInit?: (init: RequestInit) => void): Promise<void>;
+        replaceContent(url: string): Promise<void>;
         replaceContentWithHtml(html: string): void;
         onClose(callback: () => void): void;
         onContentReplaced(callback: () => void): void;
@@ -52,14 +52,10 @@ declare namespace Mox.UI {
         filters: (HTMLInputElement | HTMLSelectElement | string)[];
         rememberFilters?: boolean;
         skipRenderOnCreate?: boolean;
-        configureRequestInit?: (init: RequestInit) => void;
-        onSelectedIdsChanged?: (dataTable: DataTable) => void;
     }
     class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
-        selectedIds: number[];
-        selectionEnabled: boolean;
         get tableId(): string;
         get containerElement(): HTMLElement;
         get filterQueryString(): string;
@@ -67,7 +63,6 @@ declare namespace Mox.UI {
         private constructor();
         private render;
         refresh(): Promise<void>;
-        checkSelectedRows(headers: any): void;
     }
     type CloseOnEscapeHandle = number;
     class CloseOnEscapeQueue {

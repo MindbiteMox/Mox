@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
 {
@@ -34,15 +35,17 @@ namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
         private readonly SignInManager<MoxUser> _signInManager;
         private readonly MoxIdentityOptions _options;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         private static readonly ConcurrentDictionary<string, object> _refreshedUsers = new ConcurrentDictionary<string, object>();
 
-        public RefreshLoginService(UserManager<MoxUser> userManager, SignInManager<MoxUser> signInManager, IOptions<MoxIdentityOptions> options, IServiceProvider serviceProvider)
+        public RefreshLoginService(UserManager<MoxUser> userManager, SignInManager<MoxUser> signInManager, IOptions<MoxIdentityOptions> options, IServiceProvider serviceProvider, IHttpContextAccessor httpContextAccessor)
         {
             this._userManager = userManager;
             this._signInManager = signInManager;
             this._options = options.Value;
             this._serviceProvider = serviceProvider;
+            this._httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<bool> RefreshLoginAsync(string userId)
@@ -55,8 +58,13 @@ namespace Mindbite.Mox.Identity.Services.RefreshLoginMiddleware
                     return false;
                 }
 
-                await this._signInManager.RefreshSignInAsync(user);
                 _refreshedUsers.TryAdd(userId, string.Empty);
+
+                var auth = await this._httpContextAccessor.HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
+                if (auth.Succeeded)
+                {
+                    await this._signInManager.RefreshSignInAsync(user);
+                }
 
                 foreach(var hook in this.Hooks)
                 {
