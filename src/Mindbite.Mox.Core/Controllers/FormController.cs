@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Mindbite.Mox.Attributes;
 using Mindbite.Mox.Extensions;
 using Mindbite.Mox.UI;
 using System;
@@ -120,6 +121,7 @@ namespace Mindbite.Mox.Core.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [PreventDuplicateRequests]
         public virtual async Task<IActionResult> Create(ViewModel_T viewModel)
         {
             this.BeforeValidation();

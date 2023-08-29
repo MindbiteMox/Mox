@@ -10,6 +10,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Mindbite.Mox.Attributes
 {
@@ -602,6 +605,119 @@ namespace Mindbite.Mox.Attributes
 
             var result = (Task<bool>)method.Invoke(null, new[] { httpContext })!;
             return await result;
+        }
+    }
+
+    /// <summary>
+    /// When applied to a controller or action method, this attribute checks if a POST request with a matching
+    /// AntiForgeryToken has already been submitted recently (in the last minute), and redirects the request if so.
+    /// If no AntiForgeryToken was included in the request, this filter does nothing.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+    public class PreventDuplicateRequestsAttribute : ActionFilterAttribute
+    {
+        /// <summary>
+        /// The number of minutes that the results of POST requests will be kept in cache.
+        /// </summary>
+        private const int MinutesInCache = 1;
+        private const int MinutesWaitTimeout = 10;
+
+        public class Waiting
+        {
+            public DateTime Timeout { get; set; } = DateTime.Now.AddMinutes(MinutesWaitTimeout);
+        }
+
+        /// <summary>
+        /// Checks the cache for an existing __RequestVerificationToken, and updates the result object for duplicate requests.
+        /// Executes for every request.
+        /// </summary>
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            base.OnActionExecuting(filterContext);
+
+            // Check if this request has already been performed recently
+            var token = filterContext?.HttpContext?.Request?.Form["__RequestVerificationToken"];
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var cache = filterContext!.HttpContext!.RequestServices.GetRequiredService<IMemoryCache>();
+
+                var cacheEntry = cache.Get(token);
+
+                while (cacheEntry is Waiting waiting && waiting.Timeout > DateTime.Now)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    cacheEntry = cache.Get(token);
+                }
+
+                if (cacheEntry != null)
+                {
+                    // Optionally, assign an error message to discourage users from clicking submit multiple times (retrieve in the view using TempData["ErrorMessage"])
+                    if (cacheEntry is RedirectToActionResult actionResult)
+                    {
+                        filterContext.Result = new RedirectToActionResult(actionResult.ActionName, actionResult.ControllerName, actionResult.RouteValues, actionResult.Permanent, actionResult.PreserveMethod, actionResult.Fragment);
+                    }
+                    else if (cacheEntry is ViewResult viewResult)
+                    {
+                        filterContext.Result = new ViewResult
+                        {
+                            ContentType = viewResult.ContentType,
+                            StatusCode = viewResult.StatusCode,
+                            ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(viewResult.ViewData),
+                            ViewEngine = viewResult.ViewEngine,
+                            ViewName = viewResult.ViewName,
+                            TempData = viewResult.TempData
+                        };
+                    }
+                    else if (cacheEntry is PartialViewResult partialViewResult)
+                    {
+                        filterContext.Result = new PartialViewResult
+                        {
+                            ContentType = partialViewResult.ContentType,
+                            StatusCode = partialViewResult.StatusCode,
+                            ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(partialViewResult.ViewData),
+                            ViewEngine = partialViewResult.ViewEngine,
+                            ViewName = partialViewResult.ViewName,
+                            TempData = partialViewResult.TempData
+                        };
+                    }
+                    else if (cacheEntry is JsonResult jsonResult)
+                    {
+                        filterContext.Result = new JsonResult(jsonResult.Value)
+                        {
+                            ContentType = jsonResult.ContentType,
+                            StatusCode = jsonResult.StatusCode,
+                            SerializerSettings = jsonResult.SerializerSettings,
+                        };
+                    }
+                    else
+                    {
+                        // Provide a fallback in case the actual result is unavailable (redirects to controller index, assuming default routing behaviour)
+                        filterContext.Result = new RedirectToActionResult(filterContext.RouteData.Values["Action"]?.ToString(), filterContext.RouteData.Values["Controller"]?.ToString(), filterContext.RouteData.Values);
+                    }
+                }
+                else
+                {
+                    // Put the token in the cache, along with an arbitrary value (here, a timestamp)
+                    cache.Set(token, new Waiting(), absoluteExpirationRelativeToNow: new TimeSpan(0, MinutesInCache, 0));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the result of a completed request to the cache.
+        /// Executes only for the first completed request.
+        /// </summary>
+        public override void OnActionExecuted(ActionExecutedContext filterContext)
+        {
+            base.OnActionExecuted(filterContext);
+
+            var token = filterContext?.HttpContext?.Request?.Form["__RequestVerificationToken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                var cache = filterContext!.HttpContext!.RequestServices.GetRequiredService<IMemoryCache>();
+                cache.Set(token, filterContext.Result, absoluteExpirationRelativeToNow: new TimeSpan(0, MinutesInCache, 0));
+            }
         }
     }
 }
