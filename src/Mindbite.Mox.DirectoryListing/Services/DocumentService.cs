@@ -270,7 +270,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
         /// <exception cref="DirectoryListingException"></exception>
         public async Task UpdateDocumentAsync<TDocument>(TDocument document, string newName, IQueryable<TDocument>? allDocumentsQueryable = null) where TDocument : Data.Document
         {
-            if (await this.DocumentExistsAsync(document.DirectoryId, document.Name, document.Id, allDocumentsQueryable))
+            if (await this.DocumentExistsAsync(document.DirectoryId, newName, document.Id, allDocumentsQueryable))
             {
                 throw new DirectoryListingException("Document already exists");
             }
