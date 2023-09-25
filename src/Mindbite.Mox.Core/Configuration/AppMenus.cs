@@ -84,10 +84,6 @@ namespace Mindbite.Mox.Configuration.AppMenus
             var builtItems = builder.Build();
             this._appMenu.AddRange(builtItems);
 
-            foreach (var item in builtItems)
-            {
-            }
-
             return this;
         }
 
@@ -107,6 +103,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
                         {
                             Title = _item.Title,
                             Id = _item.Id,
+                            CssClass = _item.CssClass,
                             Url = url.Action(_item.Action, _item.Controller, routeValues),
                             Area = _item.Area,
                             Action = _item.Action,
@@ -132,6 +129,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
                     {
                         Title = item.Title,
                         Id = item.Id,
+                        CssClass = item.CssClass,
                         Url = url.Action(item.Action, item.Controller, routeValues),
                         Area = item.Area,
                         Action = item.Action,
@@ -166,6 +164,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
         public IEnumerable<AppMenuItem> Items { get; internal set; } = Enumerable.Empty<AppMenuItem>();
         public string Title { get; internal set; }
         public string Area { get; internal set; }
+        public string CssClass { get; internal set; }
         public string Controller { get; internal set; }
         public string Action { get; internal set; }
         public object RouteValues { get; internal set; }
@@ -232,6 +231,12 @@ namespace Mindbite.Mox.Configuration.AppMenus
         public AppMenuItemBuilder Title(string title)
         {
             this._menuItem.Title = title;
+            return this;
+        }
+
+        public AppMenuItemBuilder CssClass(string cssClass)
+        {
+            this._menuItem.CssClass = cssClass;
             return this;
         }
 
