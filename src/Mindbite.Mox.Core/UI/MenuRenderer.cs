@@ -27,8 +27,12 @@ namespace Mindbite.Mox.UI.Menu.Renderer
             {
                 var @class = item.Selected ? "selected" : "";
                 @class += item.Selected && item.Children.Any(x => x.Selected) ? " selected-parent" : "";
+                if (!string.IsNullOrWhiteSpace(item.CssClass))
+                {
+                    @class += $" {item.CssClass}";
+                }
 
-                sb.Append($"<a href=\"{item.Url}\" class=\"{@class}\">{this._htmlExtensions.Localizer[item.Title]}</a>");
+                sb.Append($"<a href=\"{item.Url}\" class=\"{@class}\" data-id=\"{item.Id}\">{this._htmlExtensions.Localizer[item.Title]}</a>");
             }
 
             void TraverseMenuHierarchy(MenuItem item, int depth)

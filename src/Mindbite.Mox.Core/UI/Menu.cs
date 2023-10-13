@@ -15,6 +15,7 @@ namespace Mindbite.Mox.UI.Menu
         public string Title { get; set; }
         public string Id { get; set; }
         public int Depth { get; set; }
+        public string CssClass { get; set; }
         public List<MenuItem> Children { get; set; } = new List<MenuItem>();
         public MenuItem Parent { get; set; }
 
