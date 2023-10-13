@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Mindbite.Mox.Identity.Data
 {
@@ -25,9 +27,13 @@ namespace Mindbite.Mox.Identity.Data
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+        private readonly HashSet<Core.Data.Models.ISoftDeleted> _ignoreWhenSavingChanges = new();
+
         public MoxIdentityDbContext(DbContextOptions options, IHttpContextAccessor httpContextAccessor) : base(options)
         {
             this._httpContextAccessor = httpContextAccessor;
+
+            this.SavingChanges += OnSavingChanges;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -49,6 +55,45 @@ namespace Mindbite.Mox.Identity.Data
 
             modelBuilder.Entity<IdentityRole>().Property(x => x.Name).HasMaxLength(450);
             modelBuilder.Entity<IdentityRole>().Property(x => x.NormalizedName).HasMaxLength(450);
+        }
+
+        protected virtual void OnSavingChanges(object sender, SavingChangesEventArgs args)
+        {
+            this.UpdateSoftDeletePropertiesFromToEntityState();
+        }
+
+        protected virtual void UpdateSoftDeletePropertiesFromToEntityState()
+        {
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                if (entry.Entity is Core.Data.Models.ISoftDeleted deletableEntity)
+                {
+                    if(this._ignoreWhenSavingChanges.Remove(deletableEntity))
+                    {
+                        continue;
+                    }
+
+                    if (entry.State == EntityState.Deleted)
+                    {
+                        entry.State = EntityState.Modified;
+                        deletableEntity.IsDeleted = true;
+                        deletableEntity.DeletedOn = DateTime.Now;
+                        deletableEntity.DeletedById = this._httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                    }
+                    else if (entry.State == EntityState.Added)
+                    {
+                        deletableEntity.CreatedOn = DateTime.Now;
+                        deletableEntity.CreatedById = this._httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                        deletableEntity.ModifiedOn = DateTime.Now;
+                        deletableEntity.ModifiedById = this._httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                    }
+                    else if (entry.State == EntityState.Modified)
+                    {
+                        deletableEntity.ModifiedOn = DateTime.Now;
+                        deletableEntity.ModifiedById = this._httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                    }
+                }
+            }
         }
 
         public void AddWithoutTracking<TEntity>(TEntity entity) where TEntity : Core.Data.Models.ISoftDeleted
@@ -88,50 +133,9 @@ namespace Mindbite.Mox.Identity.Data
             entity.DeletedById = this._httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
-        public override EntityEntry<TEntity> Remove<TEntity>(TEntity entity)
+        public EntityEntry<TEntity> UpdateWithoutSettingsModifiedProperties<TEntity>(TEntity entity) where TEntity : class, Core.Data.Models.ISoftDeleted
         {
-            switch (entity)
-            {
-                case Core.Data.Models.ISoftDeleted deleted:
-                    this.DeleteWithoutTracking(deleted);
-                    return base.Update((TEntity)deleted);
-                default:
-                    return base.Remove(entity);
-            }
-        }
-
-        public override EntityEntry<TEntity> Add<TEntity>(TEntity entity)
-        {
-            switch (entity)
-            {
-                case Core.Data.Models.ISoftDeleted added:
-                    this.AddWithoutTracking(added);
-                    return base.Add((TEntity)added);
-                default:
-                    return base.Add(entity);
-            }
-        }
-
-        public override EntityEntry<TEntity> Update<TEntity>(TEntity entity)
-        {
-            var result = default(EntityEntry<TEntity>);
-
-            switch (entity)
-            {
-                case Core.Data.Models.ISoftDeleted updated:
-                    this.UpdateWithoutTracking(updated);
-                    result = base.Update((TEntity)updated);
-                    break;
-                default:
-                    result = base.Update(entity);
-                    break;
-            }
-
-            return result;
-        }
-
-        public EntityEntry<TEntity> UpdateWithoutSettingsModifiedProperties<TEntity>(TEntity entity) where TEntity : class
-        {
+            this._ignoreWhenSavingChanges.Add(entity);
             return base.Update(entity);
         }
     }

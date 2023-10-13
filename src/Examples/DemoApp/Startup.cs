@@ -130,12 +130,12 @@ namespace Mindbite.Mox.DemoApp
 
             var supportedCultures = new List<System.Globalization.CultureInfo>
             {
-                new System.Globalization.CultureInfo("sv-SE"),
-                new System.Globalization.CultureInfo("en-US"),
+                new System.Globalization.CultureInfo("sv"),
+                new System.Globalization.CultureInfo("en"),
             };
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
-                DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("sv-SE"),
+                DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("sv"),
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures
             });

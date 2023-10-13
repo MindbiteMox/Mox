@@ -78,6 +78,16 @@ namespace Mindbite.Mox.Extensions
             return null;
         }
 
+        public static Guid? TryToGuid(this object? self)
+        {
+            if (Guid.TryParse(self?.ToString(), out var value))
+            {
+                return value;
+            }
+
+            return default;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -295,7 +305,7 @@ namespace Mindbite.Mox.Extensions
 
         public static string AppAction(this IUrlHelper url, Configuration.Apps.App app, IEnumerable<string> userRoles, object routeValues = null)
         {
-            return url.MenuAction(app.ResolveActiveMenu(url.ActionContext).Build(url, userRoles), userRoles, routeValues);
+            return url.MenuAction(app.GetCachedActiveMenu(url.ActionContext, url, userRoles), userRoles, routeValues);
         }
 
         public static string MenuAction(this IUrlHelper url, IEnumerable<UI.Menu.MenuItem> menu, IEnumerable<string> userRoles, object routeValues = null)

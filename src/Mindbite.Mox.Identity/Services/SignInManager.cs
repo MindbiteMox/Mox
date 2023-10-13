@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +46,29 @@ namespace Mindbite.Mox.Identity.Services
             }
 
             return await base.VerifyPasswordAsync(store, user, password);
+        }
+    }
+
+    public class MoxUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<MoxUser>
+    {
+        private readonly IServiceProvider _serviceProvider;
+
+        public MoxUserClaimsPrincipalFactory(IServiceProvider serviceProvider, MoxUserManager userManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, optionsAccessor)
+        {
+            this._serviceProvider = serviceProvider;
+        }
+
+        protected override async Task<ClaimsIdentity> GenerateClaimsAsync(MoxUser user)
+        {
+            var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
+            var identity = await base.GenerateClaimsAsync(user);
+
+            var roleGroup = await roleGroupManager.FindByIdAsync(user.RoleGroupId);
+
+            identity.AddClaim(new Claim(Constants.MoxUserNameClaimType, user.Name));
+            identity.AddClaim(new Claim(Constants.MoxUserRoleGroupNameClaimType, roleGroup.GroupName));
+
+            return identity;
         }
     }
 

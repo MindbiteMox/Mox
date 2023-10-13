@@ -45,6 +45,22 @@ namespace Mindbite.Mox.Configuration.Apps
                 return true;
             return roles.Intersect(this.Roles).Count() == this.Roles.Count();
         }
+
+        public IEnumerable<UI.Menu.MenuItem> GetCachedActiveMenu(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, IEnumerable<string> roles = null, bool tryMatchingActions = false)
+        {
+            var itemKey = $"MoxAppActiveMenu_{this.AppId}";
+
+            if(actionContext.HttpContext.Items.TryGetValue(itemKey, out var item) && item is List<UI.Menu.MenuItem> menuItems)
+            {
+                return menuItems;
+            }
+            else
+            {
+                menuItems = ResolveActiveMenu(actionContext).Build(urlHelper, roles, tryMatchingActions).ToList();
+                actionContext.HttpContext.Items[itemKey] = menuItems;
+                return menuItems;
+            }
+        }
     }
 
     public class AppCollection : IEnumerable<App>

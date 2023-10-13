@@ -66,6 +66,7 @@ namespace Mindbite.Mox.Identity
 #nullable disable
 
             public int ValidForMinutes { get; set; } = 5;
+            public bool InvalidateImmediatelyWhenUsed { get; set; } = true;
             public ShortCodeOptions ShortCodeGeneration { get; set; } = new();
         }
 

@@ -122,15 +122,17 @@ namespace Mindbite.Mox.Identity.Controllers
             return View(new ShortCodeViewModel { Email = model.Email, RememberMe = model.RememberMe, ReturnUrl = model.ReturnUrl });
         }
 
+#nullable enable
         [HttpGet]
-        public IActionResult PasswordLogIn(string email, bool rememberMe)
+        public IActionResult PasswordLogIn(string? email, bool? rememberMe)
         {
             return View(new PasswordViewModel
             {
                 Email = email,
-                RememberMe = rememberMe
+                RememberMe = rememberMe ?? false
             });
         }
+#nullable disable
 
         [HttpPost]
         [ValidateAntiForgeryToken]

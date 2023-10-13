@@ -59,7 +59,8 @@ namespace Mindbite.Mox.Extensions
                 .AddDefaultTokenProviders()
                 .AddUserManager<UserManager_T>()
                 .AddSignInManager<MoxSignInManager>()
-                .AddUserStore<MoxUserStore<AppDbContext_T>>();
+                .AddUserStore<MoxUserStore<AppDbContext_T>>()
+                .AddClaimsPrincipalFactory<MoxUserClaimsPrincipalFactory>();
 
             mvc.Services.Configure<MvcOptions>(options => {
                 var policy = new AuthorizationPolicyBuilder()

@@ -13,5 +13,8 @@ namespace Mindbite.Mox.Identity
         public const string SettingsArea = "IdentitySettings";
         public const string SettingsAppId = "MoxSettings";
         public const string SettingsAppName = "Inställningar";
+
+        public const string MoxUserNameClaimType = "MoxUserName";
+        public const string MoxUserRoleGroupNameClaimType = "MoxUserRoleGroupName";
     }
 }

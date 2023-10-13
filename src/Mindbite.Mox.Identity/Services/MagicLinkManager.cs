@@ -189,7 +189,7 @@ namespace Mindbite.Mox.Identity.Services
             var tokens = await this._context.MagicLinkTokens.Where(x => x.UserId == user.Id && !x.Used && !x.Invalidated && x.ValidUntil > DateTime.Now && x.User != null).ToListAsync();
             var shortCodeDidMatch = tokens.Any(x => x.NormalizedShortCode == Regex.Replace(shortCode, @"\s+", "").ToUpper());
 
-            if (shortCodeDidMatch)
+            if (shortCodeDidMatch && this._identityOptions.MagicLink.InvalidateImmediatelyWhenUsed)
             {
                 await this.InvalidateAllTokensAsync(user);
             }
@@ -205,7 +205,10 @@ namespace Mindbite.Mox.Identity.Services
                 return (false, null);
             }
 
-            await this.InvalidateAllTokensAsync(token.User);
+            if (this._identityOptions.MagicLink.InvalidateImmediatelyWhenUsed)
+            {
+                await this.InvalidateAllTokensAsync(token.User);
+            }
 
             return (true, token.User);
         }

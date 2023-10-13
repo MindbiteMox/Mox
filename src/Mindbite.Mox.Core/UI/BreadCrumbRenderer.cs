@@ -62,7 +62,8 @@ namespace Mindbite.Mox.UI
             {
                 var roles = await this._htmlExtensions.GetRolesAsync();
                 var selectedAppMenu = _htmlExtensions.Config.Value.Apps
-                    .Select(x => (app: x, menuItem: x.ResolveActiveMenu(this._htmlExtensions.HtmlHelper.ViewContext).Build(this._htmlExtensions.UrlHelper, roles).Flatten().LastOrDefault(y => y.MatchesView(this._htmlExtensions.HtmlHelper.ViewContext))))
+                    //.Select(x => (app: x, menuItem: x.ResolveActiveMenu(this._htmlExtensions.HtmlHelper.ViewContext).Build(this._htmlExtensions.UrlHelper, roles).Flatten().LastOrDefault(y => y.MatchesView(this._htmlExtensions.HtmlHelper.ViewContext))))
+                    .Select(x => (app: x, menuItem: x.GetCachedActiveMenu(this._htmlExtensions.HtmlHelper.ViewContext, this._htmlExtensions.UrlHelper, roles).Flatten().LastOrDefault(y => y.MatchesView(this._htmlExtensions.HtmlHelper.ViewContext))))
                     .FirstOrDefault(x => x.menuItem != null);
 
                 if(selectedAppMenu.app == null || selectedAppMenu.menuItem == null)

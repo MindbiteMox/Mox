@@ -36,31 +36,34 @@ namespace Mindbite.Mox.Configuration.StaticIncludes
 
         public void UpdateHash(FileVersionHash withHash, IEnumerable<IFileProvider> fileProviders)
         {
-            if(this.HashType != withHash || this.FileHash == null)
+            lock (this)
             {
-                this.HashType = withHash;
-                switch(this.HashType)
+                if (this.HashType != withHash || this.FileHash == null)
                 {
-                    case FileVersionHash.FileHash:
-                        var file = fileProviders.Select(x => x.GetFileInfo($"/{this.WebRootRelativePath.TrimStart('/')}")).FirstOrDefault(x => x.Exists);
-                        if(file == null)
-                        {
-                            throw new Exception($"Static file {this.WebRootRelativePath} could not be found!");
-                        }
+                    this.HashType = withHash;
+                    switch (this.HashType)
+                    {
+                        case FileVersionHash.FileHash:
+                            var file = fileProviders.Select(x => x.GetFileInfo($"/{this.WebRootRelativePath.TrimStart('/')}")).FirstOrDefault(x => x.Exists);
+                            if (file == null)
+                            {
+                                throw new Exception($"Static file {this.WebRootRelativePath} could not be found!");
+                            }
 
-                        using (var md5 = System.Security.Cryptography.MD5.Create())
-                        using (var fileStream = file.CreateReadStream())
-                        {
-                            var hash = md5.ComputeHash(fileStream);
-                            this.FileHash = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-                        }
-                        break;
-                    case FileVersionHash.Random:
-                        this.FileHash = new Random().Next().ToString();
-                        break;
-                    case FileVersionHash.None:
-                        this.FileHash = "";
-                        break;
+                            using (var md5 = System.Security.Cryptography.MD5.Create())
+                            using (var fileStream = file.CreateReadStream())
+                            {
+                                var hash = md5.ComputeHash(fileStream);
+                                this.FileHash = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                            }
+                            break;
+                        case FileVersionHash.Random:
+                            this.FileHash = new Random().Next().ToString();
+                            break;
+                        case FileVersionHash.None:
+                            this.FileHash = "";
+                            break;
+                    }
                 }
             }
         }

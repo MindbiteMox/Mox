@@ -7,9 +7,22 @@
 @inject IStringLocalizer localizer
 
 @{
-    var identityDbContext = dbContextFetcher.FetchDbContext<MoxIdentityDbContext>();
-    var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    var user = await identityDbContext.Users.SingleOrDefaultAsync(x => x.Id == userId);
+    var user = default(Mindbite.Mox.Identity.Data.Models.MoxUser);
+    if (!string.IsNullOrWhiteSpace(User?.FindFirstValue(Mindbite.Mox.Identity.Constants.MoxUserNameClaimType)))
+    {
+        user = new Mindbite.Mox.Identity.Data.Models.MoxUserBaseImpl
+        {
+            Name = User?.FindFirstValue(Mindbite.Mox.Identity.Constants.MoxUserNameClaimType),
+            Email = User?.FindFirstValue(ClaimTypes.Email)
+        };
+    }
+    else
+    {
+        var identityDbContext = dbContextFetcher.FetchDbContext<MoxIdentityDbContext>();
+        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        user = await identityDbContext.Users.SingleOrDefaultAsync(x => x.Id == userId);
+    }
+    
 }
 
 <a href="#!" class="identity" id="js-identity-header-button">@user.Initials.ToUpper()</a>
