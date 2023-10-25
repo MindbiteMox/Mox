@@ -64,7 +64,7 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         public virtual bool BreadCrumbsIncludeCurrentMenu => false;
         public virtual string? HeaderPartial => null;
         public virtual bool DefaultBreadCrumbsForDirectoryListing => false;
-        public virtual string? PartialFormViewName => "DirectoryListing/UploadPreflightForm";
+        public virtual string? PreflightFormViewName => "DirectoryListing/UploadPreflightForm";
         public virtual Task<string> GetRootDirectoryName() => Task.FromResult("Toppnivå");
         public virtual Task<IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>> AdditionalBreadCrumbNodesAsync() => Task.FromResult(Enumerable.Empty<Mindbite.Mox.UI.Menu.MenuItem>());
 
@@ -254,7 +254,7 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
 
             if (!(preflightValid || ModelState.IsValid))
             {
-                return View(this.PartialFormViewName, viewModel);
+                return View(this.PreflightFormViewName, viewModel);
             }
 
             return Json("OK");
