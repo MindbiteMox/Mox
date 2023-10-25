@@ -19,10 +19,10 @@
     var uploadUrl = ViewData["UploadUrl"] ?? Url.Action("UploadMulti", "Files", new { Area = Mindbite.Mox.Images.Configuration.MainArea });
     var onUploadChange = $"Mox.Images.uploadMulti('{uploadUrl}', this.form, Mox.Utils.DOM.closest(this, '.multi-file-container').parentElement, '{prefix}');";
 
-    string moveUrl(Guid id, int dir) => Url.Action("Move", "Files", new { id, dir, Area = Mindbite.Mox.Images.Configuration.MainArea });
+    string moveUrl(Guid id, int dir) => ViewData["MoveUrl"] != null ? ((Func<Guid, int, string>)ViewData["MoveUrl"]).Invoke(id, dir) : Url.Action("Move", "Files", new { id, dir, Area = Mindbite.Mox.Images.Configuration.MainArea });
     string onMoveClicked(Guid id, int dir) => $"Mox.Images.updateMulti('{moveUrl(id, dir)}', this.form, Mox.Utils.DOM.closest(this, '.multi-file-container').parentElement, '{prefix}');";
 
-    string removeUrl(Guid id) => Url.Action("Remove", "Files", new { id, Area = Mindbite.Mox.Images.Configuration.MainArea });
+    string removeUrl(Guid id) => ViewData["RemoveUrl"] != null ? ((Func<Guid, string>)ViewData["RemoveUrl"]).Invoke(id) : Url.Action("Remove", "Files", new { id, Area = Mindbite.Mox.Images.Configuration.MainArea });
     string onRemoveClicked(Guid id) => $"Mox.Images.updateMulti('{removeUrl(id)}', this.form, Mox.Utils.DOM.closest(this, '.multi-file-container').parentElement, '{prefix}');";
 
     var accept = options.Value.FormInputAccept?.Invoke(context.GetEntityType(Model));
