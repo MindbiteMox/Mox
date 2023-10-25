@@ -90,9 +90,38 @@ namespace Mindbite.Mox.DirectoryListing.ViewModels
         }
     }
 
+    public class DocumentUploadDefaultPreflight
+    {
+    }
+
     public class DocumentUpload
     {
         public IFormFile[] UploadedFiles { get; set; } = Array.Empty<IFormFile>();
-        public DuplicateAction OverwriteFiles { get; set; }
+        public DuplicateAction OverwriteFiles { get; set; } = DuplicateAction.Overwrite;
+    }
+
+    public class DocumentUpload<TUploadAdditionalData> : DocumentUpload
+    {
+        public TUploadAdditionalData? AdditionalData { get; set; }
+    }
+
+    public class DocumentUploadPreflight<TUploadAdditionalData>
+    {
+        public string[] FileNames { get; set; } = Array.Empty<string>();
+        [MoxRequired]
+        public DuplicateAction? OverwriteFiles { get; set; }
+        public TUploadAdditionalData? AdditionalData { get; set; }
+
+        public DocumentUploadPreflight()
+        {
+
+        }
+
+        public DocumentUploadPreflight(DocumentUpload<TUploadAdditionalData> documentUpload)
+        {
+            this.FileNames = documentUpload.UploadedFiles.Select(x => x.FileName).ToArray();
+            this.OverwriteFiles = documentUpload.OverwriteFiles;
+            this.AdditionalData = documentUpload.AdditionalData;
+        }
     }
 }

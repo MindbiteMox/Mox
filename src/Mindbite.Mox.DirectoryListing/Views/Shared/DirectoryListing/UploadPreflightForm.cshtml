@@ -1,0 +1,52 @@
+﻿
+@model Mindbite.Mox.DirectoryListing.ViewModels.DocumentUploadPreflight<Mindbite.Mox.DirectoryListing.ViewModels.DocumentUploadDefaultPreflight>
+@{
+    var existingFiles = (List<string>)ViewData["ExistingFiles"];
+}
+
+<h1>Ladda upp filer</h1>
+@using (Html.BeginForm())
+{
+    <fieldset class="document-upload-modal-only">
+        <p style="border-radius: 5px; padding: 10px; border: 1px solid #ccc;">
+            <i class="far fa-file"></i>@Model.FileNames.Length fil(er) kommer laddas upp.
+        </p>
+    </fieldset>
+
+    <p>
+        <strong>Följande filer finns redan:</strong>
+    </p>
+    <ul>
+        @foreach(var file in existingFiles)
+        {
+            <li>@file</li>
+        }
+    </ul>
+
+    <fieldset class="document-upload-modal-only" preflight-data>
+        @foreach(var fileNameIndex in Enumerable.Range(0, Model.FileNames.Length))
+        {
+            @Html.HiddenFor(x => x.FileNames[fileNameIndex])
+        }
+
+        <strong>Vad vill du göra med filerna?</strong>
+        @Html.ValidationMessageFor(x => x.OverwriteFiles)
+        <p>
+            <input type="radio" value="0" name="OverwriteFiles" id="OverwriteFiles_0" checked />
+            <label for="OverwriteFiles_0">Skriv över filer med samma namn</label>
+            <br />
+            <input type="radio" value="1" name="OverwriteFiles" id="OverwriteFiles_1" />
+            <label for="OverwriteFiles_1">Behåll båda</label>
+            <br />
+            <input type="radio" value="2" name="OverwriteFiles" id="OverwriteFiles_2" />
+            <label for="OverwriteFiles_2">Behåll befintlig fil</label>
+            <br />
+        </p>
+    </fieldset>
+
+    <fieldset class="buttons">
+        <p>
+            <button type="submit" class="mox-button save">Ladda upp</button>
+        </p>
+    </fieldset>
+}

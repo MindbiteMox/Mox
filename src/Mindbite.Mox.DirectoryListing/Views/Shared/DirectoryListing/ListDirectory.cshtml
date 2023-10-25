@@ -70,11 +70,12 @@
         @using (Html.BeginForm("UploadFiles", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } }, FormMethod.Post, null, new { enctype = "multipart/form-data", id = "upload-form" }))
         {
             <fieldset class="document-upload-list-only">
+                <input type="hidden" name="PreflightUrl" value="@Url.Action("UploadPreflight", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })">
                 <input type="file" id="UploadedFiles" multiple name="UploadedFiles" onchange="documentsUploadFile(this.form)" style="display: none;" />
                 <label for="UploadedFiles" class="mox-button"><i class="far fa-upload"></i> Ladda upp filer</label>
             </fieldset>
 
-            <fieldset class="document-upload-modal-only">
+            @*<fieldset class="document-upload-modal-only">
                 <p style="border-radius: 5px; padding: 10px; border: 1px solid #ccc;">
                     <i class="far fa-file"></i><span class="document-upload-uploaded-file-count"></span> fil(er) kommer laddas upp.
                 </p>
@@ -93,7 +94,7 @@
                     <label for="OverwriteFiles_2">Behåll befintlig fil</label>
                     <br />
                 </p>
-            </fieldset>
+            </fieldset>*@
         }
     </li>
 
@@ -114,7 +115,7 @@
         </div>
     </li>
     <li>
-        <label for="js-global" style="margin-bottom: 8px; display: inline-block;"> Sök i alla mappar</label><input type="checkbox" id="js-global" name="global" style="margin: 0px 10px;">
+        <label for="js-global" style="margin: 4px 0; display: inline-block;"> Sök i alla mappar</label><input type="checkbox" id="js-global" name="global" style="margin: 0px 10px;">
     </li>
     <li>
         <input type="text" id="js-filter" name="filter" placeholder="Sök filer och mappar...">

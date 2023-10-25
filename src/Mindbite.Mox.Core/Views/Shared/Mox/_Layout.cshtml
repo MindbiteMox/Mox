@@ -31,9 +31,9 @@
     @await Html.PartialAsync("Mox/LayoutParts/_Head")
     <title>@(ViewData["Title"] ?? currentSelectedMenu?.Title ?? "Mox") - @(Config.Value.SiteTitle)</title>
     <meta name="viewport" content="width=device-width">
+    @await Html.Mox().InlineStaticFilesAsync(true)
     @await Html.Mox().StaticFilesAsync(true)
     @await Html.Mox().AppStaticFilesAsync(true)
-    @await Html.Mox().InlineStaticFilesAsync(true)
     @RenderSection("styles", required: false)
 </head>
 <body>
@@ -59,11 +59,11 @@
 
     <div class="mox-content-wrapper">
         @{
-            @if (currentSelectedMenu?.AllParents.Count() > 0)
+            if (currentSelectedMenu?.AllParents.Count() > 1)
             {
                 <div class="mox-side-menu">
-                    <span class="app-title">@localizer[currentSelectedMenu.AllParents.First().Title]</span>
-                    @Html.Mox().Menu(root: currentSelectedMenu.AllParents.First(), startLevel: 0, maxDepth: 1)
+                    <span class="app-title">@localizer[currentSelectedMenu.AllParents.Skip(1).First().Title]</span>
+                    @Html.Mox().Menu(root: currentSelectedMenu.AllParents.Skip(1).First(), startLevel: 0, maxDepth: 1)
                 </div>
             }
         }
@@ -75,9 +75,9 @@
         </div>
     </div>
     
+    @await Html.Mox().InlineStaticFilesAsync(false)
     @await Html.Mox().StaticFilesAsync(false)
     @await Html.Mox().AppStaticFilesAsync(false)
-    @await Html.Mox().InlineStaticFilesAsync(false)
     @RenderSection("scripts", required: false)
     
     <script>Mox.UI.GlobalInstances.initDefault()</script>

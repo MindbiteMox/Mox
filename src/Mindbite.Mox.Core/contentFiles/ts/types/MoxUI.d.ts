@@ -34,6 +34,7 @@ declare namespace Mox.UI {
         constructor(options?: ModalOptions);
         static createDialog(url: string, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
         static createFormDialog(url: string, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
+        static createFormDialog(modal: Modal, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
         static createDialogWithContent(htmlContent: string): Mox.UI.Modal;
         static closeAll(): Promise<void>;
         close(): Promise<void>;

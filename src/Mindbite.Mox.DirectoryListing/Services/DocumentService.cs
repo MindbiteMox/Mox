@@ -30,18 +30,20 @@ namespace Mindbite.Mox.DirectoryListing.Services
             this._options = options.Value;
         }
 
-        public async Task<IEnumerable<Data.Document>> SaveDocumentUploadFormAsync<TDocument, TDirectory>(TDirectory? directory, ViewModels.DocumentUpload viewModel, ModelStateDictionary modelState, IEnumerable<TDocument>? allDirectoryDocuments = null, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null) where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
+        public async Task<IEnumerable<TDocument>> SaveDocumentUploadFormAsync<TDocument, TDirectory>(TDirectory? directory, ViewModels.DocumentUpload viewModel, ModelStateDictionary modelState, IEnumerable<TDocument>? allDirectoryDocuments = null, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null) where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
         {
             var directoryId = directory?.Id;
             allDirectoryDocuments ??= await this._context.Set<TDocument>().Where(x => x.DirectoryId == directoryId).ToListAsync();
 
-            var newDocuments = new List<Data.Document>();
+            var newDocuments = new List<TDocument>();
 
+            var fileIndex = 0;
             foreach (var file in viewModel.UploadedFiles)
             {
                 try
                 {
-                    newDocuments.Add(await this.UploadFileAsync(directory, Utils.RemoveInvalidFileNameChars(file.FileName), file.OpenReadStream(), beforeAdd, afterAdd));
+                    var newDocument = await this.UploadFileAsync(directory, Utils.RemoveInvalidFileNameChars(file.FileName), file.OpenReadStream(), beforeAdd, afterAdd);
+                    newDocuments.Add(newDocument);
                 }
                 catch (Exception ex)
                 {
@@ -55,6 +57,8 @@ namespace Mindbite.Mox.DirectoryListing.Services
                     }
                     modelState.AddModelError("", $"\"{file.FileName}\" kunde inte laddas upp! {ex}");
                 }
+
+                fileIndex++;
             }
 
             var uploadedFileNames = viewModel.UploadedFiles.Select(x => x.FileName);
@@ -108,7 +112,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
             }
         }
 
-        private async Task<Data.Document> UploadFileAsync<TDocument, TDirectory>(TDirectory? directory, string fileName, Stream dataStream, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null) where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
+        private async Task<TDocument> UploadFileAsync<TDocument, TDirectory>(TDirectory? directory, string fileName, Stream dataStream, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null) where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
         {
             using var transaction = await this._context.Database.BeginTransactionAsync();
 
@@ -234,7 +238,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
         {
             var cleanFileName = Utils.RemoveInvalidFileNameChars(name);
 
-            return await (allDocumentsQueryable ?? this._context.Set<TDocument>()).AnyAsync(x => x.DirectoryId == directoryId && x.Name == cleanFileName && (excludeDocumentId == null || x.Id == excludeDocumentId));
+            return await (allDocumentsQueryable ?? this._context.Set<TDocument>()).AnyAsync(x => x.DirectoryId == directoryId && x.FileName == cleanFileName && (excludeDocumentId == null || x.Id == excludeDocumentId));
         }
 
         public async Task CreateDirectoryAsync<TDirectory>(TDirectory directory, IQueryable<TDirectory>? allDirectoriesQueryable = null) where TDirectory : Data.DocumentDirectory

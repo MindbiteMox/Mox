@@ -155,7 +155,7 @@ var Mox;
                     });
                 });
             };
-            Modal.createFormDialog = function (url, options, configureRequestInit) {
+            Modal.createFormDialog = function (modalOrUrl, options, configureRequestInit) {
                 return __awaiter(this, void 0, void 0, function () {
                     function bindEvents() {
                         var form = modal.contentContainer.querySelector('form');
@@ -235,15 +235,21 @@ var Mox;
                             });
                         });
                     }
-                    var _options, modal;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
+                    var _options, modal, _a;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
                             case 0:
                                 _options = options || {};
                                 _options.actualWindowHref = _options.actualWindowHref || window.location.href;
-                                return [4 /*yield*/, Modal.createDialog(url, configureRequestInit)];
-                            case 1:
-                                modal = _a.sent();
+                                if (!(modalOrUrl instanceof Modal)) return [3 /*break*/, 1];
+                                _a = modalOrUrl;
+                                return [3 /*break*/, 3];
+                            case 1: return [4 /*yield*/, this.createDialog(modalOrUrl, configureRequestInit)];
+                            case 2:
+                                _a = _b.sent();
+                                _b.label = 3;
+                            case 3:
+                                modal = _a;
                                 modal.onContentReplaced(function () {
                                     bindEvents();
                                 });

@@ -49,11 +49,11 @@ namespace Mindbite.Mox.Identity.Services
         }
     }
 
-    public class MoxUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<MoxUser>
+    public class MoxUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<MoxUser, IdentityRole>
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public MoxUserClaimsPrincipalFactory(IServiceProvider serviceProvider, MoxUserManager userManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, optionsAccessor)
+        public MoxUserClaimsPrincipalFactory(IServiceProvider serviceProvider, MoxUserManager userManager, RoleManager<IdentityRole> roleManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, roleManager, optionsAccessor)
         {
             this._serviceProvider = serviceProvider;
         }

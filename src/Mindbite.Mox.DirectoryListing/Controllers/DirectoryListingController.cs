@@ -22,7 +22,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Mindbite.Mox.DirectoryListing.Controllers
 {
-    public class MoxDirectoryListingController<TDocument, TDirectory> : MoxDirectoryListingController<TDocument, TDirectory, ViewModels.Document, ViewModels.DocumentDirectory> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
+    public class MoxDirectoryListingController<TDocument, TDirectory> : MoxDirectoryListingController<TDocument, TDirectory, ViewModels.Document, ViewModels.DocumentDirectory, ViewModels.DocumentUploadDefaultPreflight> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
     {
         public MoxDirectoryListingController(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context, webHostEnvironment, documentService, options, localizer) { }
 
@@ -47,7 +47,12 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         }
     }
 
-    public abstract class MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel> : DirectoryListingControllerBase<TDocument, TDirectory> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new() where TDocumentViewModel : ViewModels.Document where TDirectoryViewModel : ViewModels.DocumentDirectory
+    public abstract class MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel> : MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel, ViewModels.DocumentUploadDefaultPreflight> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new() where TDocumentViewModel : ViewModels.Document where TDirectoryViewModel : ViewModels.DocumentDirectory
+    {
+        public MoxDirectoryListingController(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context, webHostEnvironment, documentService, options, localizer) { }
+    }
+
+    public abstract class MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel, TUploadAdditionalPreflightDataViewModel> : DirectoryListingControllerBase<TDocument, TDirectory> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new() where TDocumentViewModel : ViewModels.Document where TDirectoryViewModel : ViewModels.DocumentDirectory
     {
         private readonly Data.IDirectoryListingDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -59,6 +64,7 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         public virtual bool BreadCrumbsIncludeCurrentMenu => false;
         public virtual string? HeaderPartial => null;
         public virtual bool DefaultBreadCrumbsForDirectoryListing => false;
+        public virtual string? PartialFormViewName => "DirectoryListing/UploadPreflightForm";
         public virtual Task<string> GetRootDirectoryName() => Task.FromResult("Toppnivå");
         public virtual Task<IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>> AdditionalBreadCrumbNodesAsync() => Task.FromResult(Enumerable.Empty<Mindbite.Mox.UI.Menu.MenuItem>());
 
@@ -214,8 +220,53 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             return View("Mox/UI/DataTable", dataTable);
         }
 
+        protected virtual Task<bool> ValidateCustomUploadPreflightAsync(TDirectory? directory, ViewModels.DocumentUploadPreflight<TUploadAdditionalPreflightDataViewModel> viewModel)
+        {
+            return Task.FromResult(true);
+        }
+
+        protected async virtual Task<bool> ValidateFileExistsPreflightAsync(TDirectory? directory, ViewModels.DocumentUploadPreflight<TUploadAdditionalPreflightDataViewModel> viewModel)
+        {
+            var existingFiles = new List<string>();
+
+            foreach (var fileName in viewModel.FileNames)
+            {
+                var fileExists = await this._documentService.DocumentExistsAsync(directory?.Id, fileName, null, this.GetDocuments());
+                if (fileExists)
+                {
+                    existingFiles.Add(fileName);
+                }
+            }
+
+            ViewData["ExistingFiles"] = existingFiles;
+
+            return !existingFiles.Any();
+        }
+
         [HttpPost]
-        public async Task<IActionResult> UploadFiles(Guid? directoryId, ViewModels.DocumentUpload viewModel)
+        public async virtual Task<IActionResult> UploadPreflight(Guid? directoryId, ViewModels.DocumentUploadPreflight<TUploadAdditionalPreflightDataViewModel> viewModel)
+        {
+            var directory = await GetDirectories()
+                .FirstOrDefaultAsync(x => x.UID == directoryId);
+
+            var preflightValid = await this.ValidateFileExistsPreflightAsync(directory, viewModel);
+            preflightValid &= await this.ValidateCustomUploadPreflightAsync(directory, viewModel);
+
+            if (!(preflightValid || ModelState.IsValid))
+            {
+                return View(this.PartialFormViewName, viewModel);
+            }
+
+            return Json("OK");
+        }
+
+        public async virtual Task<IEnumerable<TDocument>> SaveDocumentUploadFormAsync(TDirectory? directory, IEnumerable<TDocument> directoryDocuments, ViewModels.DocumentUpload<TUploadAdditionalPreflightDataViewModel> viewModel)
+        {
+            return await this._documentService.SaveDocumentUploadFormAsync(directory, viewModel, ModelState, directoryDocuments, x => this.DocumentBeforeAddAsync(x), x => this.DocumentAfterAddAsync(x));
+        }
+
+        [HttpPost]
+        public async virtual Task<IActionResult> UploadFiles(Guid? directoryId, ViewModels.DocumentUpload<TUploadAdditionalPreflightDataViewModel> viewModel)
         {
             var directory = await GetDirectories()
                 .Include(x => x.ChildDirectories)
@@ -225,9 +276,13 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             var directoryDocuments = await this.GetDocuments().Where(x => x.DirectoryId == theDirectoryId).ToListAsync();
             var uploadedFileNames = viewModel.UploadedFiles.Select(x => x.FileName);
 
-            if (ModelState.IsValid)
+            var preflightViewModel = new ViewModels.DocumentUploadPreflight<TUploadAdditionalPreflightDataViewModel>(viewModel);
+            var preflightValid = await this.ValidateFileExistsPreflightAsync(directory, preflightViewModel);
+            preflightValid |= await this.ValidateCustomUploadPreflightAsync(directory, preflightViewModel);
+
+            if (preflightValid || ModelState.IsValid)
             {
-                var newDocuments = await this._documentService.SaveDocumentUploadFormAsync(directory, viewModel, ModelState, directoryDocuments, x => this.DocumentBeforeAddAsync(x), x => this.DocumentAfterAddAsync(x));
+                await this.SaveDocumentUploadFormAsync(directory, directoryDocuments, viewModel);
 
                 if (ModelState.IsValid)
                 {
@@ -249,7 +304,7 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             var viewModel = this.GetDirectoryViewModel(null);
             viewModel.ParentDirectoryId = parentDirectory?.Id;
 
-            return View("DirectoryListing/CreateDirectory", viewModel);
+            return View("DirectoryListing/CreateDirectory", viewModel); 
         }
 
         [HttpPost]

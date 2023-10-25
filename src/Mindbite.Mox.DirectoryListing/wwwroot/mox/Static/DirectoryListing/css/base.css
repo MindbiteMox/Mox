@@ -1,2 +1,3 @@
 ﻿.mox-filters .document-upload-modal-only { display: none; }
 .mox-modal .document-upload-list-only { display: none }
+fieldset.document-upload-list-only { margin-bottom: 0 }

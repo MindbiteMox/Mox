@@ -30,14 +30,15 @@
         private onCloseCallbacks;
         private onContentReplacedCallbacks;
         contentContainer: HTMLElement;
-        private static allOpenModals;
+        static allOpenModals: Modal[];
         constructor(options?: ModalOptions);
-        static createDialog(url: string): Promise<Mox.UI.Modal>;
-        static createFormDialog(url: string, options: FormDialogOptions): Promise<Mox.UI.Modal>;
+        static createDialog(url: string, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
+        static createFormDialog(url: string, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
+        static createFormDialog(modal: Modal, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>;
         static createDialogWithContent(htmlContent: string): Mox.UI.Modal;
         static closeAll(): Promise<void>;
         close(): Promise<void>;
-        replaceContent(url: string): Promise<void>;
+        replaceContent(url: string, configureRequestInit?: (init: RequestInit) => void): Promise<void>;
         replaceContentWithHtml(html: string): void;
         onClose(callback: () => void): void;
         onContentReplaced(callback: () => void): void;
@@ -52,10 +53,14 @@
         filters: (HTMLInputElement | HTMLSelectElement | string)[];
         rememberFilters?: boolean;
         skipRenderOnCreate?: boolean;
+        configureRequestInit?: (init: RequestInit) => void;
+        onSelectedIdsChanged?: (dataTable: DataTable) => void;
     }
     class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
+        selectedIds: number[];
+        selectionEnabled: boolean;
         get tableId(): string;
         get containerElement(): HTMLElement;
         get filterQueryString(): string;
@@ -63,6 +68,7 @@
         private constructor();
         private render;
         refresh(): Promise<void>;
+        checkSelectedRows(headers: any): void;
     }
     type CloseOnEscapeHandle = number;
     class CloseOnEscapeQueue {

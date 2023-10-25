@@ -52,7 +52,7 @@ namespace Mindbite.Mox.UI.Menu.Renderer
                         sb.AppendLine($"<ul class=\"mox-menu\">");
                         foreach (var child in item.Children)
                         {
-                            sb.AppendLine($"<li>");
+                            sb.AppendLine($"<li data-id=\"{child.Id}\">");
                             TraverseMenuHierarchy(child, depth + 1);
                             sb.AppendLine($"</li>");
                         }
@@ -74,7 +74,7 @@ namespace Mindbite.Mox.UI.Menu.Renderer
             sb.AppendLine($"<ul class=\"mox-menu\">");
             foreach (var item in root.Where(x => !string.IsNullOrWhiteSpace(x.Url)))
             {
-                sb.AppendLine($"<li>");
+                sb.AppendLine($"<li data-id=\"{item.Id}\">");
                 TraverseMenuHierarchy(item, 0);
                 sb.AppendLine($"</li>");
             }

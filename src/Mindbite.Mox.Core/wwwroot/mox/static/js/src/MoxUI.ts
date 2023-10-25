@@ -154,11 +154,14 @@
             return modal;
         }
 
-        static async createFormDialog(url: string, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal> {
+        static async createFormDialog(url: string, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>
+        static async createFormDialog(modal: Modal, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal>
+
+        static async createFormDialog(modalOrUrl: string | Modal, options: FormDialogOptions, configureRequestInit?: (init: RequestInit) => void): Promise<Mox.UI.Modal> {
             const _options = options || {} as FormDialogOptions;
             _options.actualWindowHref = _options.actualWindowHref || window.location.href;
 
-            const modal = await Modal.createDialog(url, configureRequestInit);
+            const modal = modalOrUrl instanceof Modal ? modalOrUrl : await this.createDialog(modalOrUrl, configureRequestInit);
 
             function bindEvents() {
                 const form = modal.contentContainer.querySelector('form');

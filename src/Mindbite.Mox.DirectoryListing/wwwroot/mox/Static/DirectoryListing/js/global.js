@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-function documentsUploadFile(form) {
+function documentsUploadFileX(form) {
     return __awaiter(this, void 0, void 0, function () {
         var fileInput, oldFormParent, formHTML, dialog, content, heading;
         return __generator(this, function (_a) {
@@ -55,24 +55,51 @@ function documentsUploadFile(form) {
                     dialog.onClose(function () {
                         oldFormParent.innerHTML = formHTML;
                     });
-                    //const dialog = await Mox.UI.Modal.createDialogWithContent(`
-                    //    <h1>Ladda upp filer</h1>
-                    //    <div style="margin-bottom: 60px;">
-                    //        <p style="border-radius: 5px; padding: 10px; border: 1px solid #ccc;"><i class="far fa-file"></i> ${fileInput.files.length} fil(er) valda</p>
-                    //        <p>Välj vilken behörighet dina filer ska få</p>
-                    //    </div>        
-                    //    <fieldset class="buttons">
-                    //        <p>
-                    //            <button type="button" class="mox-button save">Ladda upp</button>
-                    //        </p>
-                    //    </fieldset>
-                    //`);
                     dialog.contentContainer.querySelector('.mox-button.save').addEventListener('click', function (e) {
                         var loadingDialog = Mox.UI.Modal.createDialogWithContent("\n            <h1 style=\"text-align: center;\">Laddar upp...</h1>\n        ");
                         loadingDialog.contentContainer.parentElement.querySelector('.mox-modal-close').remove();
                         form.submit();
                     });
                     return [2 /*return*/];
+            }
+        });
+    });
+}
+function documentsUploadFile(form) {
+    return __awaiter(this, void 0, void 0, function () {
+        var fileInput, preflightUrlInput, formData, i, response, dialog, formDialog, loadingDialog;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    fileInput = form.querySelector('input[type="file"]');
+                    preflightUrlInput = form.querySelector('input[name="PreflightUrl"]');
+                    formData = new FormData(form);
+                    formData.delete('UploadedFiles');
+                    for (i = 0; i < fileInput.files.length; i++) {
+                        formData.append('FileNames[]', fileInput.files.item(i).name);
+                    }
+                    return [4 /*yield*/, post(preflightUrlInput.value, formData)];
+                case 1:
+                    response = _a.sent();
+                    if (!(response.type === 'html')) return [3 /*break*/, 4];
+                    return [4 /*yield*/, Mox.UI.Modal.createDialogWithContent(response.data)];
+                case 2:
+                    dialog = _a.sent();
+                    return [4 /*yield*/, Mox.UI.Modal.createFormDialog(dialog, {
+                            onSubmitFormData: function (modal, modalForm, response) {
+                                form.insertBefore(modal.contentContainer.querySelector('[preflight-data]'), null);
+                                modal.contentContainer.innerHTML = '<h1 style="text-align: center;">Laddar upp...</h1>';
+                                form.submit();
+                            }
+                        })];
+                case 3:
+                    formDialog = _a.sent();
+                    return [3 /*break*/, 5];
+                case 4:
+                    loadingDialog = Mox.UI.Modal.createDialogWithContent("\n            <h1 style=\"text-align: center;\">Laddar upp...</h1>\n        ");
+                    form.submit();
+                    _a.label = 5;
+                case 5: return [2 /*return*/];
             }
         });
     });

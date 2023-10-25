@@ -37,8 +37,6 @@ namespace Mindbite.Mox.UI
                 html.ViewContext.HttpContext.Items["MoxInlineStaticFiles"] = inlineStyles;
             }
 
-            inlineStyles.Add(style);
-
             if (!inlineStyles.Contains(style))
             {
                 inlineStyles.Add(style);

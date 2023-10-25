@@ -1,5 +1,5 @@
 ﻿
-async function documentsUploadFile(form: HTMLFormElement) {
+async function documentsUploadFileX(form: HTMLFormElement) {
     const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
 
     var oldFormParent = form.parentElement;
@@ -25,20 +25,6 @@ async function documentsUploadFile(form: HTMLFormElement) {
         oldFormParent.innerHTML = formHTML;
     });
 
-    //const dialog = await Mox.UI.Modal.createDialogWithContent(`
-    //    <h1>Ladda upp filer</h1>
-    //    <div style="margin-bottom: 60px;">
-    //        <p style="border-radius: 5px; padding: 10px; border: 1px solid #ccc;"><i class="far fa-file"></i> ${fileInput.files.length} fil(er) valda</p>
-    //        <p>Välj vilken behörighet dina filer ska få</p>
-            
-    //    </div>        
-    //    <fieldset class="buttons">
-    //        <p>
-    //            <button type="button" class="mox-button save">Ladda upp</button>
-    //        </p>
-    //    </fieldset>
-    //`);
-
     dialog.contentContainer.querySelector('.mox-button.save').addEventListener('click', e => {
         const loadingDialog = Mox.UI.Modal.createDialogWithContent(`
             <h1 style="text-align: center;">Laddar upp...</h1>
@@ -46,4 +32,33 @@ async function documentsUploadFile(form: HTMLFormElement) {
         loadingDialog.contentContainer.parentElement.querySelector('.mox-modal-close').remove();
         form.submit();
     });
+}
+
+async function documentsUploadFile(form: HTMLFormElement) {
+    const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
+    const preflightUrlInput = form.querySelector('input[name="PreflightUrl"]') as HTMLInputElement;
+    var formData = new FormData(form);
+
+    formData.delete('UploadedFiles');
+
+    for (var i = 0; i < fileInput.files.length; i++) {
+        formData.append('FileNames[]', fileInput.files.item(i).name);
+    }
+
+    var response = await post(preflightUrlInput.value, formData);
+    if (response.type === 'html') {
+        const dialog = await Mox.UI.Modal.createDialogWithContent(response.data);
+        const formDialog = await Mox.UI.Modal.createFormDialog(dialog, {
+            onSubmitFormData: (modal, modalForm, response) => {
+                form.insertBefore(modal.contentContainer.querySelector('[preflight-data]'), null);
+                modal.contentContainer.innerHTML = '<h1 style="text-align: center;">Laddar upp...</h1>';
+                form.submit();
+            }
+        });
+    } else {
+        const loadingDialog = Mox.UI.Modal.createDialogWithContent(`
+            <h1 style="text-align: center;">Laddar upp...</h1>
+        `);
+        form.submit();
+    }
 }
