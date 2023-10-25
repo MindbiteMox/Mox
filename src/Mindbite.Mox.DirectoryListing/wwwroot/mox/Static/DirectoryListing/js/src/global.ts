@@ -50,7 +50,10 @@ async function documentsUploadFile(form: HTMLFormElement) {
         const dialog = await Mox.UI.Modal.createDialogWithContent(response.data);
         const formDialog = await Mox.UI.Modal.createFormDialog(dialog, {
             onSubmitFormData: (modal, modalForm, response) => {
-                form.insertBefore(modal.contentContainer.querySelector('[preflight-data]'), null);
+                let preflightElements = Array.from(modal.contentContainer.querySelectorAll('[preflight-data]'));
+                for (let preflightElement of preflightElements) {
+                    form.insertBefore(preflightElement, null);
+                }
                 modal.contentContainer.innerHTML = '<h1 style="text-align: center;">Laddar upp...</h1>';
                 form.submit();
             }

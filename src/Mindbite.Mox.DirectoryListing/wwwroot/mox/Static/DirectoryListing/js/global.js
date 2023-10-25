@@ -87,7 +87,11 @@ function documentsUploadFile(form) {
                     dialog = _a.sent();
                     return [4 /*yield*/, Mox.UI.Modal.createFormDialog(dialog, {
                             onSubmitFormData: function (modal, modalForm, response) {
-                                form.insertBefore(modal.contentContainer.querySelector('[preflight-data]'), null);
+                                var preflightElements = Array.from(modal.contentContainer.querySelectorAll('[preflight-data]'));
+                                for (var _i = 0, preflightElements_1 = preflightElements; _i < preflightElements_1.length; _i++) {
+                                    var preflightElement = preflightElements_1[_i];
+                                    form.insertBefore(preflightElement, null);
+                                }
                                 modal.contentContainer.innerHTML = '<h1 style="text-align: center;">Laddar upp...</h1>';
                                 form.submit();
                             }

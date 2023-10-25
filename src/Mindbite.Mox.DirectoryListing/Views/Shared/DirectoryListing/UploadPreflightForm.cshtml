@@ -23,6 +23,7 @@
         }
     </ul>
 
+    @* All elements with the preflight-data attribute is sent with the uploaded files. If you add more fields outside this fieldset, make sure to add preflight-data where appropriate. *@
     <fieldset class="document-upload-modal-only" preflight-data>
         @foreach(var fileNameIndex in Enumerable.Range(0, Model.FileNames.Length))
         {
