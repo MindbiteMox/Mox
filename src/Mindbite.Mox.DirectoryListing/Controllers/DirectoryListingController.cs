@@ -135,58 +135,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> DisplayTable(Guid? directoryId, DataTableSort sort, string? filter, bool? global)
+        public virtual async Task<IActionResult> DisplayTable(Guid? directoryId, DataTableSort sort, string? filter, bool? global)
         {
             bool globalSearch = global == true;
-            var allDirectories = await this.GetDirectories().ToListAsync();
 
-            var directory = await this.GetDirectories().FirstOrDefaultAsync(x => x.UID == directoryId);
-            var parentDirectoryId = directory?.Id;
-            var directories = await this.GetDirectories().Include(x => x.ParentDirectory).Where(x => x.ParentDirectoryId == parentDirectoryId).ToListAsync();
-
-            if (globalSearch && !string.IsNullOrWhiteSpace(filter))
-            {
-                directories = allDirectories;
-            }
-
-            var directoriesDataSource = directories.Select(x => new
-            {
-                x.UID,
-                x.CreatedOn,
-                x.Name,
-                IsDirectory = true,
-                Extension = "Mapp",
-                Icon = "<i class='far fa-folder'></i>",
-                PathSort = new HtmlString(x.Name),
-                Path = Utils.GetDirectoryPath(allDirectories, x),
-                NameSort = sort.DataTableSortDirection == "descending" ? "öööööö" + x.Name : "_____" + x.Name,
-            }).ToList();
-
-            var documents = this.GetDocuments().Where(x => x.DirectoryId == parentDirectoryId);
-
-            if (globalSearch && !string.IsNullOrWhiteSpace(filter))
-            {
-                documents = this.GetDocuments().Include(x => x.Directory);
-            }
-
-            var documentsDataSource = (await documents.ToListAsync()).Select(x => new
-            {
-                x.UID,
-                x.CreatedOn,
-                x.Name,
-                IsDirectory = false,
-                x.Extension,
-                x.Icon,
-                PathSort = new HtmlString(x.Name),
-                Path = x.Directory != null ? Utils.GetDirectoryPath(allDirectories, (TDirectory)x.Directory, true) : new List<(Guid, string)>(),
-                NameSort = x.Name,
-            });
-
-            var dataSource = directoriesDataSource.Concat(documentsDataSource);
-            if (!string.IsNullOrWhiteSpace(filter))
-            {
-                dataSource = dataSource.Where(x => x.Name.ToLower().Contains(filter.ToLower()));
-            }
+            var dataSource = await GetDataTableData<ViewModels.DataTableData>(directoryId, sort, globalSearch, filter);
 
             var dataTable = DataTableBuilder.Create(dataSource.AsQueryable())
                 .Sort(x => x.NameSort, SortDirection.Ascending, sort.DataTableSortColumn, sort.DataTableSortDirection)
@@ -218,6 +171,60 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
                 });
 
             return View("Mox/UI/DataTable", dataTable);
+        }
+
+        protected virtual async Task<IEnumerable<T>> GetDataTableData<T>(Guid? directoryId, DataTableSort sort, bool globalSearch, string? filter) where T : ViewModels.DataTableData, new()
+        {
+            var allDirectories = await this.GetDirectories().ToListAsync();
+
+            var directory = await this.GetDirectories().FirstOrDefaultAsync(x => x.UID == directoryId);
+            var parentDirectoryId = directory?.Id;
+            var directories = await this.GetDirectories().Include(x => x.ParentDirectory).Where(x => x.ParentDirectoryId == parentDirectoryId).ToListAsync();
+
+            if (globalSearch && !string.IsNullOrWhiteSpace(filter))
+            {
+                directories = allDirectories;
+            }
+
+            var directoriesDataSource = directories.Select(x => new T
+            {
+                UID = x.UID,
+                CreatedOn = x.CreatedOn,
+                Name = x.Name,
+                IsDirectory = true,
+                Extension = "Mapp",
+                Icon = "<i class='far fa-folder'></i>",
+                PathSort = new HtmlString(x.Name),
+                Path = Utils.GetDirectoryPath(allDirectories, x),
+                NameSort = sort.DataTableSortDirection == "descending" ? "öööööö" + x.Name : "_____" + x.Name,
+            }).ToList();
+
+            var documents = this.GetDocuments().Where(x => x.DirectoryId == parentDirectoryId);
+
+            if (globalSearch && !string.IsNullOrWhiteSpace(filter))
+            {
+                documents = this.GetDocuments().Include(x => x.Directory);
+            }
+
+            var documentsDataSource = (await documents.ToListAsync()).Select(x => new T
+            {
+                UID = x.UID,
+                CreatedOn = x.CreatedOn,
+                Name = x.Name,
+                IsDirectory = false,
+                Extension = x.Extension,
+                Icon = x.Icon,
+                PathSort = new HtmlString(x.Name),
+                Path = x.Directory != null ? Utils.GetDirectoryPath(allDirectories, (TDirectory)x.Directory, true) : new List<(Guid, string)>(),
+                NameSort = x.Name,
+            });
+
+            var dataSource = directoriesDataSource.Concat(documentsDataSource);
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                dataSource = dataSource.Where(x => x.Name.ToLower().Contains(filter.ToLower()));
+            }
+            return dataSource;
         }
 
         protected virtual Task<bool> ValidateCustomUploadPreflightAsync(TDirectory? directory, ViewModels.DocumentUploadPreflight<TUploadAdditionalPreflightDataViewModel> viewModel)

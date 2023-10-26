@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -123,5 +124,18 @@ namespace Mindbite.Mox.DirectoryListing.ViewModels
             this.OverwriteFiles = documentUpload.OverwriteFiles;
             this.AdditionalData = documentUpload.AdditionalData;
         }
+    }
+
+    public class DataTableData
+    {
+        public Guid UID { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public string Name { get; set; }
+        public bool IsDirectory { get; set; }
+        public string Extension { get; set; }
+        public string Icon { get; set; }
+        public HtmlString PathSort { get; set; }
+        public List<(Guid uid, string name)> Path { get; set; } = new List<(Guid uid, string name)>();
+        public string NameSort { get; set; }
     }
 }
