@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,6 +14,7 @@ namespace Mindbite.Mox.Identity.Data.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         [Required]
+        [PersonalData]
         public string RequestedByClientInfo { get; set; }
         [Required]
         public string UserId { get; set; }

@@ -12,12 +12,15 @@ namespace Mindbite.Mox.Identity.Data.Models
     public abstract class MoxUser : IdentityUser
     {
         [Display(Name = "E-post")]
+        [PersonalData]
         public override string Email { get; set; }
 
         [Display(Name = "Användarnamn")]
+        [PersonalData]
         public override string UserName { get; set; }
 
         [Display(Name = "Namn")]
+        [PersonalData]
         public string Name { get; set; }
 
         public int RoleGroupId { get; set; }

@@ -126,6 +126,19 @@ namespace Mindbite.Mox.Identity.Data
             entity.ModifiedById = this._httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
+        public override EntityEntry<TEntity> Remove<TEntity>(TEntity entity)
+        {
+            if(entity is Core.Data.Models.ISoftDeleted deletableEntity)
+            {
+                this.DeleteWithoutTracking(deletableEntity);
+                return base.Update(entity);
+            }
+            else
+            {
+                return base.Remove(entity);
+            }
+        }
+
         public void DeleteWithoutTracking<TEntity>(TEntity entity) where TEntity : Core.Data.Models.ISoftDeleted
         {
             entity.IsDeleted = true;

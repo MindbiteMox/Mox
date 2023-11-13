@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,6 +18,7 @@ namespace Mindbite.Mox.Identity.Data.Models
         [ForeignKey("User")]
         public string UserId { get; set; }
         [Required]
+        [PersonalData]
         public string RequestedByClientInfo { get; set; }
         [Required]
         public DateTime CreatedOn { get; set; }

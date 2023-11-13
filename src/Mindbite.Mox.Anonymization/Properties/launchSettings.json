@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Mindbite.Mox.Anonymization": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:61425;http://localhost:61426"
+    }
+  }
+}

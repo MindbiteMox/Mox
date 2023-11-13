@@ -201,9 +201,10 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> DoDelete(Id_T id, ViewModel_T viewModel)
+        public virtual async Task<IActionResult> DoDelete(Id_T id)
         {
             var _id = this.GetId != null ? this.GetId() : id;
+            var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
 
             var (canDelete, _) = await this.CanDeleteAsync(_id, viewModel);
             if (!canDelete)
