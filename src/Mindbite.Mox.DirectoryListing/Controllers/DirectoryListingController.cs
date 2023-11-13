@@ -114,17 +114,17 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         {
             var dir = await this.GetDirectories()
                 .Include(x => x.ChildDirectories)
-                .FirstOrDefaultAsync(x => x.UID == directoryId);
+                .FirstOrDefaultAsync(x =>  x.UID == directoryId);
 
             return View("DirectoryListing/ListDirectory", dir);
         }
 
-        public virtual Task DocumentBeforeDownload(TDocument document)
+        protected virtual Task DocumentBeforeDownload(TDocument document)
         {
             return Task.CompletedTask;
         }
 
-        public virtual Task DirectoryBeforeDownload(TDirectory? directory)
+        protected virtual Task DirectoryBeforeDownload(TDirectory? directory)
         {
             return Task.CompletedTask;
         }
