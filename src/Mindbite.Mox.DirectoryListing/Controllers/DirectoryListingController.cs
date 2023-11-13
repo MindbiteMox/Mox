@@ -114,9 +114,19 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         {
             var dir = await this.GetDirectories()
                 .Include(x => x.ChildDirectories)
-                .FirstOrDefaultAsync(x => x.UID == directoryId);
+                .FirstOrDefaultAsync(x =>  x.UID == directoryId);
 
             return View("DirectoryListing/ListDirectory", dir);
+        }
+
+        protected virtual Task DocumentBeforeDownload(TDocument document)
+        {
+            return Task.CompletedTask;
+        }
+
+        protected virtual Task DirectoryBeforeDownload(TDirectory? directory)
+        {
+            return Task.CompletedTask;
         }
 
         [HttpGet]
@@ -129,6 +139,8 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             {
                 return Unauthorized();
             }
+
+            await DocumentBeforeDownload(document);
 
             new FileExtensionContentTypeProvider().TryGetContentType(document.FileName, out var contentType);
             return File(document.VirtualFilePath(this._options), contentType ?? "application/octet-stream", document.FileName);
@@ -517,6 +529,8 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             var documents = await this.GetDocuments().ToListAsync();
             var rootDirectory = directoryId != null ? directories.First(x => x.UID == directoryId) : null;
             var theDirectoryId = rootDirectory?.Id;
+
+            await DirectoryBeforeDownload(rootDirectory);
 
             Response.StatusCode = 200;
             Response.ContentType = "application/zip";
