@@ -15,22 +15,22 @@ using System.Threading.Tasks;
 
 namespace Mindbite.Mox.DirectoryListing.Services
 {
-    public class DocumentService
+    public class DocumentService<TDocument, TDirectory> where TDocument : Data.Document<TDirectory>, new() where TDirectory : Data.DocumentDirectory<TDocument, TDirectory>, new()
     {
-        private readonly Data.IDirectoryListingDbContext _context;
+        private readonly Data.IDirectoryListingDbContext<TDocument, TDirectory> _context;
         private readonly IWebHostEnvironment _env;
         private readonly ILogger _logger;
         private readonly DocumentServiceOptions _options;
 
-        public DocumentService(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment env, ILogger<DocumentService> logger, IOptions<DocumentServiceOptions> options)
+        public DocumentService(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment env, ILogger<DocumentService<TDocument, TDirectory>> logger, IOptions<DocumentServiceOptions> options)
         {
-            this._context = context.FetchDbContext<Data.IDirectoryListingDbContext>();
+            this._context = context.FetchDbContext<Data.IDirectoryListingDbContext<TDocument, TDirectory>>();
             this._env = env;
             this._logger = logger;
             this._options = options.Value;
         }
 
-        public async Task<IEnumerable<TDocument>> SaveDocumentUploadFormAsync<TDocument, TDirectory>(TDirectory? directory, ViewModels.DocumentUpload viewModel, ModelStateDictionary modelState, IEnumerable<TDocument>? allDirectoryDocuments = null, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null) where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
+        public async Task<IEnumerable<TDocument>> SaveDocumentUploadFormAsync(TDirectory? directory, ViewModels.DocumentUpload viewModel, ModelStateDictionary modelState, IEnumerable<TDocument>? allDirectoryDocuments = null, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null)
         {
             var directoryId = directory?.Id;
             allDirectoryDocuments ??= await this._context.Set<TDocument>().Where(x => x.DirectoryId == directoryId).ToListAsync();
@@ -79,7 +79,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
             return newDocuments;
         }
 
-        private void DoDuplicateAction<TDocument>(TDocument newDocument, IEnumerable<TDocument> allDirectoryDocuments, ViewModels.DuplicateAction duplicateAction) where TDocument : Data.Document
+        private void DoDuplicateAction(TDocument newDocument, IEnumerable<TDocument> allDirectoryDocuments, ViewModels.DuplicateAction duplicateAction)
         {
             switch (duplicateAction)
             {
@@ -112,7 +112,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
             }
         }
 
-        private async Task<TDocument> UploadFileAsync<TDocument, TDirectory>(TDirectory? directory, string fileName, Stream dataStream, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null) where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
+        private async Task<TDocument> UploadFileAsync(TDirectory? directory, string fileName, Stream dataStream, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null)
         {
             using var transaction = await this._context.Database.BeginTransactionAsync();
 
@@ -167,7 +167,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
             }
         }
 
-        public async Task DeleteDirectoryAsync<TDirectory>(TDirectory directory, IQueryable<TDirectory>? allDirectoriesQueryable = null) where TDirectory : Data.DocumentDirectory
+        public async Task DeleteDirectoryAsync(TDirectory directory, IQueryable<TDirectory>? allDirectoriesQueryable = null)
         {
             static async Task DeleteDirectoryRec(Data.IDirectoryListingDbContext context, IQueryable<TDirectory> directories, int id)
             {
@@ -193,18 +193,28 @@ namespace Mindbite.Mox.DirectoryListing.Services
             await DeleteDirectoryRec(_context, allDirectoriesQueryable ?? this._context.Set<TDirectory>(), directory.Id);
         }
 
-        public async Task DeleteDocumentAsync<TDocument>(TDocument document) where TDocument : Data.Document
+        public async Task DeleteDocumentAsync(TDocument document)
         {
             this._context.Remove(document);
             await this._context.SaveChangesAsync();
         }
 
-        public async Task WriteDirectoryZipAsync<TDocument, TDirectory>(TDirectory? directory, Stream outputStream, IQueryable<TDirectory>? allDirectoriesQueryable = null, IQueryable<TDocument>? allDocumentsQueryable = null) where TDocument : Data.Document where TDirectory : Data.DocumentDirectory
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <param name="outputStream"></param>
+        /// <param name="allDirectoriesQueryable"></param>
+        /// <param name="allDocumentsQueryable"></param>
+        /// <returns>All documents added to zip file</returns>
+        public async Task<IEnumerable<TDocument>> WriteDirectoryZipAsync(TDirectory? directory, Stream outputStream, IQueryable<TDirectory>? allDirectoriesQueryable = null, IQueryable<TDocument>? allDocumentsQueryable = null)
         {
             var directories = (await (allDirectoriesQueryable ?? this._context.Set<TDirectory>()).ToListAsync()).ToLookup(x => x.ParentDirectoryId);
             var documents = (await (allDocumentsQueryable ?? this._context.Set<TDocument>()).ToListAsync()).ToLookup(x => x.DirectoryId);
 
             using var zip = new ZipArchive(outputStream, ZipArchiveMode.Create);
+
+            var zippedDocuments = new List<TDocument>();
 
             async Task addDirectoryAsync(int? parentDirectoryId, string path)
             {
@@ -222,26 +232,30 @@ namespace Mindbite.Mox.DirectoryListing.Services
                         using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                         using var es = entry.Open();
                         await fs.CopyToAsync(es);
+
+                        zippedDocuments.Add(document);
                     }
                 }
             }
 
             await addDirectoryAsync(directory?.Id, "");
+
+            return zippedDocuments;
         }
 
-        public async Task<bool> DirectoryExistsAsync<TDirectory>(int? parentId, string name, int? excludeDirectoryId, IQueryable<TDirectory>? allDirectoriesQueryable = null) where TDirectory : Data.DocumentDirectory
+        public async Task<bool> DirectoryExistsAsync(int? parentId, string name, int? excludeDirectoryId, IQueryable<TDirectory>? allDirectoriesQueryable = null)
         {
             return await (allDirectoriesQueryable ?? this._context.Set<TDirectory>()).AnyAsync(x => x.ParentDirectoryId == parentId && x.Name == name && (excludeDirectoryId == null || x.Id != excludeDirectoryId));
         }
 
-        public async Task<bool> DocumentExistsAsync<TDocument>(int? directoryId, string name, int? excludeDocumentId, IQueryable<TDocument>? allDocumentsQueryable = null) where TDocument : Data.Document
+        public async Task<bool> DocumentExistsAsync(int? directoryId, string name, int? excludeDocumentId, IQueryable<TDocument>? allDocumentsQueryable = null)
         {
             var cleanFileName = Utils.RemoveInvalidFileNameChars(name);
 
             return await (allDocumentsQueryable ?? this._context.Set<TDocument>()).AnyAsync(x => x.DirectoryId == directoryId && x.FileName == cleanFileName && (excludeDocumentId == null || x.Id == excludeDocumentId));
         }
 
-        public async Task CreateDirectoryAsync<TDirectory>(TDirectory directory, IQueryable<TDirectory>? allDirectoriesQueryable = null) where TDirectory : Data.DocumentDirectory
+        public async Task CreateDirectoryAsync(TDirectory directory, IQueryable<TDirectory>? allDirectoriesQueryable = null)
         {
             if(await this.DirectoryExistsAsync(directory.ParentDirectoryId, directory.Name, null, allDirectoriesQueryable))
             {
@@ -252,7 +266,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
             await this._context.SaveChangesAsync();
         }
 
-        public async Task UpdateDirectoryAsync<TDirectory>(TDirectory directory, IQueryable<TDirectory>? allDirectoriesQueryable = null) where TDirectory : Data.DocumentDirectory
+        public async Task UpdateDirectoryAsync(TDirectory directory, IQueryable<TDirectory>? allDirectoriesQueryable = null)
         {
             if (await this.DirectoryExistsAsync(directory.ParentDirectoryId, directory.Name, directory.Id, allDirectoriesQueryable))
             {
@@ -272,7 +286,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
         /// <param name="allDocumentsQueryable"></param>
         /// <returns></returns>
         /// <exception cref="DirectoryListingException"></exception>
-        public async Task UpdateDocumentAsync<TDocument>(TDocument document, string newName, IQueryable<TDocument>? allDocumentsQueryable = null) where TDocument : Data.Document
+        public async Task UpdateDocumentAsync(TDocument document, string newName, IQueryable<TDocument>? allDocumentsQueryable = null)
         {
             if (await this.DocumentExistsAsync(document.DirectoryId, newName, document.Id, allDocumentsQueryable))
             {

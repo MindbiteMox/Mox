@@ -22,18 +22,36 @@ namespace Mindbite.Mox.Extensions
 {
     public static class MoxDirectoryListingExtensions
     {
-        public static IMvcBuilder AddMoxDirectoryListing(this IMvcBuilder mvc, string moxPath = "Mox")
+        public class DocumentServicesBuilder
+        {
+            private readonly IServiceCollection _serviceCollection;
+
+            public DocumentServicesBuilder(IServiceCollection serviceCollection)
+            {
+                this._serviceCollection = serviceCollection;
+            }
+
+            public void AddDocumentServiceForType<TDocument, TDirectory>() where TDocument : DirectoryListing.Data.Document<TDirectory>, new() where TDirectory : DirectoryListing.Data.DocumentDirectory<TDocument, TDirectory>, new()
+            {
+                this._serviceCollection.AddScoped<DirectoryListing.Services.DocumentService<TDocument, TDirectory>>();
+            }
+        }
+
+        public static IMvcBuilder AddMoxDirectoryListing(this IMvcBuilder mvc, Action<DocumentServicesBuilder> configureDocumentTypes, string moxPath = "Mox")
         {
             var thisAssembly = typeof(MoxDirectoryListingExtensions).Assembly;
             mvc.AddApplicationPart(thisAssembly);
             var viewsDLLName = thisAssembly.GetName().Name + ".Views.dll";
             var viewsDLLDirectory = Path.GetDirectoryName(thisAssembly.Location);
             var viewsDLLPath = Path.Combine(viewsDLLDirectory, viewsDLLName);
-            if(File.Exists(viewsDLLPath)){
+            if (File.Exists(viewsDLLPath))
+            {
                 var viewAssembly = Assembly.LoadFile(viewsDLLPath);
                 var viewAssemblyPart = new CompiledRazorAssemblyPart(viewAssembly);
                 mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
-            } else {
+            }
+            else
+            {
                 var viewAssemblyPart = new CompiledRazorAssemblyPart(thisAssembly);
                 mvc.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(viewAssemblyPart));
             }
@@ -47,7 +65,8 @@ namespace Mindbite.Mox.Extensions
 
             mvc.Services.Configure<DirectoryListing.DocumentServiceOptions>(_ => { });
 
-            mvc.Services.AddScoped<DirectoryListing.Services.DocumentService>();
+            var configurer = new DocumentServicesBuilder(mvc.Services);
+            configureDocumentTypes(configurer);
 
             return mvc;
         }

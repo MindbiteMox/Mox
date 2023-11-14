@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +8,18 @@ namespace Mindbite.Mox.DirectoryListing
 {
     public static class Utils
     {
-        public static IEnumerable<SelectListItem> MakeSelectListTree(IEnumerable<Data.DocumentDirectory> allDirectories, int addDepth = 0)
+        public static IEnumerable<SelectListItem> MakeSelectListTree(Type directoryType, IEnumerable<Data.DocumentDirectory> allDirectories, int addDepth = 0)
+        {
+            var castEnumerable = typeof(Enumerable).GetMethod(nameof(Enumerable.Cast)).MakeGenericMethod(directoryType);
+
+            return (IEnumerable< SelectListItem>)typeof(Utils)
+                .GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)!
+                .First(x => x.Name == nameof(MakeSelectListTree) && x.GetParameters().Count() == 2)
+                .MakeGenericMethod(directoryType)
+                .Invoke(null, new object[] { castEnumerable.Invoke(null, new object[] { allDirectories }), addDepth })!;
+        }
+
+        public static IEnumerable<SelectListItem> MakeSelectListTree<TDirectory>(IEnumerable<TDirectory> allDirectories, int addDepth = 0) where TDirectory : Data.DocumentDirectory<TDirectory>
         {
             void AddChildren(List<(Data.DocumentDirectory directory, int depth)> result, Data.DocumentDirectory parent, int depth)
             {
@@ -29,11 +41,23 @@ namespace Mindbite.Mox.DirectoryListing
             return theResult.Select(x => new SelectListItem(new string('\xA0', x.depth * 4) + x.directory.Name, x.directory.Id.ToString()));
         }
 
-        public static IEnumerable<Data.DocumentDirectory> GetParents(IEnumerable<Data.DocumentDirectory> allDirectories, Data.DocumentDirectory directory)
+        public static IEnumerable<Data.DocumentDirectory> GetParents(Type directoryType, IEnumerable<Data.DocumentDirectory> allDirectories, Data.DocumentDirectory directory)
+        {
+            var castEnumerable = typeof(Enumerable).GetMethod(nameof(Enumerable.Cast)).MakeGenericMethod(directoryType);
+
+            return ((IEnumerable)typeof(Utils)
+                .GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)!
+                .First(x => x.Name == nameof(GetParents) && x.GetParameters().Count() == 2)
+                .MakeGenericMethod(directoryType)
+                .Invoke(null, new object[] { castEnumerable.Invoke(null, new object[] { allDirectories }), directory })!)
+                .Cast<Data.DocumentDirectory>();
+        }
+
+        public static IEnumerable<TDirectory> GetParents<TDirectory>(IEnumerable<TDirectory> allDirectories, TDirectory directory) where TDirectory : Data.DocumentDirectory<TDirectory>
         {
             if (directory.ParentDirectoryId == null)
             {
-                return Enumerable.Empty<Data.DocumentDirectory>().Append(directory);
+                return Enumerable.Empty<TDirectory>().Append(directory);
             }
             else
             {
@@ -48,7 +72,7 @@ namespace Mindbite.Mox.DirectoryListing
             return string.Join("_", filename.Split(invalidChars));
         }
 
-        public static List<(Guid uid, string name)> GetDirectoryPath<TDirectory>(List<TDirectory> allDirectories, TDirectory directory, bool? includeSelf = false) where TDirectory : Data.DocumentDirectory
+        public static List<(Guid uid, string name)> GetDirectoryPath<TDirectory>(List<TDirectory> allDirectories, TDirectory directory, bool? includeSelf = false) where TDirectory : Data.DocumentDirectory<TDirectory>
         {
             List<int> GetParentIdRec(List<int> list, TDirectory dir)
             {

@@ -11,10 +11,11 @@
     Layout = "Mox/_Layout";
 
     var dbContext = contextFetcher.FetchDbContext<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext>();
-    var getDirectories = ViewContext.HttpContext.Items["GetDirectories"] as Func<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext, IQueryable<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>>;
+    var getDirectories = ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.GetDirectoriesHttpContentItemKey] as Func<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext, IQueryable<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>>;
     var allDirectories = await getDirectories(dbContext).ToListAsync();
 
-    var breadCrumbs = Model != null ? Mindbite.Mox.DirectoryListing.Utils.GetParents(allDirectories, Model) : Enumerable.Empty<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>();
+    var directoryType = (Type)ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.DirectoryTypeHttpContentItemKey];
+    var breadCrumbs = Model != null ? Mindbite.Mox.DirectoryListing.Utils.GetParents(directoryType, allDirectories, Model) : Enumerable.Empty<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>();
 
     var additionalNodes = (IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>)ViewData["AdditionalBreadCrumbNodes"];
 
@@ -32,12 +33,12 @@
     if ((bool)ViewData["DefaultBreadCrumbsForDirectoryListing"])
     {
         @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = (bool)ViewData["BreadCrumbsIncludeCurrentMenu"] }.ToExpando())
-        <h1>@ViewContext.HttpContext.Items["RootDirectoryName"]</h1>
+        <h1>@ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.RootDirectoryNameHttpContentItemKey]</h1>
     }
     else
     {
         @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = (bool)ViewData["BreadCrumbsIncludeCurrentMenu"], AdditionalNodes = additionalNodes }.ToExpando())
-        <h1>@(Model?.Name ?? ViewContext.HttpContext.Items["RootDirectoryName"])</h1>
+        <h1>@(Model?.Name ?? ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.RootDirectoryNameHttpContentItemKey])</h1>
     }
 }
 
@@ -106,7 +107,7 @@
 <ul class="mox-filters" style="border-top: 1px solid #ddd; padding-top: 20px;">
     <li class="break">
         <div class="bread-crumbs">
-            <a href="@Url.Action("ListDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", "" } })" class="mox-button @(breadCrumbs.Any() ? "" : "open")"><i class="far fa-home"></i> @ViewContext.HttpContext.Items["RootDirectoryName"]</a>
+            <a href="@Url.Action("ListDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", "" } })" class="mox-button @(breadCrumbs.Any() ? "" : "open")"><i class="far fa-home"></i> @ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.RootDirectoryNameHttpContentItemKey]</a>
             @foreach (var breadCrumb in breadCrumbs)
             {
                 <i class="far fa-chevron-right"></i>

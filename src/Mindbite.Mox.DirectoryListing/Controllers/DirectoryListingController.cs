@@ -22,15 +22,15 @@ using Microsoft.Extensions.Localization;
 
 namespace Mindbite.Mox.DirectoryListing.Controllers
 {
-    public class MoxDirectoryListingController<TDocument, TDirectory> : MoxDirectoryListingController<TDocument, TDirectory, ViewModels.Document, ViewModels.DocumentDirectory, ViewModels.DocumentUploadDefaultPreflight> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new()
+    public class MoxDirectoryListingController<TDocument, TDirectory> : MoxDirectoryListingController<TDocument, TDirectory, ViewModels.Document, ViewModels.DocumentDirectory, ViewModels.DocumentUploadDefaultPreflight> where TDocument : Data.Document<TDirectory>, new() where TDirectory : Data.DocumentDirectory<TDocument, TDirectory>, new()
     {
-        public MoxDirectoryListingController(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context, webHostEnvironment, documentService, options, localizer) { }
+        public MoxDirectoryListingController(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService<TDocument, TDirectory> documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context, webHostEnvironment, documentService, options, localizer) { }
 
         public override ViewModels.Document GetDocumentViewModel(TDocument? document)
         {
             if(document != null)
             {
-                return ViewModels.Document.From(document);
+                return ViewModels.Document.From<TDocument, TDirectory>(document);
             }
 
             return new ViewModels.Document();
@@ -47,16 +47,16 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         }
     }
 
-    public abstract class MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel> : MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel, ViewModels.DocumentUploadDefaultPreflight> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new() where TDocumentViewModel : ViewModels.Document where TDirectoryViewModel : ViewModels.DocumentDirectory
+    public abstract class MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel> : MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel, ViewModels.DocumentUploadDefaultPreflight> where TDocument : Data.Document<TDirectory>, new() where TDirectory : Data.DocumentDirectory<TDocument, TDirectory>, new() where TDocumentViewModel : ViewModels.Document where TDirectoryViewModel : ViewModels.DocumentDirectory
     {
-        public MoxDirectoryListingController(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context, webHostEnvironment, documentService, options, localizer) { }
+        public MoxDirectoryListingController(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService<TDocument, TDirectory> documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context, webHostEnvironment, documentService, options, localizer) { }
     }
 
-    public abstract class MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel, TUploadAdditionalPreflightDataViewModel> : DirectoryListingControllerBase<TDocument, TDirectory> where TDocument : Data.Document, new() where TDirectory : Data.DocumentDirectory, new() where TDocumentViewModel : ViewModels.Document where TDirectoryViewModel : ViewModels.DocumentDirectory
+    public abstract class MoxDirectoryListingController<TDocument, TDirectory, TDocumentViewModel, TDirectoryViewModel, TUploadAdditionalPreflightDataViewModel> : DirectoryListingControllerBase<TDocument, TDirectory> where TDocument : Data.Document<TDirectory>, new() where TDirectory : Data.DocumentDirectory<TDocument, TDirectory>, new() where TDocumentViewModel : ViewModels.Document where TDirectoryViewModel : ViewModels.DocumentDirectory
     {
-        private readonly Data.IDirectoryListingDbContext _context;
+        private readonly Data.IDirectoryListingDbContext<TDocument, TDirectory> _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly Services.DocumentService _documentService;
+        private readonly Services.DocumentService<TDocument, TDirectory> _documentService;
         private readonly DocumentServiceOptions _options;
         private readonly IStringLocalizer _localizer;
 
@@ -66,14 +66,15 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         public virtual bool DefaultBreadCrumbsForDirectoryListing => false;
         public virtual string? PreflightFormViewName => "DirectoryListing/UploadPreflightForm";
         public virtual Task<string> GetRootDirectoryName() => Task.FromResult("Toppnivå");
-        public virtual Task<IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>> AdditionalBreadCrumbNodesAsync() => Task.FromResult(Enumerable.Empty<Mindbite.Mox.UI.Menu.MenuItem>());
+        public virtual Task<IEnumerable<UI.Menu.MenuItem>> AdditionalBreadCrumbNodesAsync() => Task.FromResult(Enumerable.Empty<UI.Menu.MenuItem>());
 
         public abstract TDocumentViewModel GetDocumentViewModel(TDocument? document);
         public abstract TDirectoryViewModel GetDirectoryViewModel(TDirectory? document);
 
-        public MoxDirectoryListingController(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context)
+
+        public MoxDirectoryListingController(Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService<TDocument, TDirectory> documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context)
         {
-            this._context = context.FetchDbContext<Data.IDirectoryListingDbContext>();
+            this._context = context.FetchDbContext<Data.IDirectoryListingDbContext<TDocument, TDirectory>>();
             this._webHostEnvironment = webHostEnvironment;
             this._documentService = documentService;
             this._options = options.Value;
@@ -89,8 +90,10 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             ViewData["BreadCrumbsIncludeCurrentMenu"] = this.BreadCrumbsIncludeCurrentMenu;
             ViewData["DefaultBreadCrumbsForDirectoryListing"] = this.DefaultBreadCrumbsForDirectoryListing;
             ViewData["AdditionalBreadCrumbNodes"] = await this.AdditionalBreadCrumbNodesAsync();
-            HttpContext.Items["RootDirectoryName"] = await this.GetRootDirectoryName();
-            HttpContext.Items["GetDirectories"] = fn((Data.IDirectoryListingDbContext theContext) => this.GetDirectories(theContext));
+            HttpContext.Items[Constants.RootDirectoryNameHttpContentItemKey] = await this.GetRootDirectoryName();
+            HttpContext.Items[Constants.GetDirectoriesHttpContentItemKey] = fn((Data.IDirectoryListingDbContext theContext) => this.GetDirectories((Data.IDirectoryListingDbContext<TDocument, TDirectory>)theContext).Cast<Data.DocumentDirectory>());
+            HttpContext.Items[Constants.DirectoryTypeHttpContentItemKey] = typeof(TDirectory);
+            HttpContext.Items[Constants.DocumentTypeHttpContentItemKey] = typeof(TDocument);
             await next();
         }
 
@@ -114,19 +117,9 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         {
             var dir = await this.GetDirectories()
                 .Include(x => x.ChildDirectories)
-                .FirstOrDefaultAsync(x =>  x.UID == directoryId);
+                .FirstOrDefaultAsync(x => x.UID == directoryId);
 
             return View("DirectoryListing/ListDirectory", dir);
-        }
-
-        protected virtual Task DocumentBeforeDownload(TDocument document)
-        {
-            return Task.CompletedTask;
-        }
-
-        protected virtual Task DirectoryBeforeDownload(TDirectory? directory)
-        {
-            return Task.CompletedTask;
         }
 
         [HttpGet]
@@ -140,7 +133,7 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
                 return Unauthorized();
             }
 
-            await DocumentBeforeDownload(document);
+            await DocumentBeforeDownloadAsync(document);
 
             new FileExtensionContentTypeProvider().TryGetContentType(document.FileName, out var contentType);
             return File(document.VirtualFilePath(this._options), contentType ?? "application/octet-stream", document.FileName);
@@ -530,7 +523,6 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             var rootDirectory = directoryId != null ? directories.First(x => x.UID == directoryId) : null;
             var theDirectoryId = rootDirectory?.Id;
 
-            await DirectoryBeforeDownload(rootDirectory);
 
             Response.StatusCode = 200;
             Response.ContentType = "application/zip";
@@ -540,7 +532,9 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
                 FileName = (rootDirectory?.Name ?? await this.GetRootDirectoryName()) + ".zip"
             }.ToString());
 
-            await this._documentService.WriteDirectoryZipAsync(rootDirectory, Response.BodyWriter.AsStream(), this.GetDirectories(), this.GetDocuments());
+            var zippedDocuments = await this._documentService.WriteDirectoryZipAsync(rootDirectory, Response.BodyWriter.AsStream(), this.GetDirectories(), this.GetDocuments());
+
+            await DirectoryBeforeDownloadAsync(rootDirectory, zippedDocuments);
         }
     }
 }

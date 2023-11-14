@@ -11,12 +11,13 @@
     var directoryUID = Guid.Parse(ViewContext.HttpContext.Request.Query["directoryId"].ToString());
     var dbContext = contextFetcher.FetchDbContext<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext>();
     
-    var getDirectories = ViewContext.HttpContext.Items["GetDirectories"] as Func<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext, IQueryable<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>>;
+    var getDirectories = ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.GetDirectoriesHttpContentItemKey] as Func<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext, IQueryable<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>>;
     var allDirectories = await getDirectories(dbContext).ToListAsync();
 
     var directory = allDirectories.First(x => x.UID == directoryUID);
 
-    var breadCrumbs = directory != null ? Mindbite.Mox.DirectoryListing.Utils.GetParents(allDirectories, directory) : Enumerable.Empty<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>();
+    var directoryType = (Type)ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.DirectoryTypeHttpContentItemKey];
+    var breadCrumbs = directory != null ? Mindbite.Mox.DirectoryListing.Utils.GetParents(directoryType, allDirectories, directory) : Enumerable.Empty<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>();
 
     var additionalNodes = (IEnumerable<Mindbite.Mox.UI.Menu.MenuItem>)ViewData["AdditionalBreadCrumbNodes"];
 

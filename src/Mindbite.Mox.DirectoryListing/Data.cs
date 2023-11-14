@@ -11,28 +11,14 @@ using System.IO;
 namespace Mindbite.Mox.DirectoryListing.Data
 {
     public interface IDirectoryListingDbContext : Core.Data.IDbContext
+    { }
+
+    public interface IDirectoryListingDbContext<TDocument, TDirectory> : IDirectoryListingDbContext where TDocument : Document<TDirectory> where TDirectory : DocumentDirectory<TDocument, TDirectory> 
     {
-        DbSet<Document> AllDocuments { get; set; }
-        DbSet<DocumentDirectory> AllDocumentDirectories { get; set; }
+        DbSet<TDocument> AllDocuments { get; }
+        DbSet<TDirectory> AllDocumentDirectories { get; }
     }
 
-    public class DocumentEntityTypeConfiguration : IEntityTypeConfiguration<Document>
-    {
-        public void Configure(EntityTypeBuilder<Document> builder)
-        {
-            builder.Property(x => x.UID).HasDefaultValueSql("NEWID()");
-        }
-    }
-
-    public class DocumentDirectoryEntityTypeConfiguration : IEntityTypeConfiguration<DocumentDirectory>
-    {
-        public void Configure(EntityTypeBuilder<DocumentDirectory> builder)
-        {
-            builder.Property(x => x.UID).HasDefaultValueSql("NEWID()");
-        }
-    }
-
-    [Table(nameof(Document), Schema = "App")]
     public abstract class Document : ISoftDeleted
     {
         [Key]
@@ -44,7 +30,6 @@ namespace Mindbite.Mox.DirectoryListing.Data
         public string Name { get; set; } = string.Empty;
         public string FileName { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public int? DirectoryId { get; set; }
 
         public bool IsDeleted { get; set; }
         public DateTime CreatedOn { get; set; }
@@ -53,8 +38,6 @@ namespace Mindbite.Mox.DirectoryListing.Data
         public string? ModifiedById { get; set; }
         public DateTime? DeletedOn { get; set; }
         public string? DeletedById { get; set; }
-
-        public DocumentDirectory? Directory { get; set; }
 
         public virtual string VirtualFilePath(DocumentServiceOptions option) => $"~/{option.GetStoreDirectory(this).Trim('/')}/{this.UID}/{this.FileName}";
         public virtual string FilePath(DocumentServiceOptions option, IWebHostEnvironment env) => $"{env.WebRootPath}/{option.GetStoreDirectory(this).Trim('/')}/{this.UID}/{this.FileName}";
@@ -83,10 +66,15 @@ namespace Mindbite.Mox.DirectoryListing.Data
                 return $"<i class='far {fileIcon}'></i>";
             }
         }
-
     }
 
-    [Table(nameof(DocumentDirectory), Schema = "App")]
+    public abstract class Document<TDirectory> : Document where TDirectory : DocumentDirectory
+    {
+        public int? DirectoryId { get; set; }
+
+        public TDirectory? Directory { get; set; }
+    }
+
     public abstract class DocumentDirectory : ISoftDeleted
     {
         [Key]
@@ -96,7 +84,6 @@ namespace Mindbite.Mox.DirectoryListing.Data
         public Guid UID { get; set; }
 
         public string Name { get; set; } = string.Empty;
-        public int? ParentDirectoryId { get; set; }
         public int? LegacyId { get; set; }
 
         public bool IsDeleted { get; set; }
@@ -106,9 +93,17 @@ namespace Mindbite.Mox.DirectoryListing.Data
         public string? ModifiedById { get; set; }
         public DateTime? DeletedOn { get; set; }
         public string? DeletedById { get; set; }
+    }
 
-        public ICollection<Document> Documents { get; set; } = new List<Document>();
-        public ICollection<DocumentDirectory> ChildDirectories { get; set; } = new List<DocumentDirectory>();
-        public DocumentDirectory? ParentDirectory { get; set; }
+    public abstract class DocumentDirectory<TDirectory> : DocumentDirectory where TDirectory : DocumentDirectory<TDirectory>
+    {
+        public int? ParentDirectoryId { get; set; }
+        public TDirectory? ParentDirectory { get; set; }
+        public ICollection<TDirectory> ChildDirectories { get; set; } = new List<TDirectory>();
+    }
+
+    public abstract class DocumentDirectory<TDocument, TDirectory> : DocumentDirectory<TDirectory> where TDocument : Document<TDirectory> where TDirectory : DocumentDirectory<TDocument, TDirectory>
+    {
+        public ICollection<TDocument> Documents { get; set; } = new List<TDocument>();
     }
 }

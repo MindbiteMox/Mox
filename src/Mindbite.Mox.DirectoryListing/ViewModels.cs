@@ -34,8 +34,8 @@ namespace Mindbite.Mox.DirectoryListing.ViewModels
         [MoxFormFieldType(Render.DropDown)]
         [MoxFormDataSource("GetDirectories")]
         public int? DirectoryId { get; set; }
-
-        public static Document From(Data.Document document)
+    
+        public static Document From<TDocument, TDirectory>(TDocument? document) where TDocument : Data.Document<TDirectory> where TDirectory : Data.DocumentDirectory<TDocument, TDirectory>
         {
             return new Document
             {
@@ -47,12 +47,14 @@ namespace Mindbite.Mox.DirectoryListing.ViewModels
         public static async Task<IEnumerable<SelectListItem>> GetDirectories(HttpContext context)
         {
             var dbContext = context.RequestServices.GetRequiredService<Mindbite.Mox.Services.IDbContextFetcher>().FetchDbContext<Data.IDirectoryListingDbContext>();
-            var getDirectories = context.Items["GetDirectories"] as Func<Data.IDirectoryListingDbContext, IQueryable<Data.DocumentDirectory>>;
+            var getDirectories = context.Items[Constants.GetDirectoriesHttpContentItemKey] as Func<Data.IDirectoryListingDbContext, IQueryable<Data.DocumentDirectory>>;
 
             var directories = await getDirectories(dbContext).ToListAsync();
-            var tree = Utils.MakeSelectListTree(directories, 1);
 
-            return tree.Prepend(new SelectListItem(context.Items["RootDirectoryName"].ToString(), ""));
+            var directoryType = (Type)context.Items[Constants.DirectoryTypeHttpContentItemKey];
+            var tree = Utils.MakeSelectListTree(directoryType, directories, 1);
+
+            return tree.Prepend(new SelectListItem(context.Items[Constants.RootDirectoryNameHttpContentItemKey]!.ToString(), ""));
         }
     }
 
@@ -67,7 +69,7 @@ namespace Mindbite.Mox.DirectoryListing.ViewModels
         [MoxFormDataSource("GetDirectories")]
         public int? ParentDirectoryId { get; set; }
 
-        public static DocumentDirectory From(Data.DocumentDirectory dir)
+        public static DocumentDirectory From<TDirectory>(TDirectory dir) where TDirectory : Data.DocumentDirectory<TDirectory>
         {
             return new DocumentDirectory
             {
@@ -79,15 +81,17 @@ namespace Mindbite.Mox.DirectoryListing.ViewModels
         public static async Task<IEnumerable<SelectListItem>> GetDirectories(HttpContext context)
         {
             var dbContext = context.RequestServices.GetRequiredService<Mindbite.Mox.Services.IDbContextFetcher>().FetchDbContext<Data.IDirectoryListingDbContext>();
-            var getDirectories = context.Items["GetDirectories"] as Func<Data.IDirectoryListingDbContext, IQueryable<Data.DocumentDirectory>>;
+            var getDirectories = context.Items[Constants.GetDirectoriesHttpContentItemKey] as Func<Data.IDirectoryListingDbContext, IQueryable<Data.DocumentDirectory>>;
 
             var directoryId = Guid.TryParse(context.Request.Query["directoryId"], out var _d) ? _d : default(Guid?);
             var directories = await getDirectories(dbContext).ToListAsync();
             var isEditing = context.Request.RouteValues["Action"]!.ToString()!.Equals("EditDirectory", StringComparison.OrdinalIgnoreCase);
             directories = directories.Where(x => !isEditing || directoryId == null || x.UID != directoryId).ToList();
-            var tree = Utils.MakeSelectListTree(directories, 1);
 
-            return tree.Prepend(new SelectListItem(context.Items["RootDirectoryName"].ToString(), ""));
+            var directoryType = (Type)context.Items[Constants.DirectoryTypeHttpContentItemKey];
+            var tree = Utils.MakeSelectListTree(directoryType, directories, 1);
+
+            return tree.Prepend(new SelectListItem(context.Items[Constants.RootDirectoryNameHttpContentItemKey]!.ToString(), ""));
         }
     }
 
