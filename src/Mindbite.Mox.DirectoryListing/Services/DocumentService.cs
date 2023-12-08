@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Mindbite.Mox.Extensions;
@@ -21,13 +22,15 @@ namespace Mindbite.Mox.DirectoryListing.Services
         private readonly IWebHostEnvironment _env;
         private readonly ILogger _logger;
         private readonly DocumentServiceOptions _options;
+        private readonly IStringLocalizer _localizer;
 
-        public DocumentService(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment env, ILogger<DocumentService<TDocument, TDirectory>> logger, IOptions<DocumentServiceOptions> options)
+        public DocumentService(Mindbite.Mox.Services.IDbContextFetcher context, IWebHostEnvironment env, ILogger<DocumentService<TDocument, TDirectory>> logger, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer)
         {
             this._context = context.FetchDbContext<Data.IDirectoryListingDbContext<TDocument, TDirectory>>();
             this._env = env;
             this._logger = logger;
             this._options = options.Value;
+            this._localizer = localizer;
         }
 
         public async Task<IEnumerable<TDocument>> SaveDocumentUploadFormAsync(TDirectory? directory, ViewModels.DocumentUpload viewModel, ModelStateDictionary modelState, IEnumerable<TDocument>? allDirectoryDocuments = null, Func<TDocument, Task>? beforeAdd = null, Func<TDocument, Task>? afterAdd = null)
@@ -55,7 +58,7 @@ namespace Mindbite.Mox.DirectoryListing.Services
                     {
                         this._logger.LogError(ex.ToString());
                     }
-                    modelState.AddModelError("", $"\"{file.FileName}\" kunde inte laddas upp! {ex}");
+                    modelState.AddModelError("", _localizer["\"{0}\" kunde inte laddas upp! {1}", file.FileName, ex.ToString()]);
                 }
 
                 fileIndex++;

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Mindbite.Mox.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -64,6 +65,11 @@ namespace Mindbite.Mox.Extensions
             });
 
             mvc.Services.Configure<DirectoryListing.DocumentServiceOptions>(_ => { });
+
+            mvc.Services.Configure<LocalizationSources>(options =>
+            {
+                options.ResouceTypes.Add(typeof(Mindbite.Mox.DirectoryListing.Localization));
+            });
 
             var configurer = new DocumentServicesBuilder(mvc.Services);
             configureDocumentTypes(configurer);

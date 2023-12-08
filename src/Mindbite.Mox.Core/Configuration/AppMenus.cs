@@ -171,7 +171,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
         public string Id { get; internal set; }
         public ISet<string> Roles { get; internal set; } = new HashSet<string>();
 
-        internal AppMenuItem()
+        public AppMenuItem()
         {
             this.Action = "Index";
             this.Id = Guid.NewGuid().ToString();
@@ -182,7 +182,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
     {
         readonly private List<AppMenuItemBuilder> _builders = new List<AppMenuItemBuilder>();
 
-        internal AppMenuItemBuilderBuilder()
+        public AppMenuItemBuilderBuilder()
         {
         }
 
@@ -193,7 +193,7 @@ namespace Mindbite.Mox.Configuration.AppMenus
             return builder;
         }
 
-        internal IEnumerable<AppMenuItem> Build()
+        public IEnumerable<AppMenuItem> Build()
         {
             return this._builders.Select(x => x.Build());
         }
@@ -203,11 +203,11 @@ namespace Mindbite.Mox.Configuration.AppMenus
     {
         private readonly AppMenuItem _menuItem = new AppMenuItem();
 
-        internal AppMenuItemBuilder()
+        public AppMenuItemBuilder()
         {
         }
 
-        internal AppMenuItem Build()
+        public AppMenuItem Build()
         {
             return this._menuItem;
         }

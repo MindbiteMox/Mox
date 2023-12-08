@@ -85,15 +85,25 @@ namespace Mindbite.Mox.UI
 
         public async Task<IHtmlContent> BreadCrumbsAsync(BreadCrumbMenuReference reference)
         {
-            return await new BreadCrumbRenderer(this).RenderAsync(reference);
+            return await this.HtmlHelper.PartialAsync("Mox/UI/AppBreadCrumbs", new { Reference = reference }.ToExpando());
         }
 
         public async Task<IHtmlContent> BreadCrumbsAsync(BreadCrumbMenuReference reference, IEnumerable<MenuItem> additionalNodes)
         {
-            return await new BreadCrumbRenderer(this).RenderAsync(reference, additionalNodes);
+            return await this.HtmlHelper.PartialAsync("Mox/UI/AppBreadCrumbs", new { Reference = reference, AdditionalNodes = additionalNodes }.ToExpando());
         }
 
         public async Task<IHtmlContent> BreadCrumbsAsync(BreadCrumbMenuReference reference, Action<Configuration.AppMenus.AppMenuItemBuilderBuilder> builderAction)
+        {
+            return await this.HtmlHelper.PartialAsync("Mox/UI/AppBreadCrumbs", new { Reference = reference, BuilderAction = builderAction }.ToExpando());
+        }
+
+        public async Task<IHtmlContent> RenderBreadCrumbsAsync(BreadCrumbMenuReference reference, IEnumerable<MenuItem> additionalNodes)
+        {
+            return await new BreadCrumbRenderer(this).RenderAsync(reference, additionalNodes);
+        }
+
+        public async Task<IHtmlContent> RenderBreadCrumbsAsync(BreadCrumbMenuReference reference, Action<Configuration.AppMenus.AppMenuItemBuilderBuilder> builderAction)
         {
             return await new BreadCrumbRenderer(this).RenderAsync(reference, builderAction);
         }

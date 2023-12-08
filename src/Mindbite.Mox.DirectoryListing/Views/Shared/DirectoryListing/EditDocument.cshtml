@@ -1,7 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Routing;
+@using Microsoft.Extensions.Localization;
 @using Mindbite.Mox.Extensions
 @using Microsoft.EntityFrameworkCore
 
+@inject IStringLocalizer localizer
 @inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
 
 @model Mindbite.Mox.DirectoryListing.ViewModels.Document
@@ -42,14 +44,14 @@
 
     <fieldset class="buttons">
         <p>
-            <input type="submit" value="Spara ändringar" />
+            <input type="submit" value="@localizer["Spara ändringar"]" />
             @{
                 var cancelRouteData = new RouteValueDictionary(ViewContext.RouteData.Values)
                 {
                     { "DirectoryId", directory?.UID }
                 };
             }
-            @Html.ActionLink("Avbryt", "ListDirectory", null, cancelRouteData, new { @class = "cancel" })
+            @Html.ActionLink(localizer["Avbryt"], "ListDirectory", null, cancelRouteData, new { @class = "cancel" })
         </p>
     </fieldset>
 }

@@ -1,7 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Routing;
+@using Microsoft.Extensions.Localization;
 @using Mindbite.Mox.Extensions
 @using Microsoft.EntityFrameworkCore
 
+@inject IStringLocalizer localizer
 @inject Mindbite.Mox.Services.IDbContextFetcher contextFetcher
 
 @model Mindbite.Mox.DirectoryListing.ViewModels.DocumentDirectory
@@ -30,11 +32,11 @@
 @await Html.PartialAsync("Mox/UI/AppBreadCrumbs", new { IncludeCurrentMenu = (bool)ViewData["BreadCrumbsIncludeCurrentMenu"], AdditionalNodes = additionalNodes }.ToExpando())
 @if(parentDirectory != null)
 { 
-    <h1>Ny mapp i @parentDirectory.Name</h1>
+    <h1>@localizer["Ny mapp i {0}", parentDirectory.Name]</h1>
 }
 else 
 { 
-    <h1>Ny mapp</h1>
+    <h1>@localizer["Ny mapp"]</h1>
 }
 
 @await Html.PartialAsync("Mox/UI/Message")
@@ -48,14 +50,14 @@ else
 
     <fieldset class="buttons" style="margin-top: 12px;">
         <p>
-            <input type="submit" value="Skapa mapp" />
+            <input type="submit" value="@localizer["Skapa mapp"]" />
             @{
                 var cancelRouteData = new RouteValueDictionary(ViewContext.RouteData.Values)
                 {
                     { "DirectoryId", parentDirectory?.UID }
                 };
             }
-            @Html.ActionLink("Avbryt", "ListDirectory", null, cancelRouteData, new { @class = "cancel" })
+            @Html.ActionLink(localizer["Avbryt"], "ListDirectory", null, cancelRouteData, new { @class = "cancel" })
         </p>
     </fieldset>
 }

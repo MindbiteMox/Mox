@@ -1,23 +1,26 @@
-﻿
+﻿@using Microsoft.Extensions.Localization;
+
+@inject IStringLocalizer localizer
+
 @model Mindbite.Mox.DirectoryListing.ViewModels.DocumentUploadPreflight<Mindbite.Mox.DirectoryListing.ViewModels.DocumentUploadDefaultPreflight>
 @{
     var existingFiles = (List<string>)ViewData["ExistingFiles"];
 }
 
-<h1>Ladda upp filer</h1>
+<h1>@localizer["Ladda upp filer"]</h1>
 @using (Html.BeginForm())
 {
     <fieldset class="document-upload-modal-only">
         <p style="border-radius: 5px; padding: 10px; border: 1px solid #ccc;">
-            <i class="far fa-file"></i>@Model.FileNames.Length fil(er) kommer laddas upp.
+            <i class="far fa-file"></i>@localizer["{0} fil(er) kommer laddas upp.", Model.FileNames.Length]
         </p>
     </fieldset>
 
     <p>
-        <strong>Följande filer finns redan:</strong>
+        <strong>@localizer["Följande filer finns redan:"]</strong>
     </p>
     <ul>
-        @foreach(var file in existingFiles)
+        @foreach (var file in existingFiles)
         {
             <li>@file</li>
         }
@@ -25,29 +28,29 @@
 
     @* All elements with the preflight-data attribute is sent with the uploaded files. If you add more fields outside this fieldset, make sure to add preflight-data where appropriate. *@
     <fieldset class="document-upload-modal-only" preflight-data>
-        @foreach(var fileNameIndex in Enumerable.Range(0, Model.FileNames.Length))
+        @foreach (var fileNameIndex in Enumerable.Range(0, Model.FileNames.Length))
         {
             @Html.HiddenFor(x => x.FileNames[fileNameIndex])
         }
 
-        <strong>Vad vill du göra med filerna?</strong>
+        <strong>@localizer["Vad vill du göra med filerna?"]</strong>
         @Html.ValidationMessageFor(x => x.OverwriteFiles)
         <p>
             <input type="radio" value="0" name="OverwriteFiles" id="OverwriteFiles_0" checked />
-            <label for="OverwriteFiles_0">Skriv över filer med samma namn</label>
+            <label for="OverwriteFiles_0">@localizer["Skriv över filer med samma namn"]</label>
             <br />
             <input type="radio" value="1" name="OverwriteFiles" id="OverwriteFiles_1" />
-            <label for="OverwriteFiles_1">Behåll båda</label>
+            <label for="OverwriteFiles_1">@localizer["Behåll båda"]</label>
             <br />
             <input type="radio" value="2" name="OverwriteFiles" id="OverwriteFiles_2" />
-            <label for="OverwriteFiles_2">Behåll befintlig fil</label>
+            <label for="OverwriteFiles_2">@localizer["Behåll befintlig fil"]</label>
             <br />
         </p>
     </fieldset>
 
     <fieldset class="buttons">
         <p>
-            <button type="submit" class="mox-button save">Ladda upp</button>
+            <button type="submit" class="mox-button save">@localizer["Ladda upp"]</button>
         </p>
     </fieldset>
 }

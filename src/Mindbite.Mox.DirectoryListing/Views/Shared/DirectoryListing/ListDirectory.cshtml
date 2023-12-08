@@ -55,52 +55,31 @@
     @if (Model != null)
     {
         <li>
-            <a href="@Url.Action("EditDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-edit"></i> Redigera mapp</a>
+            <a href="@Url.Action("EditDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-edit"></i> @localizer["Redigera mapp"]</a>
         </li>
 
         <li class="spacing">
-            <a href="@Url.Action("DeleteDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-trash-alt"></i> Radera mapp</a>
+            <a href="@Url.Action("DeleteDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-trash-alt"></i> @localizer["Radera mapp"]</a>
         </li>
     }
 
     <li>
-        <a href="@Url.Action("CreateDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-plus"></i> Ny mapp</a>
+        <a href="@Url.Action("CreateDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-plus"></i> @localizer["Ny mapp"]</a>
     </li>
 
     <li class="spacing">
-        @using (Html.BeginForm("UploadFiles", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } }, FormMethod.Post, null, new { enctype = "multipart/form-data", id = "upload-form" }))
+        @using (Html.BeginForm("UploadFiles", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } }, FormMethod.Post, null, new { enctype = "multipart/form-data", id = "upload-fm" }))
         {
             <fieldset class="document-upload-list-only">
                 <input type="hidden" name="PreflightUrl" value="@Url.Action("UploadPreflight", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })">
                 <input type="file" id="UploadedFiles" multiple name="UploadedFiles" onchange="documentsUploadFile(this.form)" style="display: none;" />
-                <label for="UploadedFiles" class="mox-button"><i class="far fa-upload"></i> Ladda upp filer</label>
+                <label for="UploadedFiles" class="mox-button"><i class="far fa-upload"></i> @localizer["Ladda upp filer"]</label>
             </fieldset>
-
-            @*<fieldset class="document-upload-modal-only">
-                <p style="border-radius: 5px; padding: 10px; border: 1px solid #ccc;">
-                    <i class="far fa-file"></i><span class="document-upload-uploaded-file-count"></span> fil(er) kommer laddas upp.
-                </p>
-            </fieldset>
-
-            <fieldset class="document-upload-modal-only">
-                <legend>Filer med samma namn</legend>
-                <p>
-                    <input type="radio" value="0" name="OverwriteFiles" id="OverwriteFiles_0" checked />
-                    <label for="OverwriteFiles_0">Skriv över filer med samma namn</label>
-                    <br />
-                    <input type="radio" value="1" name="OverwriteFiles" id="OverwriteFiles_1" />
-                    <label for="OverwriteFiles_1">Behåll båda</label>
-                    <br />
-                    <input type="radio" value="2" name="OverwriteFiles" id="OverwriteFiles_2" />
-                    <label for="OverwriteFiles_2">Behåll befintlig fil</label>
-                    <br />
-                </p>
-            </fieldset>*@
         }
     </li>
 
     <li>
-        <a href="@Url.Action("DownloadAll", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-download"></i> Ladda ner mapp</a>
+        <a href="@Url.Action("DownloadAll", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-download"></i> @localizer["Ladda ner mapp"]</a>
     </li>
 </ul>
 
@@ -116,10 +95,10 @@
         </div>
     </li>
     <li>
-        <label for="js-global" style="margin: 4px 0; display: inline-block;"> Sök i alla mappar</label><input type="checkbox" id="js-global" name="global" style="margin: 0px 10px;">
+        <label for="js-global" style="margin: 4px 0; display: inline-block;"> @localizer["Sök i alla mappar"]</label><input type="checkbox" id="js-global" name="global" style="margin: 0px 10px;">
     </li>
     <li>
-        <input type="text" id="js-filter" name="filter" placeholder="Sök filer och mappar...">
+        <input type="text" id="js-filter" name="filter" placeholder="@localizer["Sök filer och mappar..."]">
     </li>
 </ul>
 

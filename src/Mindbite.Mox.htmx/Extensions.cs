@@ -78,9 +78,11 @@ namespace Mindbite.Mox.Htmx
             return mvc;
         }
 
-        public static void MapMoxHtmxRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox")
+        public static void MapMoxHtmxRoutes(this IEndpointRouteBuilder endpoints, string moxPath = "Mox", Action<IEndpointConventionBuilder>? endpointAdded = null)
         {
-            endpoints.MapControllerRoute("HtmxController", $"{moxPath}/Htmx/{{action}}".TrimStart('/'), defaults: new { Controller = "Htmx" });
+            endpointAdded ??= _ => { };
+         
+            endpointAdded(endpoints.MapControllerRoute("HtmxController", $"{moxPath}/Htmx/{{action}}".TrimStart('/'), defaults: new { Controller = "Htmx" }));
         }
 
         public static void UseMoxHtmxStaticFiles(this IApplicationBuilder app, IWebHostEnvironment webHostEnvironment, string requestPath = "")

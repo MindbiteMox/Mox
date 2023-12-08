@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace Mindbite.Mox.DirectoryListing
 {
+    public class Localization { }
+
     public static class Utils
     {
         public static IEnumerable<SelectListItem> MakeSelectListTree(Type directoryType, IEnumerable<Data.DocumentDirectory> allDirectories, int addDepth = 0)

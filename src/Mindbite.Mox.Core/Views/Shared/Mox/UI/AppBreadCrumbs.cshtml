@@ -1,57 +1,41 @@
 ﻿@using Mindbite.Mox.UI
 @using Mindbite.Mox.UI.Menu
-@*@using Microsoft.AspNetCore.Mvc.Controllers
-@using Mindbite.Mox.Extensions
-@using System.Reflection
-@using System.Linq
-@using Microsoft.Extensions.Localization;
-@inject Microsoft.Extensions.Options.IOptions<Mindbite.Mox.Configuration.Config> Config
-@inject IStringLocalizer localizer
 
 @{
-    var includeCurrentMenu = false;
+    var reference = BreadCrumbMenuReference.Current;
     var additionalNodes = Enumerable.Empty<MenuItem>();
+    var builderAction = default(Action<Mindbite.Mox.Configuration.AppMenus.AppMenuItemBuilderBuilder>);
+
     try
     {
-        includeCurrentMenu = Model.IncludeCurrentMenu;
+        reference = Model.IncludeCurrentMenu ? BreadCrumbMenuReference.Current : BreadCrumbMenuReference.Parent;
     }
     catch { }
+
+    try
+    {
+        reference = Model.Reference;
+    }
+    catch { }
+
     try
     {
         additionalNodes = Model.AdditionalNodes;
     }
     catch { }
-    var roles = await Html.Mox().GetRolesAsync();
-    var selectedAppMenu = Config.Value.Apps
-        .Select(x => (app: x, menuItem: x.ResolveActiveMenu(this.ViewContext).Build(Url, roles).Flatten().LastOrDefault(y => y.MatchesView(this.ViewContext))))
-        .FirstOrDefault(x => x.menuItem != null);
-    var currentApp = selectedAppMenu.app;
-    var selectedMenu = selectedAppMenu.menuItem;
-    var parents = includeCurrentMenu ? selectedMenu.AllParents.Append(selectedMenu) : selectedMenu.AllParents;
-    parents = parents.Concat(additionalNodes);
-    var localizer = Html.Mox().Localizer;
-}
 
-<ul class="mox-breadcrumbs">
-    <li><a href="@Url.AppAction(currentApp, roles)">@localizer[currentApp.Name]</a></li>
-    @foreach (var parent in parents)
-    {
-        <li><a href="@Url.MenuAction(parent, roles)">@localizer[parent.Title]</a></li>
-    }
-</ul>*@
-
-@{ 
-    var includeCurrentMenu = false;
-    var additionalNodes = Enumerable.Empty<MenuItem>();
     try
     {
-        includeCurrentMenu = Model.IncludeCurrentMenu;
-    }
-    catch { }
-    try
-    {
-        additionalNodes = Model.AdditionalNodes;
+        builderAction = Model.BuilderAction;
     }
     catch { }
 }
-@await Html.Mox().BreadCrumbsAsync(includeCurrentMenu ? BreadCrumbMenuReference.Current : BreadCrumbMenuReference.Parent, additionalNodes)
+
+@if (builderAction != null)
+{
+    @await Html.Mox().RenderBreadCrumbsAsync(reference, builderAction)
+}
+else
+{
+    @await Html.Mox().RenderBreadCrumbsAsync(reference, additionalNodes)
+}

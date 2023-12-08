@@ -157,7 +157,7 @@ namespace Mindbite.Mox.UI.Menu.Renderer
             var builder = new Configuration.AppMenus.AppMenuBuilder();
             builder.Items(builderAction);
 
-            var items = builder.Build(this._htmlExtensions.UrlHelper).ToList();
+            var items = builder.Build(this._htmlExtensions.UrlHelper, tryMatchingAction: selectCurrentMenuByAction).ToList();
             items.SelectCurrentMenu(this._htmlExtensions.HtmlHelper.ViewContext, selectCurrentMenuByAction);
             items.FixParents();
             return RenderMenu(items);
