@@ -34,38 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-function documentsUploadFileX(form) {
-    return __awaiter(this, void 0, void 0, function () {
-        var fileInput, oldFormParent, formHTML, dialog, content, heading;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    fileInput = form.querySelector('input[type="file"]');
-                    oldFormParent = form.parentElement;
-                    formHTML = oldFormParent.innerHTML;
-                    return [4 /*yield*/, Mox.UI.Modal.createDialogWithContent("\n        <h1>Ladda upp filer</h1>\n        <fieldset class=\"buttons\">\n            <p>\n                <button type=\"button\" class=\"mox-button save\">Ladda upp</button>\n            </p>\n        </fieldset>\n    ")];
-                case 1:
-                    dialog = _a.sent();
-                    content = dialog.contentContainer;
-                    heading = content.querySelector('h1');
-                    content.insertBefore(form, heading.nextElementSibling);
-                    form.classList.add('in-modal');
-                    form.querySelector('.document-upload-uploaded-file-count').innerHTML = fileInput.files.length.toString();
-                    oldFormParent.innerHTML = form.querySelector('.document-upload-list-only label').outerHTML;
-                    dialog.onClose(function () {
-                        oldFormParent.innerHTML = formHTML;
-                    });
-                    dialog.contentContainer.querySelector('.mox-button.save').addEventListener('click', function (e) {
-                        var loadingDialog = Mox.UI.Modal.createDialogWithContent("\n            <h1 style=\"text-align: center;\">Laddar upp...</h1>\n        ");
-                        loadingDialog.contentContainer.parentElement.querySelector('.mox-modal-close').remove();
-                        form.submit();
-                    });
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-function documentsUploadFile(form) {
+function documentsUploadFile(form, loadingText) {
     return __awaiter(this, void 0, void 0, function () {
         var fileInput, preflightUrlInput, formData, i, response, dialog, formDialog, loadingDialog;
         return __generator(this, function (_a) {
@@ -92,7 +61,7 @@ function documentsUploadFile(form) {
                                     var preflightElement = preflightElements_1[_i];
                                     form.insertBefore(preflightElement, null);
                                 }
-                                modal.contentContainer.innerHTML = '<h1 style="text-align: center;">Laddar upp...</h1>';
+                                modal.contentContainer.innerHTML = '<h1 style="text-align: center;">' + loadingText + '</h1>';
                                 form.submit();
                             }
                         })];
@@ -100,7 +69,7 @@ function documentsUploadFile(form) {
                     formDialog = _a.sent();
                     return [3 /*break*/, 5];
                 case 4:
-                    loadingDialog = Mox.UI.Modal.createDialogWithContent("\n            <h1 style=\"text-align: center;\">Laddar upp...</h1>\n        ");
+                    loadingDialog = Mox.UI.Modal.createDialogWithContent("\n            <h1 style=\"text-align: center;\">".concat(loadingText, "</h1>\n        "));
                     form.submit();
                     _a.label = 5;
                 case 5: return [2 /*return*/];

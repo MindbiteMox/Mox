@@ -61,6 +61,7 @@ namespace Mindbite.Mox.DirectoryListing.Data
                     ".jpg" => "fa-file-image",
                     ".jpeg" => "fa-file-image",
                     ".png" => "fa-file-image",
+                    ".zip" => "fa-archive",
                     _ => "fa-file-alt"
                 };
                 return $"<i class='far {fileIcon}'></i>";

@@ -336,9 +336,11 @@ dd + dt { margin-top: 10px; }
 .mox-dialog .buttons p { float: right; }
 
 .mox-content fieldset input[type=submit],
-.mox-content fieldset button.save { background-position-x: -16px; transition: padding-left .2s, background-position .2s; }
+.mox-content fieldset button.save,
+.mox-button.save { background-position-x: -16px; transition: padding-left .2s, background-position .2s; }
 .mox-content fieldset input[type=submit].loading,
-.mox-content fieldset button.save.loading { padding-left: 28px; background-image: url('/mox/static/svg/loader-button-white.svg'); background-position: 6px center; background-size: 16px; background-repeat: no-repeat; }
+.mox-content fieldset button.save.loading,
+.mox-button.save.loading { padding-left: 28px; background-image: url('/mox/static/svg/loader-button-white.svg'); background-position: 6px center; background-size: 16px; background-repeat: no-repeat; }
 
 @media (pointer: coarse) {
 

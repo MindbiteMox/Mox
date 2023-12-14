@@ -436,6 +436,7 @@ var Mox;
                         switch (_a.label) {
                             case 0:
                                 table = new DataTable(options);
+                                options.container.dataTable = table;
                                 table.filters = table.options.filters.map(function (x) { return typeof (x) === 'string' ? document.getElementById(x) : x; });
                                 table.filters.forEach(function (x) {
                                     switch (x.nodeName) {
@@ -565,10 +566,10 @@ var Mox;
                                             var checkbox = target;
                                             if (checkbox.name === 'rowId') {
                                                 if (checkbox.checked) {
-                                                    _this.selectedIds.push(parseInt(checkbox.value));
+                                                    _this.selectedIds.push(checkbox.value);
                                                 }
                                                 else {
-                                                    _this.selectedIds.splice(_this.selectedIds.indexOf(parseInt(checkbox.value)), 1);
+                                                    _this.selectedIds.splice(_this.selectedIds.indexOf(checkbox.value), 1);
                                                 }
                                                 if (_this.options.onSelectedIdsChanged) {
                                                     _this.options.onSelectedIdsChanged(_this);

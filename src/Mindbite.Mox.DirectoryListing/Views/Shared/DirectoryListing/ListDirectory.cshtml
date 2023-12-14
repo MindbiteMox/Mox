@@ -72,7 +72,7 @@
         {
             <fieldset class="document-upload-list-only">
                 <input type="hidden" name="PreflightUrl" value="@Url.Action("UploadPreflight", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })">
-                <input type="file" id="UploadedFiles" multiple name="UploadedFiles" onchange="documentsUploadFile(this.form)" style="display: none;" />
+                <input type="file" id="UploadedFiles" multiple name="UploadedFiles" onchange="documentsUploadFile(this.form, '@localizer["Laddar upp..."]')" style="display: none;" />
                 <label for="UploadedFiles" class="mox-button"><i class="far fa-upload"></i> @localizer["Ladda upp filer"]</label>
             </fieldset>
         }
@@ -116,6 +116,11 @@
             filters: ['js-filter', 'js-global'],
             onRenderComplete: function (instance) {
                 localStorage.removeItem(instance.tableId + '_filtersquery');
+            },
+            addQuery: function (dt) {
+                if (window.innerWidth < 960) {
+                    return 'mobile=True';
+                }
             }
         });
 
@@ -174,6 +179,7 @@
         #dropzone { position: fixed; top: 0; left: 0; z-index: 9999999999; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); transition: visibility 175ms, opacity 175ms; display: table; color: #fff; background: rgba(0, 0, 0, 0.45); font: bold 42px sans-serif; }
         #textnode { display: table-cell; text-align: center; vertical-align: middle; transition: font-size 175ms; }
         i { margin-right: 10px; }
+        .mox-datatable i { width: 1em; text-align: center; }
         .mox-filters i { margin-right: 5px; }
         .path-column > a:first-child { display: none; }
         .bread-crumbs { }

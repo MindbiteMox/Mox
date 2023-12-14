@@ -372,7 +372,7 @@
     export class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
-        selectedIds: number[] = [];
+        selectedIds: string[] = [];
         selectionEnabled: boolean;
 
         get tableId() {
@@ -416,6 +416,7 @@
 
         static async create(options: DataTableOptions): Promise<DataTable> {
             const table = new DataTable(options);
+            (options.container as any).dataTable = table;
 
             table.filters = table.options.filters.map(x => typeof (x) === 'string' ? document.getElementById(x) as (HTMLInputElement | HTMLSelectElement) : x);
             table.filters.forEach(x => {
@@ -553,9 +554,9 @@
                         const checkbox = target as HTMLInputElement;
                         if (checkbox.name === 'rowId') {
                             if (checkbox.checked) {
-                                this.selectedIds.push(parseInt(checkbox.value));
+                                this.selectedIds.push(checkbox.value);
                             } else {
-                                this.selectedIds.splice(this.selectedIds.indexOf(parseInt(checkbox.value)), 1);
+                                this.selectedIds.splice(this.selectedIds.indexOf(checkbox.value), 1);
                             }
 
                             if (this.options.onSelectedIdsChanged) {

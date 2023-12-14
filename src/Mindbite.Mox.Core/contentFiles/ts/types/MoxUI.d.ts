@@ -59,7 +59,7 @@ declare namespace Mox.UI {
     class DataTable {
         options: DataTableOptions;
         filters: (HTMLInputElement | HTMLSelectElement)[];
-        selectedIds: number[];
+        selectedIds: string[];
         selectionEnabled: boolean;
         get tableId(): string;
         get containerElement(): HTMLElement;
