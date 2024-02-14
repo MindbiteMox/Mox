@@ -67,10 +67,15 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         public virtual string? PreflightFormViewName => "DirectoryListing/UploadPreflightForm";
         public virtual Task<string> GetRootDirectoryName() => Task.FromResult(this._localizer["Toppnivå"].ToString());
         public virtual Task<IEnumerable<UI.Menu.MenuItem>> AdditionalBreadCrumbNodesAsync() => Task.FromResult(Enumerable.Empty<UI.Menu.MenuItem>());
+        public virtual async Task<string> GetDownloadAllZipFileNameAsync(TDirectory? rootDirectory) => (rootDirectory?.Name ?? await this.GetRootDirectoryName()) + ".zip";
 
         public abstract TDocumentViewModel GetDocumentViewModel(TDocument? document);
         public abstract TDirectoryViewModel GetDirectoryViewModel(TDirectory? document);
 
+        public virtual bool CanUpload => true;
+        public virtual bool CanDownload => true;
+        public virtual bool CanEdit => true;
+        public virtual bool CanDelete => true;
 
         public MoxDirectoryListingController(Mox.Services.IDbContextFetcher context, IWebHostEnvironment webHostEnvironment, Services.DocumentService<TDocument, TDirectory> documentService, IOptions<DocumentServiceOptions> options, IStringLocalizer localizer) : base(context)
         {
@@ -90,10 +95,15 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             ViewData["BreadCrumbsIncludeCurrentMenu"] = this.BreadCrumbsIncludeCurrentMenu;
             ViewData["DefaultBreadCrumbsForDirectoryListing"] = this.DefaultBreadCrumbsForDirectoryListing;
             ViewData["AdditionalBreadCrumbNodes"] = await this.AdditionalBreadCrumbNodesAsync();
+            ViewData["CanEdit"] = this.CanEdit;
+            ViewData["CanUpload"] = this.CanUpload;
+            ViewData["CanDownload"] = this.CanDownload;
+            ViewData["CanDelete"] = this.CanDelete;
             HttpContext.Items[Constants.RootDirectoryNameHttpContentItemKey] = await this.GetRootDirectoryName();
             HttpContext.Items[Constants.GetDirectoriesHttpContentItemKey] = fn((Data.IDirectoryListingDbContext theContext) => this.GetDirectories((Data.IDirectoryListingDbContext<TDocument, TDirectory>)theContext).Cast<Data.DocumentDirectory>());
             HttpContext.Items[Constants.DirectoryTypeHttpContentItemKey] = typeof(TDirectory);
             HttpContext.Items[Constants.DocumentTypeHttpContentItemKey] = typeof(TDocument);
+
             await next();
         }
 
@@ -125,6 +135,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpGet]
         public async Task<IActionResult> Download(Guid documentId)
         {
+            if (!this.CanDownload)
+            {
+                return this.Unauthorized();
+            }
+
             var document = await this.GetDocuments()
                 .FirstAsync(x => x.UID == documentId);
 
@@ -171,8 +186,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
                 })
                 .Buttons(buttons =>
                 {
-                    buttons.EditButton(x => x.IsDirectory ? Url.Action("EditDirectory", new RouteValueDictionary(RouteData.Values) { { "DirectoryId", x.UID } }) : Url.Action("EditDocument", new RouteValueDictionary(RouteData.Values) { { "DocumentId", x.UID } }));
-                    buttons.DeleteButton(x => x.IsDirectory ? Url.Action("DeleteDirectory", new RouteValueDictionary(RouteData.Values) { { "DirectoryId", x.UID } }) : Url.Action("DeleteDocument", new RouteValueDictionary(RouteData.Values) { { "DocumentId", x.UID } }));
+                    if (this.CanEdit)
+                    {
+                        buttons.EditButton(x => x.IsDirectory ? Url.Action("EditDirectory", new RouteValueDictionary(RouteData.Values) { { "DirectoryId", x.UID } }) : Url.Action("EditDocument", new RouteValueDictionary(RouteData.Values) { { "DocumentId", x.UID } }));
+                        buttons.DeleteButton(x => x.IsDirectory ? Url.Action("DeleteDirectory", new RouteValueDictionary(RouteData.Values) { { "DirectoryId", x.UID } }) : Url.Action("DeleteDocument", new RouteValueDictionary(RouteData.Values) { { "DocumentId", x.UID } }));
+                    }
                 });
 
             return View("Mox/UI/DataTable", dataTable);
@@ -268,6 +286,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpPost]
         public async virtual Task<IActionResult> UploadPreflight(Guid? directoryId, ViewModels.DocumentUploadPreflight<TUploadAdditionalPreflightDataViewModel> viewModel)
         {
+            if (!this.CanUpload)
+            {
+                return this.Unauthorized();
+            }
+
             var directory = await GetDirectories()
                 .FirstOrDefaultAsync(x => x.UID == directoryId);
 
@@ -290,6 +313,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpPost]
         public async virtual Task<IActionResult> UploadFiles(Guid? directoryId, ViewModels.DocumentUpload<TUploadAdditionalPreflightDataViewModel> viewModel)
         {
+            if (!this.CanUpload)
+            {
+                return this.Unauthorized();
+            }
+
             var directory = await GetDirectories()
                 .Include(x => x.ChildDirectories)
                 .FirstOrDefaultAsync(x => x.UID == directoryId);
@@ -319,6 +347,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateDirectory(Guid? directoryId)
         {
+            if (!this.CanUpload)
+            {
+                return this.Unauthorized();
+            }
+
             var parentDirectory = await GetDirectories().FirstOrDefaultAsync(x => x.UID == directoryId);
 
             ViewData["ParentDirectory"] = parentDirectory;
@@ -332,6 +365,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateDirectory(Guid? directoryId, TDirectoryViewModel viewModel)
         {
+            if (!this.CanUpload)
+            {
+                return this.Unauthorized();
+            }
+
             var parentDirectory = await GetDirectories().FirstOrDefaultAsync(x => x.UID == directoryId);
 
             ViewData["ParentDirectory"] = parentDirectory;
@@ -369,6 +407,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpGet]
         public async Task<IActionResult> EditDirectory(Guid directoryId)
         {
+            if (!this.CanEdit)
+            {
+                return this.Unauthorized();
+            }
+
             var directory = await this.GetDirectories()
                 .FirstAsync(x => x.UID == directoryId);
 
@@ -378,6 +421,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpPost]
         public async Task<IActionResult> EditDirectory(Guid directoryId, TDirectoryViewModel viewModel)
         {
+            if (!this.CanEdit)
+            {
+                return this.Unauthorized();
+            }
+
             var directory = await this.GetDirectories().FirstAsync(x => x.UID == directoryId);
 
             if (ModelState.IsValid)
@@ -410,6 +458,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteDirectory(Guid directoryId)
         {
+            if (!this.CanDelete)
+            {
+                return this.Unauthorized();
+            }
+
             var dir = await this.GetDirectories().Include(x => x.ParentDirectory).FirstAsync(x => x.UID == directoryId);
 
             ViewData["CanDelete"] = true;
@@ -425,6 +478,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [ActionName("DeleteDirectory")]
         public async Task<IActionResult> DoDeleteDirectory(Guid directoryId)
         {
+            if (!this.CanDelete)
+            {
+                return this.Unauthorized();
+            }
+
             var directory = await this.GetDirectories()
                 .Include(x => x.ParentDirectory)
                 .FirstAsync(x => x.UID == directoryId);
@@ -439,6 +497,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpGet]
         public async Task<IActionResult> EditDocument(Guid documentId)
         {
+            if (!this.CanEdit)
+            {
+                return this.Unauthorized();
+            }
+
             var document = await this.GetDocuments()
                 .Include(x => x.Directory)
                 .FirstAsync(x => x.UID == documentId);
@@ -451,6 +514,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpPost]
         public async Task<IActionResult> EditDocument(Guid documentId, ViewModels.Document viewModel)
         {
+            if (!this.CanEdit)
+            {
+                return this.Unauthorized();
+            }
+
             static void RenameFile(string filePath, string newFileName)
             {
                 var newFilePath = Path.Combine(Path.GetDirectoryName(filePath), newFileName + Path.GetExtension(filePath));
@@ -495,6 +563,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteDocument(Guid documentId)
         {
+            if (!this.CanDelete)
+            {
+                return this.Unauthorized();
+            }
+
             var document = await this.GetDocuments()
                 .Include(x => x.Directory)
                 .FirstAsync(x => x.UID == documentId);
@@ -512,6 +585,11 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [ActionName("DeleteDocument")]
         public async Task<IActionResult> DoDeleteDocument(Guid documentId)
         {
+            if (!this.CanDelete)
+            {
+                return this.Unauthorized();
+            }
+
             var document = await this.GetDocuments().FirstAsync(x => x.UID == documentId);
             var documentDirectory = await this.GetDirectories().FirstOrDefaultAsync(x => x.Id == document.DirectoryId);
 
@@ -525,6 +603,12 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
         [HttpGet]
         public async Task DownloadAll(Guid? directoryId)
         {
+            if (!this.CanDownload)
+            {
+                this.Response.StatusCode = 401;
+                return;
+            }
+
             var g = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature>();
             g.DisableBuffering();
 
@@ -539,7 +623,7 @@ namespace Mindbite.Mox.DirectoryListing.Controllers
             Response.Headers.Add("Content-Disposition", new System.Net.Mime.ContentDisposition
             {
                 Inline = false,
-                FileName = (rootDirectory?.Name ?? await this.GetRootDirectoryName()) + ".zip"
+                FileName = await GetDownloadAllZipFileNameAsync(rootDirectory)
             }.ToString());
 
             var zippedDocuments = await this._documentService.WriteDirectoryZipAsync(rootDirectory, Response.BodyWriter.AsStream(), this.GetDirectories(), this.GetDocuments());

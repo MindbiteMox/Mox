@@ -19,10 +19,14 @@ namespace Mindbite.Mox.Services
         private readonly LocalizationSources _sources;
         private readonly IStringLocalizerFactory _localizerFactory;
 
+        private readonly string MissingResourceSearchLocation = "";
+
         public MoxStringLocalizer(IOptions<LocalizationSources> sources, IStringLocalizerFactory localizerFactory)
         {
             this._sources = sources.Value;
             this._localizerFactory = localizerFactory;
+
+            MissingResourceSearchLocation = string.Join("\n", this._sources.ResouceTypes.Reverse<Type>().Select(x => x.Name));
         }
 
         public virtual LocalizedString this[string name] => this[name, arguments: new object[0]];
@@ -31,15 +35,16 @@ namespace Mindbite.Mox.Services
         {
             get
             {
-                for (int i = this._sources.ResouceTypes.Count - 1; i >= 0; i--)
+                foreach (var resourceType in this._sources.ResouceTypes.Reverse<Type>())
                 {
-                    var resourceType = this._sources.ResouceTypes[i];
                     var found = this._localizerFactory.Create(resourceType)[name, arguments];
                     if (!found.ResourceNotFound)
+                    {
                         return found;
+                    }
                 }
 
-                return new LocalizedString(name, string.Format(name, arguments));
+                return new LocalizedString(name, string.Format(name, arguments), true, MissingResourceSearchLocation);
             }
         }
 

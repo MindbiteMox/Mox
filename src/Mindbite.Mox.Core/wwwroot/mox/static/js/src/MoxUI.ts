@@ -487,7 +487,7 @@
 
             const renderUrl = localStorage.getItem(table.tableId) || table.options.url;
             const addedQuery = table.options.addQuery ? table.options.addQuery(table) : '';
-            const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random()]);
+            const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random(), 'windowWidth=' + window.innerWidth]);
 
             if (!table.options.skipRenderOnCreate) {
                 await table.render(url);
@@ -534,7 +534,7 @@
             sortLinks.forEach(x => x.addEventListener('click', e => {
                 e.preventDefault();
                 const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
-                const fullUrl = Utils.URL.addWindowQueryTo(x.href, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
+                const fullUrl = Utils.URL.addWindowQueryTo(x.href, [addedQuery, this.filterQueryString, 'r=' + Math.random(), 'windowWidth=' + window.innerWidth]);
                 this.render(fullUrl);
 
                 if (this.options.rememberFilters) {
@@ -577,7 +577,7 @@
         async refresh() {
             const renderUrl = localStorage.getItem(this.tableId) || this.options.url;
             const addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
-            const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
+            const url = Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, this.filterQueryString, 'r=' + Math.random(), 'windowWidth=' + window.innerWidth]);
             await this.render(url);
         }
 

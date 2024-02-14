@@ -331,7 +331,8 @@ namespace Mindbite.Mox.Attributes
         CheckBoxList,
         Radio,
         EditorOnly,
-        DivContainer
+        DivContainer,
+        NoOutput
     }
 
     public class MoxFormFieldTypeAttribute : Attribute

@@ -10,6 +10,11 @@
 @{
     Layout = "Mox/_Layout";
 
+    var canEdit = (bool)ViewData["CanEdit"]!;
+    var canUpload = (bool)ViewData["CanUpload"]!;
+    var canDownload = (bool)ViewData["CanDownload"]!;
+    var canDelete = (bool)ViewData["CanDelete"]!;
+
     var dbContext = contextFetcher.FetchDbContext<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext>();
     var getDirectories = ViewContext.HttpContext.Items[Mindbite.Mox.DirectoryListing.Constants.GetDirectoriesHttpContentItemKey] as Func<Mindbite.Mox.DirectoryListing.Data.IDirectoryListingDbContext, IQueryable<Mindbite.Mox.DirectoryListing.Data.DocumentDirectory>>;
     var allDirectories = await getDirectories(dbContext).ToListAsync();
@@ -54,33 +59,45 @@
 <ul class="mox-filters">
     @if (Model != null)
     {
+        @if (canEdit)
+        {
+            <li>
+                <a href="@Url.Action("EditDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-edit"></i> @localizer["Redigera mapp"]</a>
+            </li>
+        }
+
+        @if (canDelete)
+        {
+            <li class="spacing">
+                <a href="@Url.Action("DeleteDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-trash-alt"></i> @localizer["Radera mapp"]</a>
+            </li>
+        }
+    }
+
+    @if (canUpload)
+    {
         <li>
-            <a href="@Url.Action("EditDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-edit"></i> @localizer["Redigera mapp"]</a>
+            <a href="@Url.Action("CreateDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-plus"></i> @localizer["Ny mapp"]</a>
         </li>
 
         <li class="spacing">
-            <a href="@Url.Action("DeleteDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-trash-alt"></i> @localizer["Radera mapp"]</a>
+            @using (Html.BeginForm("UploadFiles", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } }, FormMethod.Post, null, new { enctype = "multipart/form-data", id = "upload-fm" }))
+            {
+                <fieldset class="document-upload-list-only">
+                    <input type="hidden" name="PreflightUrl" value="@Url.Action("UploadPreflight", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })">
+                    <input type="file" id="UploadedFiles" multiple name="UploadedFiles" onchange="documentsUploadFile(this.form, '@localizer["Laddar upp..."]')" style="display: none;" />
+                    <label for="UploadedFiles" class="mox-button"><i class="far fa-upload"></i> @localizer["Ladda upp filer"]</label>
+                </fieldset>
+            }
         </li>
     }
 
-    <li>
-        <a href="@Url.Action("CreateDirectory", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-plus"></i> @localizer["Ny mapp"]</a>
-    </li>
-
-    <li class="spacing">
-        @using (Html.BeginForm("UploadFiles", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } }, FormMethod.Post, null, new { enctype = "multipart/form-data", id = "upload-fm" }))
-        {
-            <fieldset class="document-upload-list-only">
-                <input type="hidden" name="PreflightUrl" value="@Url.Action("UploadPreflight", null, new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })">
-                <input type="file" id="UploadedFiles" multiple name="UploadedFiles" onchange="documentsUploadFile(this.form, '@localizer["Laddar upp..."]')" style="display: none;" />
-                <label for="UploadedFiles" class="mox-button"><i class="far fa-upload"></i> @localizer["Ladda upp filer"]</label>
-            </fieldset>
-        }
-    </li>
-
-    <li>
-        <a href="@Url.Action("DownloadAll", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-download"></i> @localizer["Ladda ner mapp"]</a>
-    </li>
+    @if (canDownload)
+    {
+        <li>
+            <a href="@Url.Action("DownloadAll", new RouteValueDictionary(ViewContext.RouteData.Values) { { "DirectoryId", Model?.UID } })" class="mox-button"><i class="far fa-folder-download"></i> @localizer["Ladda ner mapp"]</a>
+        </li>
+    }
 </ul>
 
 <ul class="mox-filters" style="border-top: 1px solid #ddd; padding-top: 20px;">
@@ -104,9 +121,12 @@
 
 <div id="js-table"></div>
 
-<div style="visibility:hidden; opacity:0" id="dropzone">
-    <div id="textnode">@localizer["Släpp dina filer här för att ladda upp"]</div>
-</div>
+@if(canUpload)
+{
+    <div style="visibility:hidden; opacity:0" id="dropzone">
+        <div id="textnode">@localizer["Släpp dina filer här för att ladda upp"]</div>
+    </div>
+}
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -127,52 +147,62 @@
     });
 </script>
 
-<script>
-    let lastTarget = null;
+@if(canUpload)
+{
+    <script>
+        let lastTarget = null;
 
-    function isFile(e) {
-        return e.dataTransfer.types.indexOf("Files") > -1;
-    }
-
-    window.addEventListener("dragenter", function (e) {
-        if (isFile(e)) {
-            lastTarget = e.target;
-            document.querySelector("#dropzone").style.visibility = "";
-            document.querySelector("#dropzone").style.opacity = 1;
-            document.querySelector("#textnode").style.fontSize = "48px";
+        function isFile(e) {
+            return e.dataTransfer.types.indexOf("Files") > -1;
         }
-    });
 
-    window.addEventListener("dragleave", function (e) {
-        e.preventDefault();
-        if (e.target === lastTarget || e.target === document) {
+        window.addEventListener("dragenter", function (e) {
+            if (isFile(e)) {
+                lastTarget = e.target;
+                document.querySelector("#dropzone").style.visibility = "";
+                document.querySelector("#dropzone").style.opacity = 1;
+                document.querySelector("#textnode").style.fontSize = "48px";
+            }
+        });
+
+        window.addEventListener("dragleave", function (e) {
+            e.preventDefault();
+            if (e.target === lastTarget || e.target === document) {
+                document.querySelector("#dropzone").style.visibility = "hidden";
+                document.querySelector("#dropzone").style.opacity = 0;
+                document.querySelector("#textnode").style.fontSize = "42px";
+            }
+        });
+
+        window.addEventListener("dragover", function (e) {
+            e.preventDefault();
+        });
+
+        window.addEventListener("drop", function (e) {
+            e.preventDefault();
             document.querySelector("#dropzone").style.visibility = "hidden";
             document.querySelector("#dropzone").style.opacity = 0;
             document.querySelector("#textnode").style.fontSize = "42px";
-        }
-    });
 
-    window.addEventListener("dragover", function (e) {
-        e.preventDefault();
-    });
-
-    window.addEventListener("drop", function (e) {
-        e.preventDefault();
-        document.querySelector("#dropzone").style.visibility = "hidden";
-        document.querySelector("#dropzone").style.opacity = 0;
-        document.querySelector("#textnode").style.fontSize = "42px";
-        if (e.dataTransfer.files.length > 0) {
-            var upload = document.querySelector(".mox-filters #UploadedFiles");
-            if (upload) {
-                upload.files = e.dataTransfer.files;
-                (function () {
-                    eval(upload.attributes.getNamedItem('onchange').value);
-                }).call(upload);
+            var emptyFiles = [...e.dataTransfer.files].filter(x => x.type == '');
+            if(emptyFiles.length > 0) {
+                alert('@localizer["Mappar kan inte laddas upp!"]');
+                return;
             }
-            //document.querySelector("#upload-form").submit();
-        }
-    });
-</script>
+
+            if (e.dataTransfer.files.length > 0) {
+                var upload = document.querySelector(".mox-filters #UploadedFiles");
+                if (upload) {
+                    upload.files = e.dataTransfer.files;
+                    (function () {
+                        eval(upload.attributes.getNamedItem('onchange').value);
+                    }).call(upload);
+                }
+                //document.querySelector("#upload-form").submit();
+            }
+        });
+    </script>
+}
 
 @section styles {
     <style>

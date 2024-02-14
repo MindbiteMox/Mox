@@ -101,7 +101,7 @@ namespace Mindbite.Mox.Identity.AzureAD
                     var userEmail = context.Principal.Claims.First(x => x.Type == "preferred_username").Value;
                     var userManager = context.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Identity.UserManager<Identity.Data.Models.MoxUser>>();
                     var signInManager = context.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Identity.SignInManager<Identity.Data.Models.MoxUser>>();
-                    var roleGroupManager = context.HttpContext.RequestServices.GetService<Services.RoleGroupManager>();
+                    var roleGroupManager = context.HttpContext.RequestServices.GetService<Services.IRoleGroupManager>();
                     var user = await userManager.FindByEmailAsync(userEmail);
                     if(user == null)
                     {

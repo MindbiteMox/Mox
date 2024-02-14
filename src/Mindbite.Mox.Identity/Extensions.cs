@@ -170,7 +170,7 @@ namespace Mindbite.Mox.Extensions
             mvc.Services.AddScoped<IMagicLinkManager, MagicLinkManager>();
             mvc.Services.AddScoped<Identity.Services.RefreshLoginMiddleware.RefreshLoginUserChanges>();
             mvc.Services.AddScoped<Identity.Services.RefreshLoginMiddleware.RefreshLoginService>();
-            mvc.Services.AddScoped<Identity.Services.RoleGroupManager>();
+            mvc.Services.AddScoped<IRoleGroupManager, RoleGroupManager>();
 
             mvc.Services.AddTransient<IBackDoor, BackDoor>();
 

@@ -13,7 +13,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -38,6 +38,18 @@ var Mox;
 (function (Mox) {
     var Images;
     (function (Images) {
+        Images.onChangeCallbacks = [];
+        function onChange(callback) {
+            Images.onChangeCallbacks.push(callback);
+        }
+        Images.onChange = onChange;
+        function triggerOnChange() {
+            for (var _i = 0, onChangeCallbacks_1 = Images.onChangeCallbacks; _i < onChangeCallbacks_1.length; _i++) {
+                var callback = onChangeCallbacks_1[_i];
+                callback();
+            }
+        }
+        Images.triggerOnChange = triggerOnChange;
         function uploadMulti(url, form, container, prefix) {
             return __awaiter(this, void 0, void 0, function () {
                 var formData, response;
@@ -57,7 +69,9 @@ var Mox;
                         case 3:
                             container.classList.remove('loading');
                             return [7 /*endfinally*/];
-                        case 4: return [2 /*return*/];
+                        case 4:
+                            triggerOnChange();
+                            return [2 /*return*/];
                     }
                 });
             });
@@ -79,7 +93,9 @@ var Mox;
                             container.innerHTML = response.data;
                             return [3 /*break*/, 4];
                         case 3: return [7 /*endfinally*/];
-                        case 4: return [2 /*return*/];
+                        case 4:
+                            triggerOnChange();
+                            return [2 /*return*/];
                     }
                 });
             });

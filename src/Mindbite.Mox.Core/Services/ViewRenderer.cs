@@ -18,6 +18,7 @@ namespace Mindbite.Mox.Services
     {
         Task<string> RenderToStringAsync(string viewName, object model, IDictionary<string, object> viewData = null);
         Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model, IDictionary<string, object> viewData = null);
+        Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model, ViewDataDictionary viewDataDictionary);
     }
 
     public class ViewRenderService : IViewRenderService
@@ -42,6 +43,24 @@ namespace Mindbite.Mox.Services
 
         public async Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model, IDictionary<string, object> viewData = null)
         {
+            var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), actionContext.ModelState ?? new ModelStateDictionary())
+            {
+                Model = model,
+            };
+
+            if (viewData != null)
+            {
+                foreach (var pair in viewData)
+                {
+                    viewDictionary[pair.Key] = pair.Value;
+                }
+            }
+
+            return await RenderToStringAsync(actionContext, viewName, model, viewDataDictionary: viewDictionary);
+        }
+
+        public async Task<string> RenderToStringAsync(ActionContext actionContext, string viewName, object model, ViewDataDictionary viewDataDictionary)
+        {
             using (var sw = new StringWriter())
             {
                 var viewResult = _razorViewEngine.FindView(actionContext, viewName ?? actionContext.RouteData.Values["action"] as string, false);
@@ -51,23 +70,12 @@ namespace Mindbite.Mox.Services
                     throw new ArgumentNullException($"{viewName} does not match any available view. \n Searched locations: {string.Join(", \n", viewResult.SearchedLocations)}");
                 }
 
-                var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), actionContext.ModelState ?? new ModelStateDictionary())
-                {
-                    Model = model,
-                };
-
-                if(viewData != null)
-                {
-                    foreach(var pair in viewData)
-                    {
-                        viewDictionary[pair.Key] = pair.Value;
-                    }
-                }
+                viewDataDictionary.Model = model;
 
                 var viewContext = new ViewContext(
                     actionContext,
                     viewResult.View,
-                    viewDictionary,
+                    viewDataDictionary,
                     new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
                     sw,
                     new HtmlHelperOptions()

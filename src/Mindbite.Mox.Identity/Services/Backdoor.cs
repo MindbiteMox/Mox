@@ -19,10 +19,10 @@ namespace Mindbite.Mox.Identity.Services
     {
         private readonly Identity.Data.MoxIdentityDbContext _context;
         private readonly UserManager<MoxUser> _userManager;
-        private readonly RoleGroupManager _roleGroupManager;
+        private readonly IRoleGroupManager _roleGroupManager;
         private readonly MoxIdentityOptions _options;
 
-        public BackDoor(Mox.Services.IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleGroupManager roleGroupManager, IOptions<MoxIdentityOptions> options)
+        public BackDoor(Mox.Services.IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, IRoleGroupManager roleGroupManager, IOptions<MoxIdentityOptions> options)
         {
             this._context = dbContextFetcher.FetchDbContext<Identity.Data.MoxIdentityDbContext>();
             this._userManager = userManager;

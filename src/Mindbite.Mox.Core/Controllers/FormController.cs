@@ -38,7 +38,11 @@ namespace Mindbite.Mox.Core.Controllers
         public virtual bool RenderDefaultCreateHeader => true;
         public virtual bool RenderDefaultIndexHeader => true;
         public virtual bool RenderDefaultDeleteHeader => true;
+        
         public virtual bool CanCreate => true;
+        public virtual bool CanEdit => true;
+        public virtual bool CanDelete => true;
+
         public abstract string IndexPageHeading { get; }
         public virtual string EditPageHeading(ViewModel_T viewModel)
         {
@@ -79,6 +83,8 @@ namespace Mindbite.Mox.Core.Controllers
             ViewData[nameof(RenderDefaultIndexHeader)] = this.RenderDefaultIndexHeader;
             ViewData[nameof(RenderDefaultDeleteHeader)] = this.RenderDefaultDeleteHeader;
             ViewData[nameof(CanCreate)] = this.CanCreate;
+            ViewData[nameof(CanEdit)] = this.CanEdit;
+            ViewData[nameof(CanDelete)] = this.CanDelete;
             ViewData[nameof(CreateHeaderPartial)] = this.CreateHeaderPartial;
             ViewData[nameof(EditHeaderPartial)] = this.EditHeaderPartial;
             ViewData[nameof(IndexHeaderPartial)] = this.IndexHeaderPartial;
@@ -113,6 +119,11 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpGet]
         public virtual async Task<IActionResult> Create()
         {
+            if (!CanCreate)
+            {
+                return Unauthorized();
+            }
+
             var viewModel = await this.GetViewModelAsync(default);
             await this.SetStaticViewModelData(viewModel);
             await InitViewDataAsync(nameof(Create), viewModel);
@@ -124,6 +135,11 @@ namespace Mindbite.Mox.Core.Controllers
         [PreventDuplicateRequests]
         public virtual async Task<IActionResult> Create(ViewModel_T viewModel)
         {
+            if (!CanCreate)
+            {
+                return Unauthorized();
+            }
+
             this.BeforeValidation();
             await this.ValidateAsync(default, viewModel);
 
@@ -146,6 +162,11 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpGet]
         public virtual async Task<IActionResult> Edit(Id_T id)
         {
+            if (!CanEdit)
+            {
+                return Unauthorized();
+            }
+
             var _id = this.GetId != null ? this.GetId() : id;
 
             var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
@@ -158,6 +179,11 @@ namespace Mindbite.Mox.Core.Controllers
         [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Edit(Id_T id, ViewModel_T viewModel)
         {
+            if (!CanEdit)
+            {
+                return Unauthorized();
+            }
+
             var _id = this.GetId != null ? this.GetId() : id;
 
             this.BeforeValidation();
@@ -182,6 +208,11 @@ namespace Mindbite.Mox.Core.Controllers
         [HttpGet]
         public virtual async Task<IActionResult> Delete(Id_T id)
         {
+            if (!CanDelete)
+            {
+                return Unauthorized();
+            }
+
             var localizer = HttpContext.RequestServices.GetRequiredService<IStringLocalizer>();
 
             var _id = this.GetId != null ? this.GetId() : id;
@@ -203,6 +234,11 @@ namespace Mindbite.Mox.Core.Controllers
         [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> DoDelete(Id_T id)
         {
+            if (!CanDelete)
+            {
+                return Unauthorized();
+            }
+
             var _id = this.GetId != null ? this.GetId() : id;
             var viewModel = await this.GetViewModelAsync((NullableId_T)(object)_id);
 
@@ -267,12 +303,23 @@ namespace Mindbite.Mox.Core.Controllers
             var data = this._context.Set<T>();
             var table = DataTableBuilder.Create(data)
                 .Page(sort.DataTablePage)
-                .RowLink(y => Url.Action("Edit", new { id = y.UID }))
                 .Buttons(x =>
                 {
-                    x.Add(y => Url.Action("Edit", new { id = y.UID })).CssClass("edit").Title("Redigera");
-                    x.Add(y => Url.Action("Delete", new { id = y.UID })).CssClass("delete").Title("Ta bort");
+                    if (this.CanEdit)
+                    {
+                        x.Add(y => Url.Action("Edit", new { id = y.UID })).CssClass("edit").Title("Redigera");
+                    }
+
+                    if (this.CanDelete)
+                    {
+                        x.Add(y => Url.Action("Delete", new { id = y.UID })).CssClass("delete").Title("Ta bort");
+                    }
                 });
+
+            if (this.CanEdit)
+            {
+                table = table.RowLink(y => Url.Action("Edit", new { id = y.UID }));
+            }
 
             this.SetTableData(table, sort);
 

@@ -59,5 +59,14 @@ namespace Mindbite.Mox.DirectoryListing.Resources {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mappar kan inte laddas upp!.
+        /// </summary>
+        internal static string Mappar_kan_inte_laddas_upp_ {
+            get {
+                return ResourceManager.GetString("Mappar kan inte laddas upp!", resourceCulture);
+            }
+        }
     }
 }

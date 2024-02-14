@@ -60,7 +60,7 @@ namespace Mindbite.Mox.Identity.Services
 
         protected override async Task<ClaimsIdentity> GenerateClaimsAsync(MoxUser user)
         {
-            var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
+            var roleGroupManager = this._serviceProvider.GetRequiredService<IRoleGroupManager>();
             var identity = await base.GenerateClaimsAsync(user);
 
             var roleGroup = await roleGroupManager.FindByIdAsync(user.RoleGroupId);
@@ -139,7 +139,7 @@ namespace Mindbite.Mox.Identity.Services
         {
             foreach (var hook in this.Hooks) { await hook.OnCreateAsync(user); }
 
-            var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
+            var roleGroupManager = this._serviceProvider.GetRequiredService<IRoleGroupManager>();
             var roleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
             if(roleGroup == null)
             {
@@ -161,7 +161,7 @@ namespace Mindbite.Mox.Identity.Services
         {
             foreach (var hook in this.Hooks) { await hook.OnUpdateAsync(user); }
 
-            var roleGroupManager = this._serviceProvider.GetRequiredService<RoleGroupManager>();
+            var roleGroupManager = this._serviceProvider.GetRequiredService<IRoleGroupManager>();
             var roleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == user.RoleGroupId, cancellationToken);
             if (roleGroup == null)
             {

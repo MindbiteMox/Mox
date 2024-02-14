@@ -159,6 +159,9 @@
   <data name="Mapp" xml:space="preserve">
     <value>Folder</value>
   </data>
+  <data name="Mappar kan inte laddas upp!" xml:space="preserve">
+    <value>Directories can not be uploaded!</value>
+  </data>
   <data name="Mappen raderades!" xml:space="preserve">
     <value>Folder deleted!</value>
   </data>

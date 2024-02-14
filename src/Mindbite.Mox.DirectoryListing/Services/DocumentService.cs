@@ -102,14 +102,24 @@ namespace Mindbite.Mox.DirectoryListing.Services
                     {
                         var maxUniqueNumber = allDirectoryDocuments.Select(x => x.FileName).Where(x => x.StartsWith(newDocument.FileName)).Select(x => Regex.Replace(x, @".*\(\d+\)\.?.*$", "$1").TryToInt() ?? 0).DefaultIfEmpty().Max();
 
+                        var oldFilePath = newDocument.FilePath(this._options, this._env);
+
                         newDocument.FileName = $"{Path.GetFileNameWithoutExtension(newDocument.FileName)} ({maxUniqueNumber + 1}){Path.GetExtension(newDocument.FileName)}";
                         newDocument.Name = Path.GetFileNameWithoutExtension(newDocument.FileName);
+
+                        File.Move(oldFilePath, newDocument.FilePath(this._options, this._env));
+
                         this._context.Update(newDocument);
                     }
                     break;
                 case ViewModels.DuplicateAction.Ignore:
                     {
                         this._context.Remove(newDocument);
+                        try
+                        {
+                            File.Delete(newDocument.FilePath(this._options, this._env));
+                        }
+                        catch { }
                     }
                     break;
             }

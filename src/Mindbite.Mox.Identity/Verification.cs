@@ -121,7 +121,7 @@ namespace Mindbite.Mox.Identity.Verification
 
         public async Task<VerificationResult> VerifyAsync(IServiceProvider serviceProvider)
         {
-            var roleGroupManager = serviceProvider.GetRequiredService<Services.RoleGroupManager>();
+            var roleGroupManager = serviceProvider.GetRequiredService<Services.IRoleGroupManager>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             var existingRoleGroup = await roleGroupManager.RoleGroups.Include(x => x.Roles).FirstOrDefaultAsync(x => x.GroupName == this._roleGroupName);

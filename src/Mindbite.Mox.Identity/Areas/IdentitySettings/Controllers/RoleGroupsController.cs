@@ -23,11 +23,11 @@ namespace Mindbite.Mox.Identity.Controllers
         public override string ModelDisplayName => this._localizer["Grupp"];
 
         private readonly Data.MoxIdentityDbContext _context;
-        private readonly Services.RoleGroupManager _roleGroupManager;
+        private readonly Services.IRoleGroupManager _roleGroupManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IStringLocalizer _localizer;
 
-        public RoleGroupsController(IDbContextFetcher dbContextFetcher, Services.RoleGroupManager roleGroupManager, RoleManager<IdentityRole> roleManager, IStringLocalizer localizer)
+        public RoleGroupsController(IDbContextFetcher dbContextFetcher, Services.IRoleGroupManager roleGroupManager, RoleManager<IdentityRole> roleManager, IStringLocalizer localizer)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._roleGroupManager = roleGroupManager;

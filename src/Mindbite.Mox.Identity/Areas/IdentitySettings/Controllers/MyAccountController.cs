@@ -29,9 +29,8 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly IStringLocalizer _localizer;
         private readonly MoxIdentityOptions _identityOptions;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Services.RoleGroupManager _roleGroupManager;
 
-        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension, ViewMessaging viewMessaging, IStringLocalizer localizer, IOptions<MoxIdentityOptions> identityOptions, IServiceProvider serviceProvider, Services.RoleGroupManager roleGroupManager)
+        public MyAccountController(IDbContextFetcher dbContextFetcher, UserManager<MoxUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<MoxUser> signInManager, IOptions<SettingsOptions> settingsExtension, ViewMessaging viewMessaging, IStringLocalizer localizer, IOptions<MoxIdentityOptions> identityOptions, IServiceProvider serviceProvider)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userManager = userManager;
@@ -41,7 +40,6 @@ namespace Mindbite.Mox.Identity.Controllers
             this._localizer = localizer;
             this._identityOptions = identityOptions.Value;
             this._serviceProvider = serviceProvider;
-            this._roleGroupManager = roleGroupManager;
         }
 
         [HttpGet]

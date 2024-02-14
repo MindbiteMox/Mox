@@ -13,7 +13,18 @@ using System.Threading.Tasks;
 
 namespace Mindbite.Mox.Identity.Services
 {
-    public class RoleGroupManager
+    public interface IRoleGroupManager
+    {
+        IQueryable<RoleGroup> RoleGroups { get; }
+
+        Task AssignToGroupAsync(MoxUser user, RoleGroup group);
+        Task CreateAsync(RoleGroup group, IEnumerable<string> roles);
+        Task<RoleGroup?> FindByIdAsync(int id);
+        Task<RoleGroup?> FindByNameAsync(string name);
+        Task UpdateAsync(RoleGroup group, IEnumerable<string> roles);
+    }
+
+    public class RoleGroupManager : IRoleGroupManager
     {
         private readonly Data.MoxIdentityDbContext _context;
         private readonly UserManager<MoxUser> _userManager;
@@ -48,13 +59,13 @@ namespace Mindbite.Mox.Identity.Services
             {
                 var roleStore = (IUserRoleStore<MoxUser>)this._userStore;
 
-                foreach(var role in roles)
+                foreach (var role in roles)
                 {
                     var normalizedRole = this._userManager.NormalizeName(role);
                     await roleStore.RemoveFromRoleAsync(user, normalizedRole, default);
                 }
 
-                foreach(var role in group.Roles.Select(x => x.Role))
+                foreach (var role in group.Roles.Select(x => x.Role))
                 {
                     var normalizedRole = this._userManager.NormalizeName(role);
                     await roleStore.AddToRoleAsync(user, normalizedRole, default);

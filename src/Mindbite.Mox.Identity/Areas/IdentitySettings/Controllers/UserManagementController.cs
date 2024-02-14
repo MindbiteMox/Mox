@@ -20,7 +20,6 @@ using System.Security.Claims;
 
 namespace Mindbite.Mox.Identity.Controllers
 {
-
     [Area(Constants.SettingsArea)]
     [Authorize(Roles = Constants.AdminRole)]
     public class UserManagementController : Controller
@@ -34,9 +33,8 @@ namespace Mindbite.Mox.Identity.Controllers
         private readonly MoxIdentityOptions _identityOptions;
         private readonly ViewMessaging _viewMessaging;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Services.RoleGroupManager _roleGroupManager;
 
-        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions, ViewMessaging viewMessaging, IServiceProvider serviceProvider, Services.RoleGroupManager roleGroupManager)
+        public UserManagementController(IDbContextFetcher dbContextFetcher, IUserValidator<MoxUser> userValidator, UserManager<MoxUser> userManager, SignInManager<MoxUser> signInManager, IStringLocalizer localizer, IOptions<SettingsOptions> settingsExtension, IOptions<MoxIdentityOptions> identityOptions, ViewMessaging viewMessaging, IServiceProvider serviceProvider)
         {
             this._context = dbContextFetcher.FetchDbContext<Data.MoxIdentityDbContext>();
             this._userValidator = userValidator;
@@ -47,7 +45,6 @@ namespace Mindbite.Mox.Identity.Controllers
             this._identityOptions = identityOptions.Value;
             this._viewMessaging = viewMessaging;
             this._serviceProvider = serviceProvider;
-            this._roleGroupManager = roleGroupManager;
         }
 
         [HttpGet]

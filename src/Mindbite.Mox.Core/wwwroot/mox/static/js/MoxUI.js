@@ -500,7 +500,7 @@ var Mox;
                                 }
                                 renderUrl = localStorage.getItem(table.tableId) || table.options.url;
                                 addedQuery = table.options.addQuery ? table.options.addQuery(table) : '';
-                                url = Mox.Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random()]);
+                                url = Mox.Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, table.filterQueryString, 'r=' + Math.random(), 'windowWidth=' + window.innerWidth]);
                                 if (!!table.options.skipRenderOnCreate) return [3 /*break*/, 2];
                                 return [4 /*yield*/, table.render(url)];
                             case 1:
@@ -549,7 +549,7 @@ var Mox;
                                 sortLinks.forEach(function (x) { return x.addEventListener('click', function (e) {
                                     e.preventDefault();
                                     var addedQuery = _this.options.addQuery ? _this.options.addQuery(_this) : '';
-                                    var fullUrl = Mox.Utils.URL.addWindowQueryTo(x.href, [addedQuery, _this.filterQueryString, 'r=' + Math.random()]);
+                                    var fullUrl = Mox.Utils.URL.addWindowQueryTo(x.href, [addedQuery, _this.filterQueryString, 'r=' + Math.random(), 'windowWidth=' + window.innerWidth]);
                                     _this.render(fullUrl);
                                     if (_this.options.rememberFilters) {
                                         localStorage.setItem(_this.tableId, x.href);
@@ -599,7 +599,7 @@ var Mox;
                             case 0:
                                 renderUrl = localStorage.getItem(this.tableId) || this.options.url;
                                 addedQuery = this.options.addQuery ? this.options.addQuery(this) : '';
-                                url = Mox.Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, this.filterQueryString, 'r=' + Math.random()]);
+                                url = Mox.Utils.URL.addWindowQueryTo(renderUrl, [addedQuery, this.filterQueryString, 'r=' + Math.random(), 'windowWidth=' + window.innerWidth]);
                                 return [4 /*yield*/, this.render(url)];
                             case 1:
                                 _a.sent();
